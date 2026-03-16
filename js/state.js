@@ -10,7 +10,7 @@ import { calculateAll } from './calc.js';
  */
 export const defaultInputs = {
   // Section 1: Status Quo
-  electricityRate: 10.00,
+  electricityRate: 15.00,  // Updated: ₱15/kWh default (commercial baseline)
   operatingWeeksPerYear: 52,
   operatingDaysPerWeek: 7,
   dailyEnergyConsumptionKWh: 50,
@@ -37,24 +37,25 @@ export const defaultInputs = {
  * Default calculated results (initial state)
  */
 export const defaultResults = {
-  // Section 1: Status Quo
+  // Section 1: Status Quo (updated for ₱15/kWh default)
   operatingDaysPerYear: 364,
   annualConsumptionKWh: 18200,
   dailyEnergyConsumptionKWh: 50,
-  projectedAnnualCost: 182000,
-  projectedMonthlyCost: 15166.67,
-  effectiveAnnualCost: 182000,
+  projectedAnnualCost: 273000,  // 50 * 364 * 15
+  projectedMonthlyCost: 22750,  // 273000 / 12
+  effectiveAnnualCost: 273000,
   // Section 2: PhotoVoltaic System
   pvSystemCost: 300000,
   totalPVCapex: 300000,
   dailyGenerationKWh: 40,
-  dailySavings: 400,
+  dailySavings: 600,  // 40 * 15
   annualGenerationKWh: 14560,
   totalSolarKW: 10,
   // Section 3: Battery Storage
   requiredBatteryKWh: 0,
   batteryCost: 0,
   extraSolarForBatteryKW: 0,
+  batteryChargePercent: 0,
   solarPricePerKW: 30000,
   // Section 4: Financing
   monthlyAmortization: 0,
@@ -203,7 +204,7 @@ export function createAppState() {
     loadPreset(presetName) {
       const presets = {
         residential: {
-          electricityRate: 11,
+          electricityRate: 20,  // ₱20/kWh for residential
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
           dailyEnergyConsumptionKWh: 30,
@@ -219,7 +220,7 @@ export function createAppState() {
           loanTermMonths: 60
         },
         commercial: {
-          electricityRate: 10,
+          electricityRate: 15,  // ₱15/kWh for commercial
           operatingWeeksPerYear: 50,
           operatingDaysPerWeek: 6,
           dailyEnergyConsumptionKWh: 500,
@@ -235,7 +236,7 @@ export function createAppState() {
           loanTermMonths: 60
         },
         batteryOnly: {
-          electricityRate: 11,
+          electricityRate: 18,  // ₱18/kWh typical for residential battery backup
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
           dailyEnergyConsumptionKWh: 40,

@@ -150,7 +150,7 @@ where P = principal, r = monthly rate, n = months
 
 ## Development Milestones
 
-Development is broken into 5 milestones. Each produces a reviewable, testable deliverable. See the [PRD Section 11](./Project_Requirements_Document.md#11-milestones--deliverables) for full acceptance criteria.
+Development is broken into 6 milestones. Each produces a reviewable, testable deliverable. See the [PRD Section 11](./Project_Requirements_Document.md#11-milestones--deliverables) for full acceptance criteria.
 
 ### Milestone 1: Calculation Engine (MVP Foundation)
 > All math works — verifiable via command line, no UI needed yet.
@@ -166,8 +166,8 @@ Development is broken into 5 milestones. Each produces a reviewable, testable de
 > All 4 sections render with inputs. Each section shows its own results. Dashboard aggregates everything.
 
 - [ ] Section 1 — Status Quo: rate, schedule, daily consumption → **inline annual + monthly cost**
-- [ ] Section 2 — PhotoVoltaic System: capacity, sun hours, pricing → **inline PV cost + generation**
-- [ ] Section 3 — Battery Storage: load, duration → **inline battery sizing + cost**
+- [ ] Section 2 — PhotoVoltaic System: capacity, sun hours, pricing → **inline PV cost + generation + daily savings**
+- [ ] Section 3 — Battery Storage: load, duration → **inline battery sizing + cost + extra PV allocation**
 - [ ] Section 4 — Financing: loan terms → **inline amortization + interest**
 - [ ] Results Dashboard — 11 KPIs, each referencing its source section (tappable)
 
@@ -202,6 +202,22 @@ Development is broken into 5 milestones. Each produces a reviewable, testable de
 - [ ] Lighthouse PWA ≥ 90, Accessibility ≥ 90
 
 **Test:** Run Lighthouse. Tab through entire app. Test all edge cases from PRD Section 12.
+
+### Milestone 6: Narrative Summary (Story Mode)
+> All data woven into a plain-language story: Problem → Hypothesis → Evidence → Verdict.
+
+- [ ] Narrative generator assembles all computed fields into 7 structured paragraphs
+- [ ] Part 1 — The Problem: electricity rate, consumption, annual/monthly cost
+- [ ] Part 2 — The Hypothesis: PV capacity, daily generation, daily savings, PV cost
+- [ ] Part 3 — Battery Storage: battery sizing, extra PV allocation, battery cost (hidden if no battery)
+- [ ] Part 4 — Total CAPEX: PV System (Section 2) + Battery (Section 3)
+- [ ] Part 5 — The Return: annual savings, Simple ROI %, payback period
+- [ ] Part 6 — Financing: loan payment, interest, net cash flow (hidden if cash purchase)
+- [ ] Part 7 — The Verdict: green/yellow/red conclusion based on ROI
+- [ ] "Copy to Clipboard" for sharing the narrative as plain text
+- [ ] Real-time updates as inputs change
+
+**Test:** Read the narrative for residential (no battery), commercial (with battery), and financed scenarios. Verify all numbers match the Dashboard KPIs. Copy to clipboard and paste into a text editor.
 
 ---
 

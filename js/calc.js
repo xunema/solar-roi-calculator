@@ -310,6 +310,9 @@ export function calculateAll(inputs) {
     requiredBatteryKWh,
     batteryCost,
     extraSolarForBatteryKW,
+    batteryChargePercent: requiredBatteryKWh > 0
+      ? ((extraSolarForBatteryKW * (peakSunHoursPerDay || 0)) / requiredBatteryKWh) * 100
+      : 0,
     solarPricePerKW,  // Needed for extra PV cost calculation
 
     // Section 4: Financing results

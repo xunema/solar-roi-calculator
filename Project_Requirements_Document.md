@@ -201,13 +201,14 @@ PV Capacity (kW) × Price per kW (₱/kW)
 
 ### 5.3 Section 3 — Battery Storage: "Do I need batteries for nighttime power?"
 
-**Purpose:** Calculate battery requirements for nighttime operation. Solar panels only produce during the day — if the user needs power at night (security, aircon, refrigeration), they need battery storage.
+**Purpose:** Calculate battery requirements for nighttime operation. Solar panels only produce during the day — if the user needs power at night (security, aircon, refrigeration), they need battery storage. This section also shows how much of the PV system must be **allocated** to charging the batteries, and whether that allocation is sufficient.
 
-**The core question:** *How many kWh of battery do I need, and how much extra solar to charge it?*
+**The core question:** *How many kWh of battery do I need, how much solar do I allocate to charge it, and is that enough?*
 
 #### Key Inputs
 - **Nighttime Load (kW)** — total power draw of appliances running on battery at night
 - **Nighttime Duration (hours)** — how many hours after sunset battery power is needed
+- **Solar Allocated for Battery (kW)** — how many kW of PV capacity the user dedicates to charging the battery (defaults to the computed `extraSolarForBatteryKW` but can be adjusted)
 
 #### Battery Chain
 ```
@@ -215,10 +216,28 @@ Nighttime Load (kW) × Duration (hours)
   = Required Battery (kWh)
   × Battery Price (₱/kWh)
   = Battery Cost (₱)
+```
 
-Required Battery (kWh) ÷ Peak Sun Hours
-  = Extra PV Needed (kW) — additional solar panels to charge the battery during the day
-  × PV Price per kW
+#### Solar Allocation for Battery Charging
+```
+Required Battery (kWh) ÷ Peak Sun Hours (hrs/day)
+  = Extra PV Needed (kW)  — minimum solar to fully charge the battery each day
+
+Solar Allocated for Battery (kW) × Peak Sun Hours (hrs/day)
+  = Daily Charge Capacity (kWh)
+
+Battery Charge % = (Daily Charge Capacity / Required Battery kWh) × 100
+```
+
+This tells the user: **"Your allocated solar can charge {batteryChargePercent}% of the battery per day."**
+
+- **100% or more** — fully charged every day (green indicator)
+- **50–99%** — partially charged; battery won't last the full nighttime duration (yellow indicator)
+- **Below 50%** — significantly under-allocated; consider adding more solar or reducing nighttime load (red indicator)
+
+#### Extra PV Cost
+```
+Extra PV Needed (kW) × PV Price per kW (₱/kW)
   = Extra PV Cost (₱)
 ```
 
@@ -252,6 +271,81 @@ Monthly Savings (from solar) - Monthly Payment = Net Monthly Cash Flow
 If loan principal is 0, the section shows: **"Cash purchase — no financing."**
 
 If the net monthly cash flow is positive, the solar system pays for itself even during the loan period. If negative, the user is paying more per month than they save until the loan is paid off.
+
+---
+
+### 5.5 The Narrative — Putting It All Together
+
+After all four sections are filled in and the Dashboard KPIs are computed, the app generates a **plain-language narrative** that strings every number into a coherent story. The narrative presents the analysis as a Problem → Hypothesis → Evidence → Verdict flow that the user can read top-to-bottom or share with a decision-maker.
+
+#### Structure
+
+**Part 1 — The Problem: Your Current Electricity Costs**
+
+> You are paying **₱{electricityRate}/kWh** for electricity. At **{dailyEnergyConsumptionKWh} kWh/day** over **{operatingDaysPerYear} operating days/year**, you consume **{annualConsumptionKWh} kWh/year**, costing you **₱{projectedAnnualCost}/year** (or **₱{projectedMonthlyCost}/month**).
+
+If `annualBill` was entered as an override, note:
+> *(Your actual annual bill of ₱{annualBill} was used instead of the projected cost.)*
+
+**Part 2 — The Hypothesis: What If You Installed Solar?**
+
+> A **{solarCapacityKW} kW PhotoVoltaic system** at **{peakSunHoursPerDay} peak sun hours/day** would generate **{dailyGenerationKWh} kWh/day**, saving you **₱{dailySavings}/day** on electricity.
+>
+> The PV equipment costs **₱{pvSystemCost}** plus **₱{miscInfraCosts}** in infrastructure, for a total PV investment of **₱{totalPVCapex}**.
+
+**Part 3 — Battery Storage (if applicable)**
+
+If `nighttimeLoadKW > 0` and `nighttimeDurationHours > 0`:
+
+> To power **{nighttimeLoadKW} kW** of nighttime load for **{nighttimeDurationHours} hours**, you need **{requiredBatteryKWh} kWh** of battery storage, costing **₱{batteryCost}**.
+>
+> Charging these batteries requires allocating an additional **{extraSolarForBatteryKW} kW** of solar capacity beyond your base {solarCapacityKW} kW — bringing your total PV to **{totalSolarKW} kW**. The extra panels add **₱{extraSolarForBatteryKW × solarPricePerKW}** to the system cost.
+
+If no battery needed:
+> No battery storage needed — your facility operates only during daylight hours.
+
+**Part 4 — The Investment: Total CAPEX**
+
+> Your total capital expenditure is **₱{totalCapex}**, covering the PV system (Section 2) and battery storage (Section 3).
+
+**Part 5 — The Return: Savings & ROI**
+
+> Over **{operatingDaysPerYear} operating days/year**, your daily savings of **₱{dailySavings}** add up to **₱{annualSavings}/year** in reduced electricity costs (or **₱{monthlySavings}/month**).
+>
+> This gives you a **Simple ROI of {simpleROI}%** — meaning you recover **{simpleROI}%** of your investment each year. The inverse of this tells us your **Payback Period: {paybackYears} years** — the time until the system has fully paid for itself.
+
+**Part 6 — Financing (if applicable)**
+
+If `loanPrincipal > 0`:
+
+> If you finance **₱{loanPrincipal}** at **{annualInterestRate}%** over **{loanTermMonths} months**, your monthly payment is **₱{monthlyAmortization}**. Over the loan term, you'll pay **₱{totalLoanCost}** total, of which **₱{totalInterestPaid}** is interest.
+>
+> After deducting the loan payment from your monthly savings: **₱{monthlySavings} - ₱{monthlyAmortization} = ₱{netMonthlyCashFlow}/month** net cash flow.
+
+If `netMonthlyCashFlow >= 0`:
+> **The solar system pays for itself even during the loan period.**
+
+If `netMonthlyCashFlow < 0`:
+> **During the loan period, you pay ₱{abs(netMonthlyCashFlow)}/month more than you save.** After the loan is paid off in {paybackYears} years, you keep the full ₱{monthlySavings}/month as pure savings.
+
+If no financing:
+> **Cash purchase — no financing costs.** Your full monthly savings of ₱{monthlySavings} go straight to recovering your investment.
+
+**Part 7 — The Verdict**
+
+A one-line summary with conditional tone based on ROI color:
+
+- **Green (ROI ≥ 15%):** "Strong investment. Your {solarCapacityKW} kW system pays for itself in {paybackYears} years with {simpleROI}% annual returns."
+- **Yellow (ROI 8–14.9%):** "Moderate investment. Payback in {paybackYears} years at {simpleROI}% annual returns — consider optimizing system size or reducing costs."
+- **Red (ROI < 8%):** "Marginal investment at current assumptions. Review your electricity rate, system sizing, or pricing to improve returns."
+
+#### Display
+
+- Rendered as a scrollable text panel below the Dashboard (or as a toggleable "Show Narrative" section)
+- All peso values use `formatPeso()`, percentages use `formatPercent()`, years use `formatYears()`
+- Each paragraph references the source section — tapping the section name scrolls to it
+- Narrative updates in real time as inputs change (same reactive pipeline as Dashboard KPIs)
+- A "Copy to Clipboard" button lets users share the narrative as plain text
 
 ---
 
@@ -294,6 +388,7 @@ If the net monthly cash flow is positive, the solar system pays for itself even 
 | `requiredBatteryKWh` | `nighttimeLoadKW × nighttimeDurationHours` | kWh | 3 |
 | `batteryCost` | `requiredBatteryKWh × batteryPricePerKWh` | ₱ | 3 |
 | `extraSolarForBatteryKW` | `IF requiredBatteryKWh > 0 THEN requiredBatteryKWh / peakSunHoursPerDay ELSE 0` | kW | 3 |
+| `batteryChargePercent` | `IF requiredBatteryKWh > 0 THEN (extraSolarForBatteryKW × peakSunHoursPerDay / requiredBatteryKWh) × 100 ELSE 0` — shows if allocated solar is sufficient to fully charge the battery each day | % | 3 |
 | `totalSolarKW` | `solarCapacityKW + extraSolarForBatteryKW` | kW | — |
 | `totalCapex` | `totalPVCapex + batteryCost + (extraSolarForBatteryKW × solarPricePerKW)` — see Section 2 (PV System) + Section 3 (Battery Storage) | ₱ | Dashboard |
 | `annualSavings` | `annualGenerationKWh × electricityRate` — tooltip: `dailySavings × operatingDaysPerYear` | ₱ | Dashboard |
@@ -376,8 +471,14 @@ annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
 │  Battery Cost             ₱480,000.00       │
 │  Extra PV for Charging    10.0 kW           │
 │  Extra PV Cost            ₱300,000.00       │
+│  Battery Charge %         100.0% ✓          │
 └─────────────────────────────────────────────┘
 ```
+
+**Battery Charge %** shows how much of the battery the allocated solar can fill each day:
+- **≥ 100%** — green checkmark, fully charged daily
+- **50–99%** — yellow warning, partial charge only
+- **< 50%** — red alert, significantly under-allocated
 
 If nighttimeLoadKW and nighttimeDurationHours are both 0, show: "No battery needed."
 
@@ -387,6 +488,8 @@ requiredBatteryKWh       = nighttimeLoadKW × nighttimeDurationHours
 batteryCost              = requiredBatteryKWh × batteryPricePerKWh
 extraSolarForBatteryKW   = requiredBatteryKWh / peakSunHoursPerDay
 extraSolarCost           = extraSolarForBatteryKW × solarPricePerKW
+dailyChargeCapacityKWh   = extraSolarForBatteryKW × peakSunHoursPerDay
+batteryChargePercent     = (dailyChargeCapacityKWh / requiredBatteryKWh) × 100
 ```
 
 #### Section 4 — Financing Results
@@ -778,7 +881,7 @@ html.classList.toggle('dark', isDarkMode);
 
 ## 11. Milestones & Deliverables
 
-Development is organized into 5 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
+Development is organized into 6 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
 
 ---
 
@@ -892,6 +995,31 @@ Development is organized into 5 milestones. Each milestone produces a reviewable
 
 ---
 
+### Milestone 6: Narrative Summary (Story Mode)
+> **Goal:** All computed data is woven into a plain-language narrative that tells the user's solar ROI story from problem to verdict. Readable, shareable, and updates in real time.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 6.1 | Narrative data assembly | A `generateNarrative(inputs, results)` function in `calc.js` or new `narrative.js` returns structured text blocks from all computed fields |
+| 6.2 | Narrative UI panel | Scrollable text panel below Dashboard (or toggle "Show Narrative"); all values formatted with `formatPeso()`, `formatPercent()`, `formatYears()` |
+| 6.3 | Conditional sections | Battery section hidden when no battery; Financing section hidden when cash purchase; Verdict tone matches ROI color |
+| 6.4 | Section back-references | Tapping a section name in the narrative scrolls to the source input section |
+| 6.5 | Copy to Clipboard | "Copy" button exports narrative as formatted plain text |
+| 6.6 | Real-time updates | Narrative re-renders on every input change via the same reactive state pipeline |
+
+**Review checklist:**
+- [ ] Narrative displays all 7 parts (Problem, Hypothesis, Battery, CAPEX, Return, Financing, Verdict)
+- [ ] Battery paragraph hidden when nighttimeLoadKW = 0
+- [ ] Financing paragraph hidden when loanPrincipal = 0
+- [ ] Verdict text and tone match ROI color thresholds (green/yellow/red)
+- [ ] All peso values formatted correctly (₱ with commas)
+- [ ] Narrative updates instantly when any input changes
+- [ ] "Copy to Clipboard" produces clean plain text
+- [ ] Section names in narrative are tappable and scroll to source section
+- [ ] Narrative reads coherently for: residential no-battery, commercial with battery, financed vs cash
+
+---
+
 ## 12. Edge Cases
 
 | Scenario | Behavior |
@@ -947,6 +1075,10 @@ Development is organized into 5 milestones. Each milestone produces a reviewable
 - **Added:** Electricity rate benchmarks table (Residential ₱11–13, Commercial ₱9–11, Industrial ₱7–9)
 - **Expanded:** Section 6 PSH Calculator into comprehensive reference (formulas, theory, data sources)
 - **Added:** `sunhours.html` standalone reference page with PSH explanation, latitude formulas, tilt angle guidance, regional data, and external data source links
+- **Added:** Section 5.5 "The Narrative" — 7-part plain-language story mode (Problem → Hypothesis → Evidence → Verdict)
+- **Added:** Milestone 6 "Narrative Summary (Story Mode)" with review checklist
+- **Added:** Battery solar allocation % — shows what percentage of battery can be charged by allocated solar
+- **Updated:** Development milestones from 5 to 6
 - **Updated:** PRD version to 1.3.0
 
 ### v1.2.0 (2026-03-16)

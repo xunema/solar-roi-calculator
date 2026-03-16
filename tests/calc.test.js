@@ -789,7 +789,7 @@ test('Annual bill overrides effective annual cost', () => {
     loanTermMonths: 60
   });
 
-  // Projected cost still calculated from inputs
+  // Projected cost still calculated from inputs (using ₱10/kWh as specified in test)
   assertEqual(results.projectedAnnualCost, 182000, 'Projected stays at ₱182,000');
   // But effective cost uses the override
   assertEqual(results.effectiveAnnualCost, 250000, 'Effective uses override ₱250,000');
@@ -1028,7 +1028,7 @@ test('createAppState returns inputs, results, ui', () => {
 
 test('Default inputs match PRD spec', () => {
   const app = createAppState();
-  assertEqual(app.inputs.electricityRate, 10, 'Default rate = ₱10');
+  assertEqual(app.inputs.electricityRate, 15, 'Default rate = ₱15');
   assertEqual(app.inputs.operatingWeeksPerYear, 52, 'Default weeks = 52');
   assertEqual(app.inputs.operatingDaysPerWeek, 7, 'Default days = 7');
   assertEqual(app.inputs.dailyEnergyConsumptionKWh, 50, 'Default consumption = 50');
@@ -1079,7 +1079,7 @@ test('resetInputs restores PRD defaults', () => {
   app.inputs.electricityRate = 99;
   app.inputs.solarCapacityKW = 500;
   app.resetInputs();
-  assertEqual(app.inputs.electricityRate, 10);
+  assertEqual(app.inputs.electricityRate, 15);
   assertEqual(app.inputs.solarCapacityKW, 10);
 });
 
@@ -1114,7 +1114,7 @@ group('📋 PRD v1.2 — Per-Section Result Fields in calculateAll');
 test('calculateAll returns projectedAnnualCost (Section 1)', () => {
   const r = calculateAll({ ...defaultInputs });
   assertType(r.projectedAnnualCost, 'number');
-  assertEqual(r.projectedAnnualCost, 182000);
+  assertEqual(r.projectedAnnualCost, 273000); // 50 × 15 × 364
 });
 
 test('calculateAll returns annualConsumptionKWh (Section 1)', () => {
@@ -1129,17 +1129,17 @@ test('annualConsumptionKWh with commercial schedule: 500 × 300 = 150,000', () =
 
 test('calculateAll returns effectiveAnnualCost (Section 1)', () => {
   const r = calculateAll({ ...defaultInputs });
-  assertEqual(r.effectiveAnnualCost, 182000);
+  assertEqual(r.effectiveAnnualCost, 273000); // 50 × 15 × 364
 });
 
 test('calculateAll returns projectedMonthlyCost (Section 1)', () => {
   const r = calculateAll({ ...defaultInputs });
-  assertClose(r.projectedMonthlyCost, 15166.67, 0.01);
+  assertClose(r.projectedMonthlyCost, 22750, 0.01); // 273000 / 12
 });
 
 test('calculateAll returns dailySavings (Section 2)', () => {
   const r = calculateAll({ ...defaultInputs });
-  assertEqual(r.dailySavings, 400); // 40 kWh/day × ₱10/kWh
+  assertEqual(r.dailySavings, 600); // 40 kWh/day × ₱15/kWh
 });
 
 test('dailySavings with ₱11/kWh: 40 × 11 = ₱440/day', () => {
@@ -1169,6 +1169,21 @@ test('calculateAll returns batteryCost (Section 3)', () => {
     nighttimeDurationHours: 10
   });
   assertEqual(r.batteryCost, 600000); // 50 × 12000
+});
+
+test('batteryChargePercent = 100% when extra solar matches battery need', () => {
+  const r = calculateAll({
+    ...defaultInputs,
+    nighttimeLoadKW: 5,
+    nighttimeDurationHours: 10
+  });
+  // extraSolarForBatteryKW = 50/4 = 12.5, dailyCharge = 12.5*4 = 50, 50/50 = 100%
+  assertClose(r.batteryChargePercent, 100, 0.01);
+});
+
+test('batteryChargePercent = 0 when no battery needed', () => {
+  const r = calculateAll({ ...defaultInputs });
+  assertEqual(r.batteryChargePercent, 0);
 });
 
 // ============================================
