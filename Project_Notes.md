@@ -51,7 +51,7 @@
 ---
 
 #### Problem 4: Battery Model Simplification
-**Issue:** The spreadsheet models battery as a separate line item (400 kWh LFP @ ₱8,000/kWh = ₱3,200,000) with its own ROI calculation. The PRD integrates battery into the solar system calculation via nighttime load/duration inputs that auto-calculate required battery kWh and extra solar capacity.
+**Issue:** The spreadsheet models battery as a separate line item (400 kWh LFP @ ₱8,000/kWh = ₱3,200,000) with its own ROI calculation. The PRD integrates battery into the photovoltaic system calculation via nighttime load/duration inputs that auto-calculate required battery kWh and extra solar capacity.
 
 **Resolution:** The PRD approach is more user-friendly and better suited for the app's target personas. The spreadsheet's separate battery ROI can be verified by setting solar capacity to 0 and entering only battery parameters.
 
@@ -80,6 +80,33 @@ Payment = 14,000,000 × (0.01 × 1.01^60) / (1.01^60 - 1)
 ```
 
 **Resolution:** Standard annuity formula confirmed. The PRD's `calcAmortization` function spec is correct.
+
+---
+
+#### Problem 6: Section Naming — "Solar System" vs "PhotoVoltaic System"
+**Issue:** "Solar System" is ambiguous — it could refer to the planetary solar system, or it's too generic for a technical calculator. Users and sales reps use "PV system" or "photovoltaic system" as the industry-standard term.
+
+**Resolution:** Renamed Section 2 from "Solar System" to "PhotoVoltaic System" across all documents. Internal field names retain `solar` prefix (e.g., `solarCapacityKW`) for brevity since they're not user-facing.
+
+---
+
+#### Problem 7: No Immediate Feedback Per Section
+**Issue:** Users had to scroll to the main KPI dashboard to see the impact of any input change. For a 4-section form, this creates a disconnect — especially on mobile where the dashboard may be far from the current section.
+
+**Resolution:** Added inline results panels to each section:
+- **Section 1:** Shows projected annual cost AND monthly cost immediately below inputs
+- **Section 2:** Shows PV equipment cost, total PV CAPEX, daily and annual generation
+- **Section 3:** Shows required battery kWh, battery cost, extra PV needed
+- **Section 4:** Shows monthly amortization, total loan cost, total interest
+
+Each section's results update in real time. The main Results Dashboard still aggregates everything and now includes source-section references so users can tap a KPI to jump to the relevant section.
+
+---
+
+#### Problem 8: Missing Monthly Cost Projection
+**Issue:** The Status Quo section only showed projected annual cost. Most users think about electricity costs monthly (since that's how bills arrive). Showing only the annual figure requires mental division.
+
+**Resolution:** Added `projectedMonthlyCost = projectedAnnualCost / 12` as both a section result and a Results Dashboard KPI. Both annual and monthly update when annual bill override is entered.
 
 ---
 
@@ -112,4 +139,4 @@ Payment = 14,000,000 × (0.01 × 1.01^60) / (1.01^60 - 1)
 5. **Years After ROI** — Show total savings over system lifetime beyond payback period
 6. **LFP Battery Degradation** — Model capacity fade over 10+ year lifespan (spreadsheet notes 3,000–6,000 cycles)
 7. **PDF Export** — Generate client-ready proposal documents
-8. **Dark Mode** — Tailwind `dark:` classes
+8. ~~**Dark Mode**~~ — Moved to V1.1 scope (Night/Day theme toggle)

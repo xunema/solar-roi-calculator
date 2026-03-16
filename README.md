@@ -8,7 +8,7 @@ A Progressive Web App (PWA) for calculating solar photovoltaic and battery stora
 
 ## What It Does
 
-SolarCalc PH takes your electricity rate, solar system specs, optional battery storage, and financing details — then instantly calculates:
+SolarCalc PH takes your electricity rate, photovoltaic system specs, optional battery storage, and financing details — then instantly calculates:
 
 - **Total CAPEX** — full system cost including panels, battery, and infrastructure
 - **Annual Savings** — how much you stop paying your utility each year
@@ -75,23 +75,29 @@ python3 -m http.server 8000
 
 ```
 solarcalc-ph/
-├── index.html          # Single-page app shell
-├── manifest.json       # PWA manifest
-├── sw.js               # Service worker (cache-first)
+├── index.html              # Single-page app shell
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service worker (cache-first)
 ├── css/
-│   └── custom.css      # Custom styles
+│   ├── custom.css          # Custom overrides
+│   └── themes.css          # Light/dark theme variables
 ├── js/
-│   ├── app.js          # Entry point
-│   ├── state.js        # Reactive state (Proxy)
-│   ├── calc.js         # Pure calculation functions
-│   ├── ui.js           # DOM rendering & tooltips
-│   ├── onboarding.js   # Guided intro modal
-│   └── format.js       # ₱ currency formatting
+│   ├── app.js              # Entry point
+│   ├── state.js            # Reactive state (Proxy)
+│   ├── calc.js             # Pure calculation functions
+│   ├── ui.js               # DOM rendering & tooltips
+│   ├── onboarding.js       # Guided intro modal
+│   ├── themes.js           # Night/Day theme toggle
+│   ├── layout.js           # Phone/Desktop layout toggle
+│   ├── sunhours.js         # Sun hours calculator
+│   └── format.js           # ₱ currency formatting
+├── data/
+│   └── philippine-sun-hours.json
 ├── icons/
 │   ├── icon-192.png
 │   └── icon-512.png
 └── tests/
-    └── calc.test.js    # Unit tests
+    └── calc.test.js        # Unit tests
 ```
 
 ---
@@ -138,6 +144,63 @@ Standard annuity formula:
 Monthly Payment = P × [r(1+r)^n] / [(1+r)^n - 1]
 where P = principal, r = monthly rate, n = months
 ```
+
+---
+
+## Development Milestones
+
+Development is broken into 5 milestones. Each produces a reviewable, testable deliverable. See the [PRD Section 11](./Project_Requirements_Document.md#11-milestones--deliverables) for full acceptance criteria.
+
+### Milestone 1: Calculation Engine (MVP Foundation)
+> All math works — verifiable via command line, no UI needed yet.
+
+- [ ] `calc.js` — all formulas (CAPEX, ROI, payback, amortization, projected costs)
+- [ ] `tests/calc.test.js` — unit tests pass via `node tests/calc.test.js`
+- [ ] `format.js` — Philippine peso formatting (`₱146,000.00`)
+- [ ] `state.js` — Proxy-based reactive state triggers recalculation
+
+**Test:** `node tests/calc.test.js` — all green.
+
+### Milestone 2: Core UI + Section Forms (MVP Usable)
+> All 4 sections render with inputs. Each section shows its own results. Dashboard aggregates everything.
+
+- [ ] Section 1 — Status Quo: rate, schedule, daily consumption → **inline annual + monthly cost**
+- [ ] Section 2 — PhotoVoltaic System: capacity, sun hours, pricing → **inline PV cost + generation**
+- [ ] Section 3 — Battery Storage: load, duration → **inline battery sizing + cost**
+- [ ] Section 4 — Financing: loan terms → **inline amortization + interest**
+- [ ] Results Dashboard — 11 KPIs, each referencing its source section (tappable)
+
+**Test:** Open in browser. Change any input — all section results and dashboard KPIs update instantly.
+
+### Milestone 3: Tooltips, Onboarding & Sun Hours
+> Help system complete. New users can self-onboard without external research.
+
+- [ ] Tooltip on every field (❓ icon, one open at a time)
+- [ ] Onboarding modal — 4-slide guide (blended rate, annual usage, defaults)
+- [ ] Sun hours calculator — region/city dropdown → peak sun hours estimate
+- [ ] External reference links (NREL, PVWatts) in tooltips
+
+**Test:** Click every ❓. Open/close onboarding. Use sun hours calculator for 3 different regions.
+
+### Milestone 4: PWA, Themes & Layout
+> Installable, offline-capable, with night/day mode and layout control.
+
+- [ ] Service worker — app works fully offline after first load
+- [ ] Night/Day theme toggle — persists in localStorage, detects system preference
+- [ ] Phone/Desktop/Auto layout toggle in header
+
+**Test:** Install as PWA. Toggle airplane mode — app still works. Switch themes. Switch layouts.
+
+### Milestone 5: Polish & Accessibility (Release Candidate)
+> Production-ready. Lighthouse audits pass.
+
+- [ ] Responsive layout at 375px / 768px / 1024px+
+- [ ] KPI conditional coloring (green/yellow/red thresholds)
+- [ ] Edge cases handled (division by zero, loan > CAPEX, rate < 1 hint)
+- [ ] Accessibility: tab order, ARIA labels, focus trapping, 44px touch targets
+- [ ] Lighthouse PWA ≥ 90, Accessibility ≥ 90
+
+**Test:** Run Lighthouse. Tab through entire app. Test all edge cases from PRD Section 12.
 
 ---
 

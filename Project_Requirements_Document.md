@@ -1,6 +1,6 @@
 # Project Requirements Document: SolarCalc PH — Solar ROI & Battery Calculator
 
-> **Version:** 1.1.0
+> **Version:** 1.2.0
 > **Date:** 2026-03-16
 > **Source:** `250915 SOLAR ROI .xlsx` spreadsheet + `Solar_ROI_App_PRD_v2.md`
 > **Status:** Draft
@@ -57,7 +57,7 @@ The existing Excel spreadsheet (`250915 SOLAR ROI .xlsx`) provides a powerful RO
   - Daily energy consumption (kWh) for cost projection
   - **Projected Annual Cost** — computed from rate × consumption × operating days
   - **Annual Bill** — optional overwrite of projected cost for reverse-calc
-- **Section 2 — Solar System:** Capacity (kW), peak sun hours with reference links, price per kW, misc infrastructure costs, battery price per kWh
+- **Section 2 — PhotoVoltaic System:** Capacity (kW), peak sun hours with reference links, price per kW, misc infrastructure costs, battery price per kWh
 - **Section 3 — Battery Storage:** Nighttime load (kW), nighttime duration (hours), auto-calculated battery kWh and extra solar requirement
 - **Section 4 — Financing:** Loan principal, annual interest rate, loan term (months), standard amortization formula
 - **Sun Hours Calculator:** Modal tool to estimate peak sun hours by region/location
@@ -107,46 +107,118 @@ The existing Excel spreadsheet (`250915 SOLAR ROI .xlsx`) provides a powerful RO
 
 ### 5.2 Computed Fields
 
-| Field | Formula | Unit |
-|-------|---------|------|
-| `operatingDaysPerYear` | `operatingWeeksPerYear × operatingDaysPerWeek` | days |
-| `projectedAnnualCost` | `dailyEnergyConsumptionKWh × electricityRate × operatingDaysPerYear` | ₱ |
-| `requiredBatteryKWh` | `nighttimeLoadKW × nighttimeDurationHours` | kWh |
-| `extraSolarForBatteryKW` | `IF requiredBatteryKWh > 0 THEN requiredBatteryKWh / peakSunHoursPerDay ELSE 0` | kW |
-| `totalSolarKW` | `solarCapacityKW + extraSolarForBatteryKW` | kW |
-| `totalCapex` | `(totalSolarKW × solarPricePerKW) + (requiredBatteryKWh × batteryPricePerKWh) + miscInfraCosts` | ₱ |
-| `annualGenerationKWh` | `totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear` | kWh |
-| `annualSavings` | `annualGenerationKWh × electricityRate` | ₱ |
-| `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` | % |
-| `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` | years |
-| `monthlyAmortization` | Standard annuity formula (see PRD Section 7) | ₱/month |
-| `totalLoanCost` | `monthlyAmortization × loanTermMonths` | ₱ |
-| `totalInterestPaid` | `totalLoanCost - loanPrincipal` | ₱ |
-| `monthlySavings` | `annualSavings / 12` | ₱/month |
-| `netMonthlyCashFlow` | `monthlySavings - monthlyAmortization` | ₱/month |
+| Field | Formula | Unit | Section |
+|-------|---------|------|---------|
+| `operatingDaysPerYear` | `operatingWeeksPerYear × operatingDaysPerWeek` | days | 1 |
+| `projectedAnnualCost` | `dailyEnergyConsumptionKWh × electricityRate × operatingDaysPerYear` | ₱ | 1 |
+| `projectedMonthlyCost` | `projectedAnnualCost / 12` | ₱ | 1 |
+| `pvSystemCost` | `solarCapacityKW × solarPricePerKW` | ₱ | 2 |
+| `totalPVCapex` | `pvSystemCost + miscInfraCosts` | ₱ | 2 |
+| `dailyGenerationKWh` | `solarCapacityKW × peakSunHoursPerDay` | kWh | 2 |
+| `annualGenerationKWh` | `totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear` | kWh | 2 |
+| `requiredBatteryKWh` | `nighttimeLoadKW × nighttimeDurationHours` | kWh | 3 |
+| `batteryCost` | `requiredBatteryKWh × batteryPricePerKWh` | ₱ | 3 |
+| `extraSolarForBatteryKW` | `IF requiredBatteryKWh > 0 THEN requiredBatteryKWh / peakSunHoursPerDay ELSE 0` | kW | 3 |
+| `totalSolarKW` | `solarCapacityKW + extraSolarForBatteryKW` | kW | — |
+| `totalCapex` | `totalPVCapex + batteryCost + (extraSolarForBatteryKW × solarPricePerKW)` | ₱ | Dashboard |
+| `annualSavings` | `annualGenerationKWh × electricityRate` | ₱ | Dashboard |
+| `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` | % | Dashboard |
+| `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` | years | Dashboard |
+| `monthlyAmortization` | Standard annuity formula (see PRD Section 7) | ₱/month | 4 |
+| `totalLoanCost` | `monthlyAmortization × loanTermMonths` | ₱ | 4 |
+| `totalInterestPaid` | `totalLoanCost - loanPrincipal` | ₱ | 4 |
+| `monthlySavings` | `annualSavings / 12` | ₱/month | Dashboard |
+| `netMonthlyCashFlow` | `monthlySavings - monthlyAmortization` | ₱/month | Dashboard |
 
-### 5.3 Status Quo Cost Flow
+### 5.3 Section Results Panels
 
-The Status Quo section now provides a clear view of current electricity costs:
+Each section displays its own inline results panel below its inputs. These give the user immediate feedback within the section context before they scroll to the main dashboard.
+
+#### Section 1 — Status Quo Results
 
 ```
-User Inputs:
-├── Electricity Rate (₱/kWh)
-├── Daily Energy Consumption (kWh)
-├── Operating Schedule (weeks/year, days/week)
-│
-Computed:
-├── Operating Days/Year = weeks × days/week
-└── Projected Annual Cost = daily kWh × rate × operating days
-
-User Can Override:
-└── Annual Bill (actual) → overwrites Projected Annual Cost for ROI context
+┌─────────────────────────────────────────────┐
+│  YOUR CURRENT ELECTRICITY COSTS             │
+│                                             │
+│  Operating Days/Year      364 days          │
+│  Projected Annual Cost    ₱182,000.00 /yr   │
+│  Projected Monthly Cost   ₱15,166.67 /mo    │
+│                                             │
+│  [Annual Bill: ₱_____ (optional override)]  │
+└─────────────────────────────────────────────┘
 ```
 
-**Reverse Calculation:** When user enters `annualBill` without `dailyEnergyConsumptionKWh`, the system can optionally calculate backwards:
+**Formulas:**
+```
+operatingDaysPerYear  = operatingWeeksPerYear × operatingDaysPerWeek
+projectedAnnualCost   = dailyEnergyConsumptionKWh × electricityRate × operatingDaysPerYear
+projectedMonthlyCost  = projectedAnnualCost / 12
+```
+
+**Reverse Calculation:** When user enters `annualBill` without `dailyEnergyConsumptionKWh`, the system calculates backwards:
 ```
 dailyEnergyConsumptionKWh = annualBill / (electricityRate × operatingDaysPerYear)
 ```
+
+When `annualBill` is entered, it overrides `projectedAnnualCost` and `projectedMonthlyCost` is recalculated from the override. A visual indicator (badge or icon) shows the value is user-overwritten.
+
+#### Section 2 — PhotoVoltaic System Results
+
+```
+┌─────────────────────────────────────────────┐
+│  PV SYSTEM OUTPUT                           │
+│                                             │
+│  PV Equipment Cost        ₱300,000.00       │
+│  Total PV CAPEX           ₱300,000.00       │
+│  Daily Generation         40.0 kWh/day      │
+│  Annual Generation        14,600 kWh/yr     │
+└─────────────────────────────────────────────┘
+```
+
+**Formulas:**
+```
+pvSystemCost        = solarCapacityKW × solarPricePerKW
+totalPVCapex        = pvSystemCost + miscInfraCosts
+dailyGenerationKWh  = solarCapacityKW × peakSunHoursPerDay
+annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
+```
+
+#### Section 3 — Battery Storage Results
+
+```
+┌─────────────────────────────────────────────┐
+│  BATTERY REQUIREMENTS                       │
+│                                             │
+│  Required Battery         40.0 kWh          │
+│  Battery Cost             ₱480,000.00       │
+│  Extra PV for Charging    10.0 kW           │
+│  Extra PV Cost            ₱300,000.00       │
+└─────────────────────────────────────────────┘
+```
+
+If nighttimeLoadKW and nighttimeDurationHours are both 0, show: "No battery needed."
+
+**Formulas:**
+```
+requiredBatteryKWh       = nighttimeLoadKW × nighttimeDurationHours
+batteryCost              = requiredBatteryKWh × batteryPricePerKWh
+extraSolarForBatteryKW   = requiredBatteryKWh / peakSunHoursPerDay
+extraSolarCost           = extraSolarForBatteryKW × solarPricePerKW
+```
+
+#### Section 4 — Financing Results
+
+```
+┌─────────────────────────────────────────────┐
+│  LOAN SUMMARY                               │
+│                                             │
+│  Monthly Amortization     ₱311,422.27 /mo   │
+│  Total Loan Cost          ₱18,685,336.06    │
+│  Total Interest Paid      ₱4,685,336.06     │
+└─────────────────────────────────────────────┘
+```
+
+If loanPrincipal is 0, show: "Cash purchase — no financing."
 
 ### 5.4 Spreadsheet Verification (from "250915 SOLAR ROI .xlsx")
 
@@ -308,19 +380,25 @@ CSS responds to this attribute:
 [data-layout="desktop"] .kpi-sidebar { position: sticky; }
 ```
 
-### 9.2 KPI Dashboard
+### 9.2 Results Dashboard
 
-| # | KPI | Format | Color Coding |
-|---|-----|--------|-------------|
-| 1 | Total CAPEX | ₱ #,###,### | — |
-| 2 | **Projected Annual Cost** | ₱ #,###,### /yr | Red (cost) |
-| 3 | Annual Savings | ₱ #,###,### /yr | Green if > 0 |
-| 4 | Simple ROI | ##.#% /yr | Green ≥ 15%, Yellow 8–14.9%, Red < 8% |
-| 5 | Payback Period | #.# years | Green ≤ 5, Yellow 5.1–8, Red > 8 |
-| 6 | Monthly Savings | ₱ #,###,### /mo | — |
-| 7 | Monthly Amortization | ₱ #,###,### /mo | Show only if loan > 0 |
-| 8 | Net Monthly Cash Flow | ₱ #,###,### /mo | Green if +, Red if −. Show only if loan > 0 |
-| 9 | Total Interest Paid | ₱ #,###,### | Show only if loan > 0 |
+The Results Dashboard is the main summary view. Each KPI references back to the section it derives from, so users can trace any number back to its source inputs.
+
+| # | KPI | Format | Source Section | Color Coding |
+|---|-----|--------|---------------|-------------|
+| 1 | Projected Annual Cost | ₱ #,###,### /yr | Section 1: Status Quo | Red (current cost baseline) |
+| 2 | Projected Monthly Cost | ₱ #,###,### /mo | Section 1: Status Quo | Red (current cost baseline) |
+| 3 | Total CAPEX | ₱ #,###,### | Section 2 + 3: PV + Battery | — |
+| 4 | Annual Generation | #,### kWh/yr | Section 2: PV System | — |
+| 5 | Annual Savings | ₱ #,###,### /yr | Section 1 rate × Section 2 generation | Green if > 0 |
+| 6 | Simple ROI | ##.#% /yr | CAPEX vs Savings | Green ≥ 15%, Yellow 8–14.9%, Red < 8% |
+| 7 | Payback Period | #.# years | CAPEX vs Savings | Green ≤ 5, Yellow 5.1–8, Red > 8 |
+| 8 | Monthly Savings | ₱ #,###,### /mo | Annual Savings ÷ 12 | — |
+| 9 | Monthly Amortization | ₱ #,###,### /mo | Section 4: Financing | Show only if loan > 0 |
+| 10 | Net Monthly Cash Flow | ₱ #,###,### /mo | Savings − Amortization | Green if +, Red if −. Show only if loan > 0 |
+| 11 | Total Interest Paid | ₱ #,###,### | Section 4: Financing | Show only if loan > 0 |
+
+**Dashboard-to-Section Navigation:** Each KPI card is tappable/clickable. Tapping a KPI scrolls to and briefly highlights the source section, so users can adjust the relevant inputs directly.
 
 ### 9.3 Design System
 
@@ -389,25 +467,119 @@ html.classList.toggle('dark', isDarkMode);
 
 ---
 
-## 11. Implementation Phases
+## 11. Milestones & Deliverables
+
+Development is organized into 5 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
+
+---
+
+### Milestone 1: Calculation Engine (MVP Foundation)
+> **Goal:** All math works correctly with no UI. Verifiable via command line.
 
 | Phase | Deliverable | Acceptance Criteria |
 |-------|-------------|---------------------|
-| 1 | `calc.js` + `tests/calc.test.js` | All test cases pass via `node tests/calc.test.js` |
-| 2 | `state.js` with Proxy reactivity | State changes trigger callbacks |
-| 3 | `format.js` with ₱ formatting | `formatCurrency(146000)` → `"₱146,000.00"` |
-| 4 | `index.html` shell + Tailwind + manifest | Opens in browser with header |
-| 5 | `ui.js` — Section 1 + KPI dashboard | Real-time KPI updates |
-| 6 | `ui.js` — Sections 2, 3, 4 | All inputs wired |
-| 7 | Tooltip system | Click ❓ opens/closes tooltips |
-| 8 | Onboarding modal | 4-slide guide |
-| 9 | `sw.js` — offline caching | App loads offline |
-| 10 | Responsive polish + KPI coloring | Visual check at 375px, 768px, 1024px |
-| **11** | **Status Quo cost projection** | Daily consumption input + projected annual cost calculation |
-| **12** | **Sun hours calculator** | Modal with region/city selection, outputs peak sun hours |
-| **13** | **Theme system** | `themes.js` with toggle, dark mode classes, localStorage persistence |
-| **14** | **Layout toggle** | `layout.js` with phone/desktop/auto modes, header toggle |
-| 15 | Accessibility audit | Tab order, labels, color not sole indicator |
+| 1.1 | `calc.js` — pure calculation functions | All formulas from Section 5.2 implemented |
+| 1.2 | `tests/calc.test.js` — unit tests | `node tests/calc.test.js` passes all assertions |
+| 1.3 | `format.js` — currency/number formatting | `formatCurrency(146000)` → `"₱146,000.00"` |
+| 1.4 | `state.js` — reactive state with Proxy | Changing any field triggers registered callback |
+
+**Review checklist:**
+- [ ] `node tests/calc.test.js` — all pass
+- [ ] Basic payback: 10kW, ₱10/kWh, 4 PSH, 365 days → CAPEX ₱300,000, Payback ~2.05yr
+- [ ] Amortization: ₱14M, 12%, 60mo → ₱311,422.27/mo
+- [ ] Division-by-zero guards work (0 savings → Infinity payback)
+- [ ] Projected monthly cost = annual cost / 12
+
+---
+
+### Milestone 2: Core UI + Section Forms (MVP Usable)
+> **Goal:** All 4 sections render with inputs. Each section shows its own inline results panel. Results Dashboard aggregates all KPIs. Real-time recalculation on every input change.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 2.1 | `index.html` shell + Tailwind CDN + `manifest.json` | Opens in browser with header and empty sections |
+| 2.2 | Section 1 — Status Quo form + **Section 1 Results** | Rate, schedule, daily consumption inputs; inline annual + monthly cost |
+| 2.3 | Section 2 — PhotoVoltaic System form + **Section 2 Results** | PV inputs; inline PV cost, daily/annual generation |
+| 2.4 | Section 3 — Battery Storage form + **Section 3 Results** | Battery inputs; inline battery kWh, cost, extra PV needed |
+| 2.5 | Section 4 — Financing form + **Section 4 Results** | Loan inputs; inline amortization, total cost, interest |
+| 2.6 | Results Dashboard with section references | All 11 KPIs display; tapping KPI scrolls to source section |
+
+**Review checklist:**
+- [ ] All 16 input fields render with correct labels, defaults, and units
+- [ ] Each section shows its own results panel that updates in real time
+- [ ] Results Dashboard shows all 11 KPIs
+- [ ] Tapping a KPI card scrolls to the source section
+- [ ] Projected Annual Cost AND Monthly Cost display in Section 1 results
+- [ ] Annual Bill override updates both annual and monthly projections
+- [ ] Battery section shows "No battery needed" when load/duration = 0
+- [ ] Financing section shows "Cash purchase" when loan = 0
+- [ ] No console errors
+
+---
+
+### Milestone 3: Tooltips, Onboarding & Sun Hours
+> **Goal:** Contextual help system complete. New users can self-onboard. Sun hours calculator eliminates guesswork.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 3.1 | Tooltip system | Click ❓ → tooltip appears with help text; click away closes |
+| 3.2 | Onboarding modal (4 slides) | "Guide" button opens modal; ESC/click-outside closes; focuses first input on dismiss |
+| 3.3 | Sun hours calculator modal | Region/city dropdown → outputs peak sun hours; "Use this value" populates Section 2 |
+| 3.4 | External reference links in tooltips | Peak sun hours tooltip includes NREL, PVWatts links |
+
+**Review checklist:**
+- [ ] All 16 fields have working tooltips with correct copy
+- [ ] Only one tooltip open at a time
+- [ ] Onboarding modal shows on first visit (sessionStorage flag)
+- [ ] All 4 onboarding slides display correctly
+- [ ] Sun hours calculator returns reasonable values for all regions
+- [ ] Sun hours "Use this value" populates the input and closes modal
+- [ ] External links open in new tab
+
+---
+
+### Milestone 4: PWA, Themes & Layout
+> **Goal:** App is installable, works offline, and supports night/day mode and layout preferences.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 4.1 | `sw.js` — service worker + offline caching | App loads after going offline |
+| 4.2 | Night/Day theme toggle | Toggle switches themes; preference persists in localStorage; respects system preference |
+| 4.3 | Phone/Desktop layout toggle | 3-state toggle (Auto/Phone/Desktop) in header; layout changes immediately |
+| 4.4 | `themes.css` — light and dark theme variables | All colors, borders, backgrounds adapt to theme |
+
+**Review checklist:**
+- [ ] PWA installs on Android Chrome ("Add to Home Screen")
+- [ ] PWA installs on iOS Safari
+- [ ] App works fully offline after first load
+- [ ] Theme toggle switches between light/dark
+- [ ] Theme persists across page reloads
+- [ ] System `prefers-color-scheme` detected on first load
+- [ ] Layout toggle works at all screen widths
+- [ ] Desktop mode on small screen shows maximized single column
+
+---
+
+### Milestone 5: Polish & Accessibility (Release Candidate)
+> **Goal:** Production-ready. Passes Lighthouse audits. All edge cases handled.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 5.1 | Responsive polish | Visual check at 375px (iPhone SE), 768px (iPad), 1024px+ |
+| 5.2 | KPI conditional coloring | ROI/Payback/CashFlow colors match spec thresholds |
+| 5.3 | Edge case handling | All scenarios from Section 12 handled gracefully |
+| 5.4 | Accessibility audit | Tab order, labels, ARIA roles, focus trapping, touch targets |
+
+**Review checklist:**
+- [ ] Lighthouse PWA audit ≥ 90
+- [ ] Lighthouse Accessibility audit ≥ 90
+- [ ] KPI colors: ROI Green ≥ 15%, Yellow 8–14.9%, Red < 8%
+- [ ] KPI colors: Payback Green ≤ 5yr, Yellow 5.1–8yr, Red > 8yr
+- [ ] "Did you mean 12%?" hint when rate < 1
+- [ ] "Loan exceeds system cost" warning when loan > CAPEX
+- [ ] Keyboard navigation through all inputs in section order
+- [ ] No console errors on any interaction path
+- [ ] `prefers-reduced-motion` disables transitions
 
 ---
 
@@ -435,9 +607,11 @@ html.classList.toggle('dark', isDarkMode);
 - [ ] PWA installs on iOS Safari
 - [ ] App works fully offline after first load
 - [ ] All 16 input fields render with correct labels, defaults, tooltips
-- [ ] All 9 KPI cards render and update in real time
-- [ ] Projected Annual Cost calculates correctly from daily consumption
-- [ ] Annual Bill overwrite functions correctly
+- [ ] All 11 KPI cards in Results Dashboard render and update in real time
+- [ ] Each section displays its own inline results panel
+- [ ] KPI cards navigate to source section on tap/click
+- [ ] Projected Annual Cost AND Monthly Cost calculate correctly from daily consumption
+- [ ] Annual Bill overwrite functions correctly (updates both annual and monthly)
 - [ ] Sun hours calculator opens and returns valid values
 - [ ] Peak sun hours tooltip shows external links
 - [ ] Theme toggle switches between light/dark modes
@@ -452,6 +626,15 @@ html.classList.toggle('dark', isDarkMode);
 ---
 
 ## Changelog
+
+### v1.2.0 (2026-03-16)
+- **Renamed:** "Solar System" → "PhotoVoltaic System" throughout all documents
+- **Added:** Per-section inline results panels (each section shows its own computed outputs)
+- **Added:** Projected Monthly Cost (`projectedAnnualCost / 12`) alongside annual cost
+- **Added:** Results Dashboard KPI-to-section navigation (tap KPI → scroll to source section)
+- **Added:** Intermediate computed fields: `pvSystemCost`, `totalPVCapex`, `dailyGenerationKWh`, `batteryCost`
+- **Updated:** Results Dashboard expanded from 9 to 11 KPIs with source section references
+- **Updated:** Computed fields table now includes Section column for traceability
 
 ### v1.1.0 (2026-03-16)
 - **Added:** Projected Annual Cost calculation in Status Quo section
