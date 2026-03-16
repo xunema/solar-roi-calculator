@@ -284,6 +284,7 @@ function generatePart7Verdict(inputs, results) {
   const verdict = getVerdict(results);
   const simpleROI = results.simpleROI || 0;
   const paybackYears = results.paybackYears;
+  const hasFinancing = results.hasFinancing;
 
   let text = `THE VERDICT: SHOULD YOU PROCEED?\n`;
   text += `===============================\n\n`;
@@ -301,13 +302,23 @@ function generatePart7Verdict(inputs, results) {
   text += `${verdict.summary}\n\n`;
 
   // Key numbers summary
-  text += `Summary:\n`;
+  text += `Key Metrics:\n`;
   text += `  • Annual ROI: ${formatPercent(simpleROI)}\n`;
   if (paybackYears !== Infinity && paybackYears < 100) {
     text += `  • Payback period: ${formatYears(paybackYears)}\n`;
   }
   text += `  • Annual savings: ${formatPeso(results.annualSavings || 0)}\n`;
-  text += `  • Total investment: ${formatPeso(results.totalCapex || 0)}\n\n`;
+  text += `  • Total investment: ${formatPeso(results.totalCapex || 0)}\n`;
+  
+  // Financing-specific metrics
+  if (hasFinancing && results.monthlySavings > 0) {
+    text += `  • Monthly loan payment: ${formatPeso(results.monthlyAmortization || 0)}\n`;
+    text += `  • Cash flow buffer: ${formatPercent(verdict.cashFlowBufferPct)} of savings\n`;
+    if (verdict.loanShareOfSavingsPct > 0) {
+      text += `  • Loan uses ${formatPercent(verdict.loanShareOfSavingsPct)} of monthly savings\n`;
+    }
+  }
+  text += `\n`;
 
   // Actionable advice
   text += `Recommendation: ${verdict.advice}`;
@@ -316,47 +327,108 @@ function generatePart7Verdict(inputs, results) {
 }
 
 /**
- * Get verdict based on ROI and payback
+ * Get verdict based on payback and cash flow (per PRD v1.5)
+ * 
+ * Rules:
+ * - 🔴 Red: payback > 6 years OR (financed AND netMonthlyCashFlow < 0)
+ * - 🟡 Yellow: payback > 4 years OR (financed AND cashFlowBuffer < 20%)
+ * - 🟢 Green: payback <= 4 years AND (no financing OR cashFlowBuffer >= 20%)
  */
 function getVerdict(results) {
-  const roi = results.simpleROI || 0;
   const payback = results.paybackYears;
+  const hasFinancing = results.hasFinancing;
+  const netCashFlow = results.netMonthlyCashFlow || 0;
+  const monthlySavings = results.monthlySavings || 0;
+  
+  // Calculate cash flow buffer percentage (financed only)
+  // Buffer = how much of monthly savings remains after loan payment
+  let cashFlowBufferPct = 0;
+  let loanShareOfSavingsPct = 0;
+  if (hasFinancing && monthlySavings > 0) {
+    cashFlowBufferPct = (netCashFlow / monthlySavings) * 100;
+    loanShareOfSavingsPct = ((results.monthlyAmortization || 0) / monthlySavings) * 100;
+  }
 
-  // Green: ROI >= 15% and payback <= 5 years
-  if (roi >= 15 && payback <= 5) {
+  // Check RED conditions first (most serious)
+  const redPayback = payback > 6 && payback !== Infinity;
+  const redCashFlow = hasFinancing && netCashFlow < 0;
+  
+  if (redPayback || redCashFlow) {
+    let reason = '';
+    let detail = '';
+    
+    if (redPayback && redCashFlow) {
+      reason = 'Long payback period AND negative monthly cash flow';
+      detail = `Your ${formatYears(payback)} payback exceeds 6 years, and your loan payment exceeds ` +
+               `your monthly savings by ${formatPeso(Math.abs(netCashFlow))}.`;
+    } else if (redPayback) {
+      reason = 'Payback period too long';
+      detail = `Your ${formatYears(payback)} payback exceeds 6 years. Solar systems typically last 25 years, ` +
+               `but a long payback increases risk.`;
+    } else {
+      reason = 'Negative monthly cash flow';
+      detail = `Your loan payment of ${formatPeso(results.monthlyAmortization || 0)} exceeds ` +
+               `your monthly savings of ${formatPeso(monthlySavings)}. ` +
+               `You would pay ${formatPeso(Math.abs(netCashFlow))} more per month.`;
+    }
+    
+    return {
+      recommendation: 'red',
+      cashFlowBufferPct,
+      loanShareOfSavingsPct,
+      summary: `${reason}. ${detail}`,
+      advice: `Before proceeding, consider: (1) Larger system for economies of scale, ` +
+              `(2) Better financing terms or larger down payment, ` +
+              `(3) Higher sun exposure location, ` +
+              `(4) Government incentives or rebates.`
+    };
+  }
+
+  // Check GREEN conditions
+  const greenPayback = payback <= 4;
+  const greenCashFlow = !hasFinancing || (monthlySavings > 0 && cashFlowBufferPct >= 20);
+  
+  if (greenPayback && greenCashFlow) {
+    let cashFlowText = '';
+    if (hasFinancing) {
+      cashFlowText = ` Your loan payment uses ${formatPercent(loanShareOfSavingsPct)} of your solar savings, ` +
+                     `leaving a ${formatPercent(cashFlowBufferPct)} cash flow buffer.`;
+    }
+    
     return {
       recommendation: 'green',
-      summary: `This solar investment shows strong returns. With a ${formatPercent(roi)} annual ROI ` +
-               `and a ${formatYears(payback)} payback period, your system will pay for itself quickly ` +
-               `and then generate pure savings for years to come.`,
-      advice: `Proceed with confidence. Get multiple quotes to ensure competitive pricing, ` +
-              `and verify installer credentials and warranties.`
+      cashFlowBufferPct,
+      loanShareOfSavingsPct,
+      summary: `Strong financial case. Your ${formatYears(payback)} payback is under 4 years${hasFinancing ? ' with healthy cash flow' : ''}.${cashFlowText}`,
+      advice: `Proceed with confidence. Get 3-5 quotes from reputable installers, verify warranties, ` +
+              `and consider adding battery storage if your net metering terms are unfavorable.`
     };
   }
 
-  // Yellow: ROI 8-15% or payback 5-8 years
-  if (roi >= 8 && payback <= 8) {
-    return {
-      recommendation: 'yellow',
-      summary: `This solar investment shows moderate returns. The ${formatPercent(roi)} annual ROI ` +
-               `and ${formatYears(payback)} payback period are acceptable but not exceptional. ` +
-               `Your savings will materialize, but the timeline is longer.`,
-      advice: `Consider negotiating better pricing, exploring financing options, or ` +
-              `checking for government incentives. If your electricity rates are expected ` +
-              `to rise significantly, this improves the case.`
-    };
+  // YELLOW: Fallback (payback 4-6 years OR thin cash flow buffer)
+  let reason = '';
+  let detail = '';
+  
+  if (payback > 4) {
+    reason = 'Moderate payback period';
+    detail = `Your ${formatYears(payback)} payback is between 4-6 years. Acceptable but not optimal.`;
+  } else if (hasFinancing && cashFlowBufferPct < 20) {
+    reason = 'Thin cash flow buffer';
+    detail = `Your loan payment uses ${formatPercent(loanShareOfSavingsPct)} of your solar savings, ` +
+             `leaving only a ${formatPercent(cashFlowBufferPct)} buffer. Any drop in generation ` +
+             `(cloudy months, maintenance) could strain cash flow.`;
+  } else {
+    reason = 'Moderate financial returns';
+    detail = `The numbers work, but there's limited margin for error.`;
   }
-
-  // Red: ROI < 8% or payback > 8 years
+  
   return {
-    recommendation: 'red',
-    summary: `This solar investment shows weak returns. With only ${formatPercent(roi)} annual ROI ` +
-             `and a ${payback === Infinity ? 'very long' : formatYears(payback)} payback period, ` +
-             `the financial case is difficult to justify.`,
-    advice: `Before proceeding, explore: (1) Lower equipment costs through more quotes, ` +
-            `(2) Better financing terms, (3) Higher sun exposure locations, ` +
-            `(4) Government incentives or net metering programs, or ` +
-            `(5) Larger system size to benefit from economies of scale.`
+    recommendation: 'yellow',
+    cashFlowBufferPct,
+    loanShareOfSavingsPct,
+    summary: `${reason}. ${detail}`,
+    advice: `Consider negotiating better pricing, a larger system size for economies of scale, ` +
+            `or improving your loan terms. If electricity rates rise, your case improves.`
   };
 }
 
@@ -368,11 +440,14 @@ export function exportAsTxt(narrativeText) {
   const date = new Date().toISOString().split('T')[0];
   const filename = `solarcalc-report-${date}.txt`;
   
-  const header = `SolarCalc PH — Solar ROI Analysis Report\n`;
+  const header = `SolarCalc PH — Solar ROI Report\n`;
   const separator = `=`.repeat(50) + `\n`;
-  const timestamp = `Generated: ${new Date().toLocaleString('en-PH')}\n\n`;
+  const timestamp = `Generated: ${new Date().toLocaleString('en-PH')}\n`;
+  const footer = `\n${separator}` +
+                 `Generated by SolarCalc PH\n` +
+                 `https://xunema.github.io/solar-roi-calculator/\n`;
   
-  const fullContent = header + separator + timestamp + narrativeText;
+  const fullContent = header + separator + timestamp + `\n` + narrativeText + footer;
   
   const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -393,11 +468,13 @@ export function exportAsTxt(narrativeText) {
  * @returns {Promise<boolean>} Success status
  */
 export async function copyToClipboard(narrativeText) {
-  const header = `SolarCalc PH — Solar ROI Analysis Report\n`;
+  const header = `SolarCalc PH — Solar ROI Report\n`;
   const separator = `=`.repeat(50) + `\n`;
-  const timestamp = `Generated: ${new Date().toLocaleString('en-PH')}\n\n`;
+  const timestamp = `Generated: ${new Date().toLocaleString('en-PH')}\n`;
+  const footer = `\n${separator}` +
+                 `Generated by SolarCalc PH | https://xunema.github.io/solar-roi-calculator/`;
   
-  const fullContent = header + separator + timestamp + narrativeText;
+  const fullContent = header + separator + timestamp + `\n` + narrativeText + footer;
   
   try {
     await navigator.clipboard.writeText(fullContent);
@@ -417,12 +494,18 @@ export function updateNarrativeUI(narrative) {
   const partIds = ['part1', 'part2', 'part3', 'part4', 'part5', 'part6', 'part7'];
   
   partIds.forEach(partId => {
-    const element = document.getElementById(`narrative-${partId}`);
-    if (element && narrative.parts[partId]) {
-      element.textContent = narrative.parts[partId];
-      element.classList.remove('hidden');
-    } else if (element) {
-      element.classList.add('hidden');
+    const container = document.getElementById(`narrative-${partId}`);
+    if (container && narrative.parts[partId]) {
+      // Find the content div (first child for part7, second child for others due to button)
+      const contentDiv = partId === 'part7' 
+        ? container.querySelector('div')
+        : container.querySelector('div:last-child');
+      if (contentDiv) {
+        contentDiv.textContent = narrative.parts[partId];
+      }
+      container.classList.remove('hidden');
+    } else if (container) {
+      container.classList.add('hidden');
     }
   });
 

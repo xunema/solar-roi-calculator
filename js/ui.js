@@ -813,6 +813,21 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+/**
+ * Bind narrative section scroll buttons (M6)
+ * Allows clicking section headers in narrative to scroll to source
+ */
+export function bindNarrativeScrollButtons() {
+  document.querySelectorAll('[data-scroll-to]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const sectionNum = parseInt(e.currentTarget.getAttribute('data-scroll-to'));
+      if (sectionNum && sectionNum >= 1 && sectionNum <= 4) {
+        scrollToSection(sectionNum);
+      }
+    });
+  });
+}
+
 // Default export
 export default {
   getColorClass,
@@ -848,5 +863,6 @@ export default {
   updateSaveButtonState,
   toggleManageSpecsModal,
   renderSpecsList,
-  toggleSpecLimitWarning
+  toggleSpecLimitWarning,
+  bindNarrativeScrollButtons
 };

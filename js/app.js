@@ -23,7 +23,8 @@ import {
   updateSaveButtonState,
   toggleManageSpecsModal,
   renderSpecsList,
-  toggleSpecLimitWarning
+  toggleSpecLimitWarning,
+  bindNarrativeScrollButtons
 } from './ui.js';
 
 import {
@@ -220,6 +221,9 @@ class SolarCalcApp {
 
     // Initialize specs UI (M7)
     this.initSpecsUI();
+
+    // Bind narrative section scroll buttons (M6)
+    bindNarrativeScrollButtons();
     
     // Save state on page unload
     window.addEventListener('beforeunload', () => {

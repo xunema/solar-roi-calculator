@@ -263,11 +263,17 @@ All data woven into a plain-language story: Problem → Hypothesis → Evidence 
 - [x] "✨ Generate Narrative Summary" button — user-initiated generation with clear CTA
 - [x] "Copy to Clipboard" — full narrative as plain text
 - [x] "Export as .txt" — downloads `solarcalc-report-YYYY-MM-DD.txt`
+- [x] **Section back-references** — Click section headers in narrative to scroll to source
+- [x] **Cash flow analysis** — Shows cash flow buffer % and loan share of savings %
 
-**Verdict thresholds:**
-- 🟢 **Green** (Recommended): ROI ≥ 15% AND payback ≤ 5 years
-- 🟡 **Yellow** (Caution): ROI 8–15% AND payback ≤ 8 years  
-- 🔴 **Red** (Not Recommended): ROI < 8% OR payback > 8 years
+**Verdict thresholds (per PRD v1.5):**
+- 🟢 **Green** (Recommended): payback ≤ 4 years AND (no financing OR cash flow buffer ≥ 20%)
+- 🟡 **Yellow** (Caution): payback 4-6 years OR cash flow buffer < 20%
+- 🔴 **Red** (Not Recommended): payback > 6 years OR negative monthly cash flow
+
+**Cash flow metrics (when financed):**
+- Cash Flow Buffer: % of monthly savings remaining after loan payment
+- Loan Share of Savings: % of solar savings consumed by loan payment
 
 ---
 
