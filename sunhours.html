@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peak Sun Hours (PSH) - SolarCalc PH Reference</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .formula-box {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      font-family: 'Courier New', monospace;
+      overflow-x: auto;
+    }
+    .dark .formula-box {
+      background: #1e293b;
+      border-color: #334155;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-teal-700 text-white shadow-lg">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold">Peak Sun Hours (PSH)</h1>
+        <p class="text-teal-200 text-sm">SolarCalc PH Reference Guide</p>
+      </div>
+      <a href="index.html" class="text-teal-200 hover:text-white text-sm flex items-center gap-1">
+        &larr; Back to Calculator
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8 space-y-10">
+
+    <!-- Section 1: What is PSH -->
+    <section>
+      <h2 class="text-2xl font-bold text-teal-800 mb-4">What is a Peak Sun Hour?</h2>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+        <p>A Peak Sun Hour is <strong>not</strong> a literal measurement of daylight hours (sunrise to sunset). It is a measurement of solar <em>energy intensity</em>.</p>
+
+        <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+          <p class="font-semibold text-teal-800 text-lg">1 Peak Sun Hour = 1 hour of sunlight at 1,000 W/m&sup2;</p>
+          <p class="text-teal-700 text-sm mt-1">This is the Standard Test Condition (STC) used to rate solar panel output.</p>
+        </div>
+
+        <p>The sun's intensity follows a bell curve throughout the day &mdash; starting low at sunrise, peaking around solar noon, and waning as it sets. PSH converts this variable curve into an equivalent number of "perfect" hours.</p>
+
+        <p><strong>Example:</strong> If your roof receives 500 W/m&sup2; for 2 hours in the early morning, those two hours combine to equal exactly <em>one</em> Peak Sun Hour.</p>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <p class="font-semibold text-amber-800">Philippines: 4.0 hours is the conservative standard</p>
+          <p class="text-amber-700 text-sm mt-1">The raw geographic average is <strong>4.5&ndash;5.5 hours</strong>, but Philippine solar installers use <strong>4.0 hours</strong> to safely account for cloud cover, rainy seasons (Habagat), panel degradation, and wiring losses.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: The Formulas -->
+    <section>
+      <h2 class="text-2xl font-bold text-teal-800 mb-4">The Formulas</h2>
+
+      <div class="space-y-6">
+
+        <!-- Basic Formula -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Basic Formula</h3>
+          <div class="formula-box">
+            <p>PSH = Total Daily Solar Insolation (Wh/m&sup2;) / 1,000 W/m&sup2;</p>
+          </div>
+          <p class="text-gray-600 text-sm mt-3">Since 1,000 Wh = 1 kWh, if a database provides insolation in kWh/m&sup2;/day, <strong>PSH equals that number directly</strong>.</p>
+          <div class="formula-box mt-3">
+            <p>PSH = Total Daily Solar Insolation (kWh/m&sup2;)</p>
+          </div>
+        </div>
+
+        <!-- Rigorous Formula -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Rigorous Definition (Integral Form)</h3>
+          <p class="text-gray-600 mb-3">To account for the sun's varying intensity throughout the day, engineers use:</p>
+          <div class="formula-box">
+            <p>PSH = &int;<sub>sunrise</sub><sup>sunset</sup> G(t) / G<sub>STC</sub> dt</p>
+            <br>
+            <p class="text-sm text-gray-600">Where:</p>
+            <p class="text-sm text-gray-600">&nbsp; G(t)&nbsp;&nbsp;&nbsp; = Actual solar irradiance at time t (W/m&sup2;)</p>
+            <p class="text-sm text-gray-600">&nbsp; G<sub>STC</sub>&nbsp; = Standard reference irradiance (1,000 W/m&sup2;)</p>
+          </div>
+        </div>
+
+        <!-- Extraterrestrial Radiation -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Extraterrestrial Radiation H<sub>0</sub> (Latitude-Based Theoretical Maximum)</h3>
+          <p class="text-gray-600 mb-3">This formula calculates how much solar energy hits the top of the atmosphere at your latitude &mdash; before clouds and weather interfere:</p>
+          <div class="formula-box text-sm">
+            <p>H<sub>0</sub> = (24 &times; 60 / &pi;) &times; G<sub>sc</sub> &times; d<sub>r</sub> &times; (&omega;<sub>s</sub> &times; sin(&phi;) &times; sin(&delta;) + cos(&phi;) &times; cos(&delta;) &times; sin(&omega;<sub>s</sub>))</p>
+            <br>
+            <p>Where:</p>
+            <p>&nbsp; &phi;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = Your Latitude (radians)</p>
+            <p>&nbsp; G<sub>sc</sub>&nbsp;&nbsp;&nbsp; = Solar constant (1,367 W/m&sup2;)</p>
+            <p>&nbsp; d<sub>r</sub>&nbsp;&nbsp;&nbsp;&nbsp; = Inverse relative Earth-Sun distance (varies by day of year)</p>
+            <p>&nbsp; &delta;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = Solar declination (Earth's tilt, varies by day)</p>
+            <p>&nbsp; &omega;<sub>s</sub>&nbsp;&nbsp;&nbsp; = Sunset hour angle = arccos(-tan(&phi;) &times; tan(&delta;))</p>
+          </div>
+
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+            <p class="text-yellow-800 text-sm"><strong>For the Philippines (~13&ndash;15&deg; N):</strong> This gives <strong>9&ndash;10 theoretical PSH</strong> in summer. But you don't actually get 9 hours of perfect sunlight on the ground &mdash; atmosphere, clouds, humidity, and pollution cut it roughly in half.</p>
+          </div>
+        </div>
+
+        <!-- Hargreaves-Samani -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Hargreaves-Samani Model (Practical Estimation)</h3>
+          <p class="text-gray-600 mb-3">Combines latitude with temperature data to estimate actual ground-level sunlight:</p>
+          <div class="formula-box">
+            <p>R<sub>s</sub> = k<sub>Rs</sub> &times; &radic;(T<sub>max</sub> - T<sub>min</sub>) &times; H<sub>0</sub></p>
+            <br>
+            <p class="text-sm text-gray-600">Where:</p>
+            <p class="text-sm text-gray-600">&nbsp; R<sub>s</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = Actual solar radiation (ground-level PSH)</p>
+            <p class="text-sm text-gray-600">&nbsp; H<sub>0</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = Extraterrestrial radiation (from latitude formula above)</p>
+            <p class="text-sm text-gray-600">&nbsp; T<sub>max</sub>&nbsp;&nbsp;&nbsp; = Daily maximum temperature</p>
+            <p class="text-sm text-gray-600">&nbsp; T<sub>min</sub>&nbsp;&nbsp;&nbsp; = Daily minimum temperature</p>
+            <p class="text-sm text-gray-600">&nbsp; k<sub>Rs</sub>&nbsp;&nbsp;&nbsp; = 0.16 (inland) or 0.19 (coastal Philippines)</p>
+          </div>
+        </div>
+
+        <!-- Why Satellite Data Wins -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Why Satellite Data Beats Formulas</h3>
+          <p class="text-gray-600">While these formulas are elegant physics, calculating them by hand is obsolete for designing solar systems. The Philippines has a distinct <strong>dry season (Amihan)</strong> and a heavily clouded <strong>wet season (Habagat)</strong>. A latitude-based formula cannot accurately predict the sunlight blocked by July and August monsoon clouds.</p>
+          <p class="text-gray-600 mt-3">This is why the industry relies on <strong>satellite-based databases</strong> that physically measure clouds and weather over a <strong>20-year period</strong> to give a true, grounded average.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Tilt Angle & Orientation -->
+    <section>
+      <h2 class="text-2xl font-bold text-teal-800 mb-4">Panel Tilt Angle & Orientation</h2>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+        <p class="text-gray-600">While you shouldn't use latitude alone to calculate sunlight hours, you <strong>must</strong> use latitude to calculate the <strong>tilt angle</strong> of your solar panels.</p>
+
+        <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+          <p class="font-semibold text-teal-800">All panels in the Philippines should face SOUTH</p>
+          <p class="text-teal-700 text-sm mt-1">The Philippines is north of the equator (4&deg;&ndash;21&deg; N), so panels must face toward the equator (South) to capture the most sunlight.</p>
+        </div>
+
+        <h3 class="text-lg font-semibold text-gray-800 mt-4">Optimal Tilt Formula</h3>
+        <div class="formula-box">
+          <p>Year-round optimal: Tilt &asymp; Latitude</p>
+          <p>Dry season (Nov&ndash;Apr): Tilt = Latitude - 15&deg; (flatter)</p>
+          <p>Wet season (May&ndash;Oct): Tilt = Latitude + 15&deg; (steeper, sheds rain)</p>
+        </div>
+
+        <h3 class="text-lg font-semibold text-gray-800 mt-4">Philippine City Examples</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="text-left p-3 border-b">City</th>
+                <th class="text-left p-3 border-b">Latitude</th>
+                <th class="text-left p-3 border-b">Optimal Tilt</th>
+                <th class="text-left p-3 border-b">Face</th>
+                <th class="text-left p-3 border-b">Avg PSH</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b"><td class="p-3">Laoag</td><td class="p-3">18.2&deg; N</td><td class="p-3">18&deg;</td><td class="p-3">South</td><td class="p-3">4.5</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Baguio</td><td class="p-3">16.4&deg; N</td><td class="p-3">16&deg;</td><td class="p-3">South</td><td class="p-3">4.0</td></tr>
+              <tr class="border-b"><td class="p-3">Manila / Quezon City</td><td class="p-3">14.6&deg; N</td><td class="p-3">15&deg;</td><td class="p-3">South</td><td class="p-3">4.0</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Cebu City</td><td class="p-3">10.3&deg; N</td><td class="p-3">10&deg;</td><td class="p-3">South</td><td class="p-3">4.2</td></tr>
+              <tr class="border-b"><td class="p-3">Iloilo City</td><td class="p-3">10.7&deg; N</td><td class="p-3">11&deg;</td><td class="p-3">South</td><td class="p-3">4.1</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Davao City</td><td class="p-3">7.1&deg; N</td><td class="p-3">7&deg;</td><td class="p-3">South</td><td class="p-3">4.2</td></tr>
+              <tr class="border-b"><td class="p-3">General Santos</td><td class="p-3">6.1&deg; N</td><td class="p-3">6&deg;</td><td class="p-3">South</td><td class="p-3">4.3</td></tr>
+              <tr><td class="p-3">Zamboanga City</td><td class="p-3">6.9&deg; N</td><td class="p-3">7&deg;</td><td class="p-3">South</td><td class="p-3">4.3</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: PSH by Region -->
+    <section>
+      <h2 class="text-2xl font-bold text-teal-800 mb-4">PSH by Philippine Region</h2>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <p class="text-gray-600 mb-4">Conservative annual averages used in SolarCalc PH. Values account for both dry (Amihan) and wet (Habagat) seasons.</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="text-left p-3 border-b">Region</th>
+                <th class="text-left p-3 border-b">Base PSH</th>
+                <th class="text-left p-3 border-b">Latitude</th>
+                <th class="text-left p-3 border-b">Key Cities</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b"><td class="p-3">Metro Manila (NCR)</td><td class="p-3 font-semibold">4.0</td><td class="p-3">14.6&deg; N</td><td class="p-3">Manila, Quezon City, Makati</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region I (Ilocos)</td><td class="p-3 font-semibold">4.5</td><td class="p-3">17.6&deg; N</td><td class="p-3">Laoag, Vigan, Dagupan</td></tr>
+              <tr class="border-b"><td class="p-3">Region II (Cagayan Valley)</td><td class="p-3 font-semibold">4.3</td><td class="p-3">17.5&deg; N</td><td class="p-3">Tuguegarao, Santiago</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region III (Central Luzon)</td><td class="p-3 font-semibold">4.4</td><td class="p-3">15.5&deg; N</td><td class="p-3">Angeles, Olongapo, Cabanatuan</td></tr>
+              <tr class="border-b"><td class="p-3">Region IV-A (Calabarzon)</td><td class="p-3 font-semibold">4.0</td><td class="p-3">14.1&deg; N</td><td class="p-3">Calamba, Batangas, Lipa</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region IV-B (Mimaropa)</td><td class="p-3 font-semibold">4.2</td><td class="p-3">12.0&deg; N</td><td class="p-3">Puerto Princesa, Calapan</td></tr>
+              <tr class="border-b"><td class="p-3">Region V (Bicol)</td><td class="p-3 font-semibold">3.9</td><td class="p-3">13.4&deg; N</td><td class="p-3">Legazpi, Naga, Iriga</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region VI (Western Visayas)</td><td class="p-3 font-semibold">4.1</td><td class="p-3">10.7&deg; N</td><td class="p-3">Iloilo City, Bacolod</td></tr>
+              <tr class="border-b"><td class="p-3">Region VII (Central Visayas)</td><td class="p-3 font-semibold">4.2</td><td class="p-3">10.3&deg; N</td><td class="p-3">Cebu City, Dumaguete</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region VIII (Eastern Visayas)</td><td class="p-3 font-semibold">4.0</td><td class="p-3">11.0&deg; N</td><td class="p-3">Tacloban, Ormoc</td></tr>
+              <tr class="border-b"><td class="p-3">Region IX (Zamboanga)</td><td class="p-3 font-semibold">4.3</td><td class="p-3">7.8&deg; N</td><td class="p-3">Zamboanga City, Dipolog</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region X (N. Mindanao)</td><td class="p-3 font-semibold">4.1</td><td class="p-3">8.5&deg; N</td><td class="p-3">Cagayan de Oro, Iligan</td></tr>
+              <tr class="border-b"><td class="p-3">Region XI (Davao)</td><td class="p-3 font-semibold">4.2</td><td class="p-3">7.1&deg; N</td><td class="p-3">Davao City, Tagum</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Region XII (Soccsksargen)</td><td class="p-3 font-semibold">4.3</td><td class="p-3">6.5&deg; N</td><td class="p-3">General Santos, Koronadal</td></tr>
+              <tr class="border-b"><td class="p-3">Region XIII (Caraga)</td><td class="p-3 font-semibold">3.9</td><td class="p-3">8.9&deg; N</td><td class="p-3">Butuan, Surigao</td></tr>
+              <tr class="border-b bg-gray-50"><td class="p-3">Cordillera (CAR)</td><td class="p-3 font-semibold">4.0</td><td class="p-3">16.4&deg; N</td><td class="p-3">Baguio, Benguet</td></tr>
+              <tr class="border-b"><td class="p-3">Negros Island</td><td class="p-3 font-semibold">4.1</td><td class="p-3">9.6&deg; N</td><td class="p-3">Dumaguete, Bacolod</td></tr>
+              <tr><td class="p-3">BARMM</td><td class="p-3 font-semibold">4.4</td><td class="p-3">7.0&deg; N</td><td class="p-3">Cotabato City, Marawi</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: External Data Sources -->
+    <section>
+      <h2 class="text-2xl font-bold text-teal-800 mb-4">Get Your Exact PSH Data</h2>
+
+      <div class="space-y-4">
+        <p class="text-gray-600">For hyper-local data rather than regional averages, use these free satellite-based databases:</p>
+
+        <!-- Global Solar Atlas -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">1. Global Solar Atlas (World Bank Group)</h3>
+          <a href="https://globalsolaratlas.info/" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-800 font-medium">globalsolaratlas.info &rarr;</a>
+          <div class="bg-gray-50 rounded-lg p-4 mt-3">
+            <p class="text-sm text-gray-700"><strong>How to use:</strong> Search for your exact Philippine location. Look for <strong>Global Horizontal Irradiation (GHI)</strong> or <strong>Direct Normal Irradiation (DNI)</strong>. The daily GHI value in kWh/m&sup2; <em>is</em> your Peak Sun Hours.</p>
+          </div>
+        </div>
+
+        <!-- NREL PVWatts -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">2. NREL PVWatts Calculator</h3>
+          <a href="https://pvwatts.nrel.gov/" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-800 font-medium">pvwatts.nrel.gov &rarr;</a>
+          <div class="bg-gray-50 rounded-lg p-4 mt-3">
+            <p class="text-sm text-gray-700"><strong>How to use:</strong> Enter your address or coordinates. View "Solar Radiation (kWh/m&sup2;/day)" broken down month-by-month. This reveals how much PSH drops during <strong>Habagat</strong> (wet season) versus the dry season.</p>
+          </div>
+        </div>
+
+        <!-- Solargis -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Solargis Philippines Map</h3>
+          <a href="https://solargis.com/maps-and-gis-data/download/philippines" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-800 font-medium">solargis.com/maps &rarr;</a>
+          <div class="bg-gray-50 rounded-lg p-4 mt-3">
+            <p class="text-sm text-gray-700"><strong>How to use:</strong> Download free high-resolution solar radiation maps of the Philippines showing kWh/m&sup2; distribution across the archipelago.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Back to Calculator CTA -->
+    <section class="text-center py-8">
+      <a href="index.html" class="inline-block bg-teal-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-teal-800 transition shadow-lg">
+        &larr; Back to SolarCalc PH Calculator
+      </a>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-100 border-t border-gray-200 mt-12">
+    <div class="max-w-4xl mx-auto px-4 py-6 text-center text-sm text-gray-500">
+      <p>SolarCalc PH &mdash; "Know your payback before you pay."</p>
+      <p class="mt-1">PSH data sources: Global Solar Atlas (World Bank), NREL PVWatts, Solargis</p>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -753,6 +753,15 @@ Development is organized into 5 milestones. Each milestone produces a reviewable
 
 ## Changelog
 
+### v1.3.0 (2026-03-16)
+- **Expanded:** Section 6 PSH Calculator into comprehensive reference (formulas, theory, data sources)
+- **Added:** `sunhours.html` standalone reference page with PSH explanation, latitude formulas, tilt angle guidance, regional data, and external data source links
+- **Added:** Extraterrestrial radiation formula (H₀), Hargreaves-Samani practical model
+- **Added:** Panel tilt angle formula (Tilt ≈ Latitude) and Philippine city examples
+- **Added:** Latitude data to regional PSH table
+- **Updated:** PSH tooltip spec with "Calculate PSH" and "Learn More" links
+- **Updated:** File structure to include `sunhours.html`
+
 ### v1.2.0 (2026-03-16)
 - **Renamed:** "Solar System" → "PhotoVoltaic System" throughout all documents
 - **Added:** Per-section inline results panels (each section shows its own computed outputs)
