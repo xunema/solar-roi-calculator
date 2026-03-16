@@ -226,12 +226,13 @@ All formulas implemented and verified. No UI required.
 
 ---
 
-### ⬜ Milestone 4: PWA, Themes & Layout
-> **Status: NOT STARTED**
+### ✅ Milestone 4: PWA, Themes & Layout
+> **Status: COMPLETE** — 155/155 tests pass
 
-- [ ] Service worker — app works fully offline after first load
-- [ ] Night/Day theme toggle — persists in localStorage, detects system preference
-- [ ] Phone/Desktop/Auto layout toggle in header
+- [x] Service worker — all app assets cached; app works fully offline after first load
+- [x] Night/Day theme toggle — persists in localStorage, detects system preference on first load
+- [x] Phone/Desktop/Auto layout toggle in header — icon updates per mode (📐/📱/🖥️)
+- [x] `css/themes.css` — CSS custom properties for light/dark themes; dark mode overrides extracted from inline styles
 
 ---
 

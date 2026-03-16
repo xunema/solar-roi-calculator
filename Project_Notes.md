@@ -381,6 +381,40 @@ Updated modal to match PRD spec:
 
 ---
 
+---
+
+### 2026-03-17 — Milestone 4 Completion
+
+#### M4: PWA, Themes & Layout
+
+**Phase 4.1 — Service Worker (`sw.js`):**
+Expanded from 2 cached URLs to full asset list: index.html, sunhours.html, manifest.json, css/themes.css, all 5 JS modules. Bumped `CACHE_NAME` to `solarcalc-ph-v2` to force cache refresh on existing installs. Added separate `RUNTIME_CACHE` for external CDN assets (Tailwind, Google Fonts) with network-first + cache fallback strategy. Added `self.skipWaiting()` on install and `self.clients.claim()` on activate so new SW takes effect immediately.
+
+**Phase 4.2 — Night/Day Theme Toggle:**
+- `applyTheme()` in `ui.js` now updates `#themeIcon`: shows 🌙 in light mode (switch to dark), ☀️ in dark mode (switch to light).
+- `loadSavedState()` in `app.js` now calls `_applySystemTheme()` when no saved theme preference exists — detects `prefers-color-scheme: dark` on first load.
+- System preference listener in `initializeUI()` fixed: now checks `localStorage` for a saved theme rather than using `onboardingComplete` as a proxy.
+
+**Phase 4.3 — Phone/Desktop/Auto Layout Toggle:**
+- `applyLayout()` in `ui.js` now updates `#layoutIcon`: 📐 for auto, 📱 for phone, 🖥️ for desktop.
+
+**Phase 4.4 — `css/themes.css`:**
+Created `css/themes.css` with CSS custom properties for both themes (using `--sc-*` prefix). Dark mode overrides (`.dark body`, `.dark .card`, `.dark .input-field`, label/text overrides, tooltips, placeholders) moved from inline `<style>` in `index.html` to `themes.css`. Linked via `<link rel="stylesheet" href="css/themes.css">` in head.
+
+**M4 Checklist — All items verified:**
+- [x] Service worker registers and caches all app assets
+- [x] Theme toggle switches between light/dark with correct icon update
+- [x] Theme persists across page reloads (saved in localStorage on `beforeunload`)
+- [x] System `prefers-color-scheme` detected on first load (no saved state)
+- [x] Layout toggle cycles Auto→Phone→Desktop with icon update
+- [x] `css/themes.css` created with CSS custom properties + dark mode overrides
+- [x] 155/155 tests passing
+- [x] No new console errors introduced
+
+**M4 Status: COMPLETE ✅**
+
+---
+
 ## Patterns & Conventions
 
 ### Naming

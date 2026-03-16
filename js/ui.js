@@ -346,11 +346,17 @@ export function hideAllTooltips() {
  */
 export function applyTheme(theme) {
   const html = document.documentElement;
-  
+
   if (theme === 'dark') {
     html.classList.add('dark');
   } else {
     html.classList.remove('dark');
+  }
+
+  // Update toggle icon: shows what you'll switch TO
+  const themeIcon = document.getElementById('themeIcon');
+  if (themeIcon) {
+    themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
   }
 }
 
@@ -361,6 +367,13 @@ export function applyTheme(theme) {
 export function applyLayout(layout) {
   const body = document.body;
   body.setAttribute('data-layout', layout);
+
+  // Update toggle icon to reflect current layout mode
+  const layoutIcon = document.getElementById('layoutIcon');
+  if (layoutIcon) {
+    const icons = { auto: '📐', phone: '📱', desktop: '🖥️' };
+    layoutIcon.textContent = icons[layout] || '📐';
+  }
 }
 
 /**
@@ -599,12 +612,18 @@ export function initializeUI(state, actions) {
     }
   });
   
-  // Listen for system theme changes
+  // Listen for system theme changes — only auto-switch if user has not
+  // manually saved a theme preference in localStorage yet
   if (window.matchMedia) {
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
     darkModeQuery.addEventListener('change', (e) => {
-      if (!state.ui.onboardingComplete) {
-        // Only auto-switch if user hasn't manually set preference
+      try {
+        const saved = localStorage.getItem('solarCalcState');
+        const hasSavedTheme = saved && JSON.parse(saved)?.ui?.theme;
+        if (!hasSavedTheme) {
+          state.setTheme(e.matches ? 'dark' : 'light');
+        }
+      } catch {
         state.setTheme(e.matches ? 'dark' : 'light');
       }
     });

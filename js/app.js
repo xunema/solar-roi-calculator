@@ -82,7 +82,8 @@ class SolarCalcApp {
   }
 
   /**
-   * Load saved state from localStorage
+   * Load saved state from localStorage.
+   * If no saved theme, detect system prefers-color-scheme as fallback.
    */
   loadSavedState() {
     const saved = loadStateFromStorage();
@@ -95,7 +96,7 @@ class SolarCalcApp {
           }
         });
       }
-      
+
       // Restore UI state
       if (saved.ui) {
         if (saved.ui.theme) {
@@ -108,6 +109,23 @@ class SolarCalcApp {
           this.state.ui.onboardingComplete = saved.ui.onboardingComplete;
         }
       }
+
+      // If no theme was saved, fall through to system preference below
+      if (!saved.ui?.theme) {
+        this._applySystemTheme();
+      }
+    } else {
+      // No saved state at all — respect system preference
+      this._applySystemTheme();
+    }
+  }
+
+  /**
+   * Set theme from OS/browser prefers-color-scheme if available
+   */
+  _applySystemTheme() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      this.state.setTheme('dark');
     }
   }
 

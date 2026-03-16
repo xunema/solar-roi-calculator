@@ -1,0 +1,100 @@
+/* themes.css — SolarCalc PH Theme Variables & Dark Mode Overrides */
+
+/* ============================================================
+   CSS Custom Properties — Light Theme (Default)
+   ============================================================ */
+:root {
+  --sc-primary:            #0f766e; /* teal-700 */
+  --sc-primary-light:      #14b8a6; /* teal-500 */
+  --sc-bg:                 #f9fafb; /* gray-50  */
+  --sc-card-bg:            #ffffff;
+  --sc-text-primary:       #111827; /* gray-900 */
+  --sc-text-secondary:     #6b7280; /* gray-500 */
+  --sc-text-muted:         #9ca3af; /* gray-400 */
+  --sc-border:             #e5e7eb; /* gray-200 */
+  --sc-input-bg:           #ffffff;
+  --sc-input-border:       #d1d5db; /* gray-300 */
+  --sc-section-header-bg:  #f3f4f6; /* gray-100 */
+}
+
+/* ============================================================
+   CSS Custom Properties — Dark Theme (Night Mode)
+   High contrast: labels ≥ 11:1, secondary text ≥ 7:1
+   ============================================================ */
+.dark {
+  --sc-primary:            #14b8a6; /* teal-500 */
+  --sc-primary-light:      #2dd4bf; /* teal-400 */
+  --sc-bg:                 #0f172a; /* slate-900 */
+  --sc-card-bg:            #1e293b; /* slate-800 */
+  --sc-text-primary:       #f8fafc; /* slate-50  */
+  --sc-text-secondary:     #e2e8f0; /* slate-200 — high contrast labels */
+  --sc-text-muted:         #94a3b8; /* slate-400 */
+  --sc-border:             #475569; /* slate-600 */
+  --sc-input-bg:           #0f172a; /* slate-900 */
+  --sc-input-border:       #475569; /* slate-600 */
+  --sc-section-header-bg:  #1e293b; /* slate-800 */
+}
+
+/* ============================================================
+   Dark Mode Overrides
+   ============================================================ */
+
+.dark body {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.dark .card {
+  background-color: #1e293b;
+  border-color: #475569;
+}
+
+.dark .input-field {
+  background-color: #0f172a;
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+.dark .section-header {
+  background-color: #1e293b;
+  border-color: #475569;
+}
+
+/* Labels and text — high contrast */
+.dark label {
+  color: #e2e8f0;
+}
+
+.dark .text-gray-700 {
+  color: #e2e8f0;
+}
+
+.dark .text-gray-600 {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-500 {
+  color: #94a3b8;
+}
+
+.dark .text-gray-400 {
+  color: #94a3b8;
+}
+
+/* Section result labels */
+.dark .section-results h3,
+.dark [class*="text-xs"][class*="font-semibold"] {
+  color: #94a3b8;
+}
+
+/* Tooltips */
+.dark .tooltip {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+/* Placeholder text */
+.dark input::placeholder {
+  color: #64748b;
+}
