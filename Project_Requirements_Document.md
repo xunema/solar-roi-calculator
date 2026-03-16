@@ -118,7 +118,7 @@ A homeowner or business owner opens the app. They may know their electricity rat
 
 > **How to calculate your blended rate:** Total Bill Amount ÷ Total kWh Consumed. Do NOT use just the "Generation Charge" line — that's only one component. The blended rate includes transmission, distribution, metering, universal charges, and VAT.
 
-**Default:** ₱10/kWh (conservative midpoint suitable for both residential and commercial).
+**Default:** ₱15/kWh (commercial baseline; residential rates typically ₱15–₱20/kWh).
 
 #### Consumption Chain
 
@@ -170,7 +170,7 @@ A visual badge indicates the value is user-overwritten (not computed).
 
 #### Key Inputs
 - **PV Capacity (kW)** — the "engine size" of the solar plant. Rule of thumb: 1 kW needs ~10 m² of unshaded roof.
-- **Peak Sun Hours/day** — effective full-power output hours (see Section 6 for PSH calculator). Philippine default: 4.0 hours.
+- **Peak Sun Hours/day** — effective full-power output hours (see Section 7 for PSH calculator). Philippine default: 4.0 hours.
 - **Price per kW** — total installed cost per kilowatt of solar capacity.
 - **Misc Infrastructure** — roof waterproofing, structural reinforcement, rewiring, net-metering fees.
 - **Battery Price per kWh** — unit cost for battery storage (used in Section 3 calculations).
@@ -349,13 +349,110 @@ A one-line summary with conditional tone based on ROI color:
 
 ---
 
+### 5.6 Quick Presets
+
+Quick Presets allow users to load pre-configured scenarios with a single click. These presets serve as **benchmarks** — users can start from a realistic scenario and adjust to match their specific situation.
+
+#### 🏠 Residential Preset
+
+**Target User:** Homeowner with typical Meralco residential service
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| **Daily Consumption** | 30 kWh/day | Typical 3-bedroom home with AC, fridge, appliances |
+| **Operating Schedule** | 7 days/week, 52 weeks/year | Home occupied daily |
+| **Electricity Rate** | ₱20/kWh | Meralco residential blended rate (higher due to lifeline subsidies, universal charges) |
+| **Solar System Size** | 5 kW | Typical residential rooftop installation |
+| **Solar Price** | ₱80,000/kW | **Retail/residential pricing** — higher per-kW cost due to lower volume, permits, smaller installer margins, consumer-grade equipment (e.g., Jackery, EcoFlow Delta pricing equivalent) |
+| **Battery Price** | ₱30,000/kWh | Consumer/residential battery storage pricing (portable power stations, home backup systems) |
+| **Nighttime Load** | 1.5 kW | Aircon (0.75-1.5 kW) + Fridge (0.05-0.1 kW) + Fans/Routers (0.1 kW) |
+| **Nighttime Duration** | 8 hours | 10pm - 6am typical usage |
+| **Loan Principal** | ₱200,000 | Partial financing (~50% of system cost) |
+| **Interest Rate** | 8% | Typical personal/home improvement loan |
+
+**Note:** Residential solar costs more per kW than commercial due to:
+- Smaller system volume (no economies of scale)
+- Higher permitting and inspection costs per kW
+- Residential-grade equipment vs. industrial-grade
+- Higher installer overhead for small jobs
+
+---
+
+#### 🏢 Commercial Preset
+
+**Target User:** Business with 100 office employees
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| **Daily Consumption** | 500 kWh/day | 100 employees × 5 kWh/person/day (computers, AC, lighting, equipment) |
+| **Operating Schedule** | 5 days/week, 52 weeks/year | Standard business operations |
+| **Electricity Rate** | ₱15/kWh | Meralco commercial blended rate (lower per-kWh than residential) |
+| **Solar System Size** | 100 kW | Medium commercial rooftop or ground-mount installation |
+| **Solar Price** | ₱50,000/kW | **Commercial pricing** — lower per-kW due to bulk purchasing, streamlined permitting, industrial-grade equipment |
+| **Battery Price** | ₱12,000/kWh | Commercial/industrial LFP battery pricing (bulk procurement, rack-mounted systems) |
+| **Nighttime Load** | 15 kW | Security lights (0.5 kW) + Servers/Network (1 kW) + Refrigeration (2 kW) + CCTV (0.2 kW) + Emergency lighting (0.3 kW) + other 24/7 loads |
+| **Nighttime Duration** | 12 hours | 6pm - 6am business closure |
+| **Loan Principal** | ₱2,500,000 | Partial financing (~50% of system cost) |
+| **Interest Rate** | 10% | Typical commercial equipment financing |
+
+**Note:** Commercial solar benefits from:
+- Economies of scale (bulk panel purchasing)
+- Lower per-kW permitting and labor costs
+- Industrial-grade inverters and BOS (balance of system)
+- Negotiated volume pricing with suppliers
+
+---
+
+#### 🔋 Battery Only Preset
+
+**Target User:** Existing solar owner adding battery storage
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| **Solar System Size** | 0 kW | Existing system — adding only battery |
+| **Battery Price** | ₱25,000/kWh | Mid-range between residential and commercial |
+| **Nighttime Load** | 5 kW | Moderate backup load (essential circuits only) |
+| **Nighttime Duration** | 10 hours | Evening + early morning backup |
+
+---
+
+#### 📋 Spreadsheet Preset
+
+**Target User:** User validating against original Excel model
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| **Daily Consumption** | 1,200 kWh/day | Spreadsheet assumption |
+| **Operating Schedule** | 6 days/week, 50 weeks/year (= 300 days) | Spreadsheet K5-K6 |
+| **Electricity Rate** | ₱11/kWh | Spreadsheet K4 |
+| **Solar System Size** | 300 kW | Spreadsheet K13 |
+| **Solar Price** | ₱40,000/kW | Spreadsheet K8 |
+| **Battery Price** | ₱5,000/kWh | Spreadsheet K9 (LFP bulk pricing) |
+| **Misc Costs** | ₱2,000,000 | Spreadsheet K10 |
+| **Loan Principal** | ₱14,000,000 | Spreadsheet S6 |
+| **Interest Rate** | 12% | Spreadsheet V5 |
+
+---
+
+#### Pricing Benchmark Philosophy
+
+> **These are benchmark prices.** If users can get better deals through negotiation, volume purchasing, or government incentives, their **ROI will increase** (payback period shortens).
+>
+> The presets represent **realistic market rates** in the Philippines as of 2026:
+> - Residential prices reflect consumer-grade equipment and smaller installer margins
+> - Commercial prices reflect industrial procurement and economies of scale
+>
+> Users should treat these as starting points and adjust to their actual quotes.
+
+---
+
 ## 6. Data Model
 
 ### 6.1 Input Fields
 
 | Field | Type | Default | Unit | Validation | Section | Spreadsheet Cell(s) |
 |-------|------|---------|------|------------|---------|---------------------|
-| `electricityRate` | number | 10.00 | ₱/kWh | > 0, max 100 | 1 | K4 (COST PER KW = 11) |
+| `electricityRate` | number | 15.00 | ₱/kWh | > 0, max 100 | 1 | K4 (COST PER KW = 11) |
 | `operatingWeeksPerYear` | number | 52 | weeks | 1–52, integer | 1 | K5 (50) |
 | `operatingDaysPerWeek` | number | 7 | days | 1–7, integer | 1 | K6 (6) |
 | `dailyEnergyConsumptionKWh` | number | 50 | kWh | ≥ 0 | 1 | — |
@@ -372,7 +469,7 @@ A one-line summary with conditional tone based on ROI color:
 | `annualInterestRate` | number | 0 | % | 0–100 | 4 | V5 (12%) |
 | `loanTermMonths` | number | 60 | months | 1–360, integer | 4 | S5 (60) |
 
-### 5.2 Computed Fields
+### 6.2 Computed Fields
 
 | Field | Formula | Unit | Section |
 |-------|---------|------|---------|
@@ -394,13 +491,13 @@ A one-line summary with conditional tone based on ROI color:
 | `annualSavings` | `annualGenerationKWh × electricityRate` — tooltip: `dailySavings × operatingDaysPerYear` | ₱ | Dashboard |
 | `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` — Annual Savings ÷ Total CAPEX. Measures what % of investment is recovered each year. Higher = faster recovery. | % | Dashboard |
 | `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` — the inverse of ROI: how many years until CAPEX is fully recovered. | years | Dashboard |
-| `monthlyAmortization` | Standard annuity formula (see PRD Section 7) | ₱/month | 4 |
+| `monthlyAmortization` | Standard annuity formula (see Section 5.4 Financing) | ₱/month | 4 |
 | `totalLoanCost` | `monthlyAmortization × loanTermMonths` | ₱ | 4 |
 | `totalInterestPaid` | `totalLoanCost - loanPrincipal` | ₱ | 4 |
 | `monthlySavings` | `annualSavings / 12` — note: this is Annual Savings divided by 12 months, not a direct calculation from daily savings × 30 | ₱/month | Dashboard |
 | `netMonthlyCashFlow` | `monthlySavings - monthlyAmortization` | ₱/month | Dashboard |
 
-### 5.3 Section Results Panels
+### 6.3 Section Results Panels
 
 Each section displays its own inline results panel below its inputs. These give the user immediate feedback within the section context before they scroll to the main dashboard.
 
@@ -506,7 +603,7 @@ batteryChargePercent     = (dailyChargeCapacityKWh / requiredBatteryKWh) × 100
 
 If loanPrincipal is 0, show: "Cash purchase — no financing."
 
-### 5.4 Spreadsheet Verification (from "250915 SOLAR ROI .xlsx")
+### 6.4 Spreadsheet Verification (from "250915 SOLAR ROI .xlsx")
 
 The spreadsheet models three scenarios with these results:
 
@@ -520,7 +617,7 @@ Loan example from spreadsheet: ₱14,000,000 principal @ 12% annual over 60 mont
 
 ---
 
-## 6. Peak Sun Hours (PSH) Calculator & Reference
+## 7. Peak Sun Hours (PSH) Calculator & Reference
 
 ### 6.1 Purpose
 Help users determine their location's peak sun hours without external research. Accessible as a dedicated reference page (`sunhours.html`) linked from the Peak Sun Hours input field in Section 2.
@@ -711,7 +808,7 @@ Data sources:
 
 ---
 
-## 7. Tech Stack
+## 8. Tech Stack
 
 | Layer | Choice | Rationale |
 |-------|--------|-----------|
@@ -727,7 +824,7 @@ Data sources:
 
 ---
 
-## 8. File Structure
+## 9. File Structure
 
 ```
 solarcalc-ph/
@@ -760,7 +857,7 @@ solarcalc-ph/
 
 ---
 
-## 9. UI Requirements
+## 10. UI Requirements
 
 ### 9.1 Layout
 
@@ -865,7 +962,7 @@ html.classList.toggle('dark', isDarkMode);
 
 ---
 
-## 10. Accessibility Requirements
+## 11. Accessibility Requirements
 
 - All inputs have associated `<label>` elements
 - Tooltips use `role="tooltip"` and `aria-describedby`
@@ -879,7 +976,7 @@ html.classList.toggle('dark', isDarkMode);
 
 ---
 
-## 11. Milestones & Deliverables
+## 12. Milestones & Deliverables
 
 Development is organized into 6 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
 
@@ -1020,7 +1117,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 
 ---
 
-## 12. Edge Cases
+## 13. Edge Cases
 
 | Scenario | Behavior |
 |----------|----------|
@@ -1037,7 +1134,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 
 ---
 
-## 13. Testing Checklist
+## 14. Testing Checklist
 
 - [ ] `node tests/calc.test.js` — all assertions pass
 - [ ] PWA installs on Android Chrome
@@ -1073,7 +1170,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - **Added:** Simple ROI and Payback clarity: ROI = Annual Savings ÷ CAPEX; Payback = inverse of ROI
 - **Added:** Monthly Savings note: Annual Savings ÷ 12
 - **Added:** Electricity rate benchmarks table (Residential ₱11–13, Commercial ₱9–11, Industrial ₱7–9)
-- **Expanded:** Section 6 PSH Calculator into comprehensive reference (formulas, theory, data sources)
+- **Expanded:** Section 7 PSH Calculator into comprehensive reference (formulas, theory, data sources)
 - **Added:** `sunhours.html` standalone reference page with PSH explanation, latitude formulas, tilt angle guidance, regional data, and external data source links
 - **Added:** Section 5.5 "The Narrative" — 7-part plain-language story mode (Problem → Hypothesis → Evidence → Verdict)
 - **Added:** Milestone 6 "Narrative Summary (Story Mode)" with review checklist

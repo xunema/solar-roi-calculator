@@ -114,7 +114,7 @@ solarcalc-ph/
 
 ## Philippine Market Defaults
 
-The app ships with current market rates for the Philippines:
+The app ships with current market rates for the Philippines. **App default: ₱15/kWh** (commercial baseline). Use Quick Presets to switch:
 
 | Parameter | Residential | Commercial | Notes |
 |-----------|-------------|------------|-------|

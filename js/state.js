@@ -210,28 +210,28 @@ export function createAppState() {
           dailyEnergyConsumptionKWh: 30,
           solarCapacityKW: 5,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 20000,      // ₱20,000/kW for residential
-          miscInfraCosts: 25000,        // Lower misc costs for small residential
-          batteryPricePerKWh: 12000,    // ₱12,000/kWh LFP battery
+          solarPricePerKW: 80000,       // ₱80,000/kW retail/residential pricing (PRD 5.6)
+          miscInfraCosts: 50000,        // Permits, inspection, small job overhead
+          batteryPricePerKWh: 30000,    // ₱30,000/kWh consumer battery (Jackery/EcoFlow class)
           nighttimeLoadKW: 1.5,         // Aircon + fridge + 24/7 appliances
           nighttimeDurationHours: 8,    // 10pm - 6am typical
-          loanPrincipal: 125000,        // 50% financing of ~₱125k system
+          loanPrincipal: 200000,        // ~50% financing of ~₱400k system
           annualInterestRate: 8,
           loanTermMonths: 60
         },
         commercial: {
           electricityRate: 15,  // ₱15/kWh for commercial
           operatingWeeksPerYear: 50,
-          operatingDaysPerWeek: 6,
+          operatingDaysPerWeek: 5,      // 5 days/week (business days)
           dailyEnergyConsumptionKWh: 500,
           solarCapacityKW: 100,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 15000,       // ₱15,000/kW for commercial (economies of scale)
-          miscInfraCosts: 300000,       // Higher misc for commercial installation
-          batteryPricePerKWh: 10000,    // ₱10,000/kWh bulk battery pricing
+          solarPricePerKW: 50000,       // ₱50,000/kW commercial bulk pricing (PRD 5.6)
+          miscInfraCosts: 500000,       // Commercial permitting, engineering
+          batteryPricePerKWh: 12000,    // ₱12,000/kWh commercial LFP
           nighttimeLoadKW: 15,          // Security lights, servers, refrigeration
           nighttimeDurationHours: 12,   // 6pm - 6am typical for commercial
-          loanPrincipal: 1800000,       // 60% financing of ~₱1.8M system
+          loanPrincipal: 2500000,       // ~50% financing of ~₱5M system
           annualInterestRate: 10,
           loanTermMonths: 60
         },

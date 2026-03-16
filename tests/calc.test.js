@@ -163,7 +163,7 @@ test('50 kWh/day × ₱10/kWh × 364 days = ₱182,000/yr', () => {
   assertEqual(calculateProjectedAnnualCost(50, 10, 364), 182000);
 });
 
-test('PRD default: 50 kWh × ₱10 × 364 = ₱182,000', () => {
+test('50 kWh × ₱10 × 364 = ₱182,000 (₱10/kWh scenario)', () => {
   const days = calculateOperatingDaysPerYear(52, 7);
   const annual = calculateProjectedAnnualCost(50, 10, days);
   assertEqual(annual, 182000);
@@ -345,7 +345,7 @@ test('Zero everything → ₱0', () => {
 // ============================================
 group('⚡ Annual Savings');
 
-test('14,560 kWh × ₱10 = ₱145,600 (PRD defaults)', () => {
+test('14,560 kWh × ₱10 = ₱145,600 (₱10/kWh scenario)', () => {
   assertEqual(calculateAnnualSavings(14560, 10), 145600);
 });
 
@@ -390,7 +390,7 @@ test('Simple ROI: negative CAPEX → 0%', () => {
   assertEqual(calculateSimpleROI(145600, -100), 0);
 });
 
-test('Payback: ₱300,000 / ₱145,600 = 2.06 years (PRD defaults)', () => {
+test('Payback: ₱300,000 / ₱145,600 = 2.06 years (₱10/kWh scenario)', () => {
   assertClose(calculatePaybackYears(300000, 145600), 2.06, 0.01);
 });
 
@@ -514,7 +514,7 @@ test('₱5,000,000 / (₱11 × 300 days) = 1,515.15 kWh/day', () => {
   assertClose(reverseCalculateDailyConsumption(5000000, 11, 300), 1515.15, 0.1);
 });
 
-test('₱182,000 / (₱10 × 364 days) = 50 kWh/day (PRD default round-trip)', () => {
+test('₱182,000 / (₱10 × 364 days) = 50 kWh/day (round-trip at ₱10)', () => {
   assertClose(reverseCalculateDailyConsumption(182000, 10, 364), 50, 0.01);
 });
 
@@ -601,7 +601,7 @@ test('Cash flow < 0 → red', () => {
 // ============================================
 group('🧮 calculateAll — PRD Default Inputs');
 
-test('PRD defaults: 10 kW, ₱10/kWh, 4 PSH, 52w × 7d, no battery, no loan', () => {
+test('Baseline scenario: 10 kW, ₱10/kWh, 4 PSH, 52w × 7d, no battery, no loan', () => {
   const results = calculateAll({
     electricityRate: 10,
     operatingWeeksPerYear: 52,
