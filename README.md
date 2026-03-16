@@ -168,50 +168,70 @@ where P = principal, r = monthly rate, n = months
 
 ## Development Milestones
 
-Development is broken into 6 milestones. Each produces a reviewable, testable deliverable. See the [PRD Section 11](./Project_Requirements_Document.md#11-milestones--deliverables) for full acceptance criteria.
+Development is broken into 7 milestones. Each produces a reviewable, testable deliverable. See the [PRD Section 13](./Project_Requirements_Document.md#13-milestones--deliverables) for full acceptance criteria and the [Milestone Execution Rules](./Project_Requirements_Document.md#12-milestone-execution-rules) before starting any milestone.
 
-### Milestone 1: Calculation Engine (MVP Foundation)
-> All math works — verifiable via command line, no UI needed yet.
+> **Known Issues:** See [Project Notes](./Project_Notes.md) for problems encountered and resolutions.
 
-- [ ] `calc.js` — all formulas (CAPEX, ROI, payback, amortization, projected costs)
-- [ ] `tests/calc.test.js` — unit tests pass via `node tests/calc.test.js`
-- [ ] `format.js` — Philippine peso formatting (`₱146,000.00`)
-- [ ] `state.js` — Proxy-based reactive state triggers recalculation
+---
 
-**Test:** `node tests/calc.test.js` — all green.
+### ✅ Milestone 1: Calculation Engine (MVP Foundation)
+> **Status: COMPLETE** — `node tests/calc.test.js` → 155/155 pass
 
-### Milestone 2: Core UI + Section Forms (MVP Usable)
-> All 4 sections render with inputs. Each section shows its own results. Dashboard aggregates everything.
+All formulas implemented and verified. No UI required.
 
-- [ ] Section 1 — Status Quo: rate, schedule, daily consumption → **inline annual + monthly cost**
-- [ ] Section 2 — PhotoVoltaic System: capacity, sun hours, pricing → **inline PV cost + generation + daily savings**
-- [ ] Section 3 — Battery Storage: load, duration → **inline battery sizing + cost + extra PV allocation**
-- [ ] Section 4 — Financing: loan terms → **inline amortization + interest**
-- [ ] Results Dashboard — 11 KPIs, each referencing its source section (tappable)
+- [x] `calc.js` — CAPEX, ROI, payback, amortization, battery charge %, all section results
+- [x] `tests/calc.test.js` — 155 tests, 0 failures
+- [x] `format.js` — Philippine peso formatting (`₱146,000.00`)
+- [x] `state.js` — Proxy-based reactive state; Quick Presets (Residential, Commercial, Battery Only, Spreadsheet)
 
-**Test:** Open in browser. Change any input — all section results and dashboard KPIs update instantly.
+**Key formula decisions:**
+- `pvSystemCost = (solarCapacityKW + pvForBatteryKW) × solarPricePerKW` — all PV panels (daytime + battery-charging) priced together
+- `totalCapex = totalPVCapex + batteryCost` — `extraSolarCost` shown in Section 3 as informational breakdown only
+- `batteryChargePercent = (pvForBatteryKW × peakSunHours / batteryCapacityKWh) × 100`
 
-### Milestone 3: Tooltips, Onboarding & Sun Hours
-> Help system complete. New users can self-onboard without external research.
+**Known resolved issues (see Project Notes):**
+- Problem 12: Battery model restructured to use `batteryCapacityKWh` and `pvForBatteryKW` as direct user inputs
+- Problem 13: `pvTotalCapacityKW` missing from `defaultResults` caused startup crash — fixed
+
+---
+
+### ✅ Milestone 2: Core UI + Section Forms (MVP Usable)
+> **Status: COMPLETE** — All deliverables implemented; 155/155 tests pass
+
+- [x] Section 1 — Status Quo: rate, schedule, daily consumption → **inline annual + monthly cost**
+- [x] Section 2 — PhotoVoltaic System: capacity, sun hours, pricing → **inline PV cost + generation + daily savings**
+- [x] Section 3 — Battery Storage: battery capacity, PV for battery → **inline battery cost, charge %, extra PV cost**
+- [x] Section 4 — Financing: loan terms → **inline amortization + interest**
+- [x] Results Dashboard — 11 KPIs, each referencing its source section (tappable)
+- [x] Phase 2.7 — "Reset to Defaults" button — clears localStorage and resets all 18 inputs to defaults
+
+**Key resolved issues:**
+- Problem 13: `pvTotalCapacityKW` missing from `defaultResults` caused startup crash that silenced all updates — fixed
+- Tooltip `ReferenceError` (missing import) and preset load DOM sync fixed in `app.js`
+
+---
+
+### ⬜ Milestone 3: Tooltips, Onboarding & Sun Hours
+> **Status: NOT STARTED**
 
 - [ ] Tooltip on every field (❓ icon, one open at a time)
 - [ ] Onboarding modal — 4-slide guide (blended rate, annual usage, defaults)
 - [ ] Sun hours calculator — region/city dropdown → peak sun hours estimate
 - [ ] External reference links (NREL, PVWatts) in tooltips
 
-**Test:** Click every ❓. Open/close onboarding. Use sun hours calculator for 3 different regions.
+---
 
-### Milestone 4: PWA, Themes & Layout
-> Installable, offline-capable, with night/day mode and layout control.
+### ⬜ Milestone 4: PWA, Themes & Layout
+> **Status: NOT STARTED**
 
 - [ ] Service worker — app works fully offline after first load
 - [ ] Night/Day theme toggle — persists in localStorage, detects system preference
 - [ ] Phone/Desktop/Auto layout toggle in header
 
-**Test:** Install as PWA. Toggle airplane mode — app still works. Switch themes. Switch layouts.
+---
 
-### Milestone 5: Polish & Accessibility (Release Candidate)
-> Production-ready. Lighthouse audits pass.
+### ⬜ Milestone 5: Polish & Accessibility (Release Candidate)
+> **Status: NOT STARTED**
 
 - [ ] Responsive layout at 375px / 768px / 1024px+
 - [ ] KPI conditional coloring (green/yellow/red thresholds)
@@ -219,23 +239,37 @@ Development is broken into 6 milestones. Each produces a reviewable, testable de
 - [ ] Accessibility: tab order, ARIA labels, focus trapping, 44px touch targets
 - [ ] Lighthouse PWA ≥ 90, Accessibility ≥ 90
 
-**Test:** Run Lighthouse. Tab through entire app. Test all edge cases from PRD Section 12.
+---
 
-### Milestone 6: Narrative Summary (Story Mode)
-> All data woven into a plain-language story: Problem → Hypothesis → Evidence → Verdict.
+### ⬜ Milestone 6: Narrative Summary (Story Mode)
+> **Status: NOT STARTED**
 
-- [ ] Narrative generator assembles all computed fields into 7 structured paragraphs
-- [ ] Part 1 — The Problem: electricity rate, consumption, annual/monthly cost
+All data woven into a plain-language story: Problem → Hypothesis → Evidence → Verdict.
+
+- [ ] Narrative generator — 7 structured paragraphs from all computed fields
+- [ ] Part 1 — The Problem: electricity rate, annual cost
 - [ ] Part 2 — The Hypothesis: PV capacity, daily generation, daily savings, PV cost
-- [ ] Part 3 — Battery Storage: battery sizing, extra PV allocation, battery cost (hidden if no battery)
-- [ ] Part 4 — Total CAPEX: PV System (Section 2) + Battery (Section 3)
-- [ ] Part 5 — The Return: annual savings, Simple ROI %, payback period
-- [ ] Part 6 — Financing: loan payment, interest, net cash flow (hidden if cash purchase)
-- [ ] Part 7 — The Verdict: green/yellow/red conclusion based on ROI
-- [ ] "Copy to Clipboard" for sharing the narrative as plain text
-- [ ] Real-time updates as inputs change
+- [ ] Part 3 — Battery Storage (hidden if batteryCapacityKWh = 0)
+- [ ] Part 4 — Total CAPEX
+- [ ] Part 5 — The Return: annual savings, ROI %, payback
+- [ ] Part 6 — Financing (hidden if cash purchase)
+- [ ] Part 7 — The Verdict: green/yellow/red conclusion
+- [ ] "Copy to Clipboard" — full narrative as plain text
+- [ ] "Export as .txt" — downloads `solarcalc-report-YYYY-MM-DD.txt`
 
-**Test:** Read the narrative for residential (no battery), commercial (with battery), and financed scenarios. Verify all numbers match the Dashboard KPIs. Copy to clipboard and paste into a text editor.
+---
+
+### ⬜ Milestone 7: Save Specifications
+> **Status: NOT STARTED**
+
+Named scenario save/load with a dropdown selector at the top of the page.
+
+- [ ] **Spec Selector** — dropdown + Save + Save As… always visible at top of page
+- [ ] **Save As…** — name prompt → saves to `localStorage` → becomes active spec
+- [ ] **Save** — silently overwrites current active spec
+- [ ] **Load** — select from dropdown → restores all 18 inputs and recalculates
+- [ ] **Manage panel** — delete (with confirmation), rename, export as JSON, import from JSON
+- [ ] Max 20 specs per device
 
 ---
 
@@ -245,11 +279,16 @@ Development is broken into 6 milestones. Each produces a reviewable, testable de
 node tests/calc.test.js
 ```
 
+Current results: **155 tests, 0 failures** ✅
+
 Tests verify:
-- Basic payback calculation
-- Battery cost integration
-- Zero-interest and standard loan amortization
+- All individual calc functions
+- `calculateAll()` integration (Spreadsheet Scenarios A, B, C + home defaults)
+- pvSystemCost includes both daytime and battery-charging panels
+- Battery charge percent calculation
+- Zero-interest and standard loan amortization (₱14M @ 12% → ₱311,422.27/mo)
 - Division-by-zero guards
+- format.js and state.js reactive state
 
 ---
 

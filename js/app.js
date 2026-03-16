@@ -4,17 +4,18 @@
  */
 
 import { createAppState, loadStateFromStorage } from './state.js';
-import { 
-  updateAllKPIs, 
-  updateAllInputs, 
-  applyTheme, 
+import {
+  updateAllKPIs,
+  updateAllInputs,
+  applyTheme,
   applyLayout,
   toggleOnboardingModal,
   toggleSunHoursModal,
   updateOnboardingSlide,
   initializeUI,
   hideAllTooltips,
-  updateAllSectionResults
+  updateAllSectionResults,
+  toggleTooltip
 } from './ui.js';
 
 // Onboarding slides content
@@ -155,10 +156,13 @@ class SolarCalcApp {
     
     // Bind preset buttons
     this.bindPresetButtons();
-    
+
+    // Bind reset button
+    this.bindResetButton();
+
     // Bind modal buttons
     this.bindModalButtons();
-    
+
     // Bind tooltip buttons
     this.bindTooltipButtons();
     
@@ -294,6 +298,7 @@ class SolarCalcApp {
    */
   loadPreset(presetName) {
     this.state.loadPreset(presetName);
+    updateAllInputs(this.state.inputs);
   }
 
   /**
@@ -310,6 +315,20 @@ class SolarCalcApp {
         });
       }
     });
+  }
+
+  /**
+   * Bind reset to defaults button
+   */
+  bindResetButton() {
+    const btn = document.getElementById('resetDefaults');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        this.state.resetInputs();
+        localStorage.removeItem('solarCalcState');
+        updateAllInputs(this.state.inputs);
+      });
+    }
   }
 
   /**

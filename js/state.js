@@ -30,8 +30,8 @@ export const defaultInputs = {
   nighttimeDurationHours: 10,     // Reference: 10 hours of backup needed
   
   // Section 4: Financing
-  loanPrincipal: 0,
-  annualInterestRate: 0,
+  loanPrincipal: 180000,
+  annualInterestRate: 14,
   loanTermMonths: 60
 };
 
@@ -47,10 +47,11 @@ export const defaultResults = {
   projectedMonthlyCost: 6066.67, // 72800 / 12
   effectiveAnnualCost: 72800,
   // Section 2: PhotoVoltaic System (Home defaults)
-  pvSystemCost: 60000,           // 1 × 60000
-  totalPVCapex: 90000,           // 60000 + 30000
-  dailyGenerationKWh: 4,         // 1 × 4
-  dailySavings: 80,              // 4 × 20
+  pvTotalCapacityKW: 2,          // 1 kW solar + 1 kW pvForBattery
+  pvSystemCost: 120000,          // (1+1) × 60000 — ALL solar panels including pvForBattery
+  totalPVCapex: 150000,          // 120000 + 30000 misc
+  dailyGenerationKWh: 8,         // (1+1) × 4 = 8 kWh/day (all panels)
+  dailySavings: 160,             // 8 × 20
   annualGenerationKWh: 2912,     // 2 × 4 × 364
   totalSolarKW: 2,               // 1 + 1
   // Section 3: Battery Storage (Home defaults)
@@ -62,22 +63,22 @@ export const defaultResults = {
   extraSolarCost: 60000,         // 1 × 60000
   batteryChargePercent: 80,      // (4/5) × 100
   solarPricePerKW: 60000,
-  // Section 4: Financing
-  monthlyAmortization: 0,
-  totalLoanCost: 0,
-  totalInterestPaid: 0,
+  // Section 4: Financing (Home defaults: ₱180,000 @ 14% / 60 months)
+  monthlyAmortization: 4188.29,  // 180000 @ 14% / 60mo
+  totalLoanCost: 251297.11,      // 4188.29 × 60
+  totalInterestPaid: 71297.11,   // 251297.11 - 180000
   // Dashboard KPIs (Home defaults)
-  totalCapex: 300000,            // 90000 + 150000 + 60000
+  totalCapex: 300000,            // 150000 (totalPVCapex) + 150000 (batteryCost)
   annualSavings: 58240,          // 2912 × 20
   simpleROI: 19.41,              // (58240/300000) × 100
   paybackYears: 5.15,            // 300000 / 58240
   monthlySavings: 4853.33,       // 58240 / 12
-  netMonthlyCashFlow: 4853.33,   // No loan = monthly savings
+  netMonthlyCashFlow: 665.05,    // 4853.33 - 4188.29
   // UI helpers
   roiColor: 'green',
-  paybackColor: 'green',
+  paybackColor: 'yellow',
   cashFlowColor: 'green',
-  hasFinancing: false
+  hasFinancing: true
 };
 
 /**
@@ -266,7 +267,7 @@ export function createAppState() {
           electricityRate: 11,
           operatingWeeksPerYear: 50,
           operatingDaysPerWeek: 6,
-          dailyEnergyConsumptionKWh: 818, // ~300kW * 4h / 300days * 365/300
+          dailyEnergyConsumptionKWh: 1200, // 300kW × 4 PSH = 1,200 kWh/day
           solarCapacityKW: 300,
           peakSunHoursPerDay: 4,
           solarPricePerKW: 40000,

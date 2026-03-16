@@ -191,7 +191,7 @@ These fields are needed by the per-section inline results panels (PRD Section 5.
 
 ---
 
-#### Problem 11: Missing `annualConsumptionKWh` and `dailySavings` Fields
+#### Problem 11b: Missing `annualConsumptionKWh` and `dailySavings` Fields
 **Issue:** PRD Section 5.1 described a consumption chain (daily kWh → annual kWh → annual ₱) but the intermediate `annualConsumptionKWh` field was not in the computed fields table or code. Similarly, Section 2 lacked a `dailySavings` field to show per-day savings from PV generation.
 
 **Resolution:** Added both fields to:
@@ -238,6 +238,116 @@ Also added PRD clarifications:
 - Scenario C (Combined, 400 kW total) ✅
 - Loan (₱14M @ 12% / 60mo = ₱311,422.27/mo) ✅
 - PRD defaults (10 kW residential) ✅
+
+---
+
+#### Problem 12: Battery Model Restructure (v1.4.0)
+**Issue:** The original battery model auto-calculated required battery kWh from nighttime load × duration, and auto-calculated extra solar from that. This made the UI feel passive — users couldn't directly control battery size or solar allocation, and the nighttime reference values felt like rigid inputs rather than guidance.
+
+**Resolution (PRD v1.4.0):** Battery inputs restructured so `batteryCapacityKWh` and `pvForBatteryKW` are primary user inputs. `nighttimeLoadKW` and `nighttimeDurationHours` become reference-only guidance fields. The battery charge percent now shows how much of the battery the allocated PV can fill per day — giving direct feedback on whether the solar allocation is adequate.
+
+**Code changes:**
+- `calc.js`: `calculateAll()` uses `batteryCapacityKWh` and `pvForBatteryKW` directly from inputs
+- `state.js`: `defaultInputs` updated to include both new fields; nighttime fields kept as reference
+- `tests/calc.test.js`: All battery tests updated to use `batteryCapacityKWh` and `pvForBatteryKW`
+- New field `batteryChargePercent` = `(pvForBatteryKW × peakSunHoursPerDay / batteryCapacityKWh) × 100`
+
+---
+
+#### Problem 13: Results Not Updating When Inputs Change (OPEN — 2026-03-16)
+**Issue:** User reports that after changing input field values, the results panels and KPI dashboard do not update.
+
+**Code investigation findings:** The reactive chain was traced end-to-end and is structurally correct:
+1. `bindInputHandlers` attaches `input` event listeners to all 17 input fields
+2. On change: parses float value → calls `onChange(id, numValue)`
+3. `initializeUI` passes `(id, value) => { state.inputs[id] = value; }` as the callback
+4. Proxy `set` on `state.inputs` → fires `onInputChange` → runs `calculateAll(inputs)`
+5. Each result key is set on `state.results` via Proxy → fires `onResultsChange`
+6. `changeCallback('results', ...)` → `app.js` `onChange` handler → `updateAllKPIs(this.state.results)`
+7. `updateAllKPIs` updates all DOM KPI and section result elements
+
+**Two confirmed bugs found and fixed in `app.js` (2026-03-16):**
+
+**Bug A — Missing `toggleTooltip` import:**
+`bindTooltipButtons()` called `toggleTooltip(tooltipId)` but it was not in the import list from `ui.js`. This caused a `ReferenceError: toggleTooltip is not defined` every time a tooltip button was clicked.
+- **Fix:** Added `toggleTooltip` to the import statement in `app.js`
+- **Impact:** Only affected tooltip buttons; would not prevent input→results updates
+
+**Bug B — Preset load does not sync DOM inputs:**
+`loadPreset()` called `this.state.loadPreset(presetName)` which correctly updated state via Proxy (triggering recalculation and KPI updates), but never called `updateAllInputs(this.state.inputs)`. As a result, the DOM input fields continued to display the old values while all calculations used the preset values — creating a mismatch between what the user sees and what is being calculated.
+- **Fix:** Added `updateAllInputs(this.state.inputs)` after `this.state.loadPreset(presetName)` in `app.js`
+- **Impact:** After loading any Quick Preset, input fields now visually reflect the preset values
+
+**Status: Results still not updating — deeper diagnosis required**
+
+Both bugs above were fixed but the problem persists. The most likely remaining causes are **environment-level**, not code-level:
+
+**Cause A — Opening via `file://` protocol (most likely):**
+The app uses ES modules (`import`/`export`). Browsers block cross-origin module loading from `file://`. Opening `index.html` directly via double-click or `open index.html` will load the HTML/CSS but all JS modules will silently fail to import. The app renders but is completely non-functional (no reactive state, no event handlers, no calculations).
+- **Diagnostic:** Check browser console for `CORS` or `Failed to fetch` errors
+- **Fix:** Must serve via HTTP. Run `python3 -m http.server 8000` then open `http://localhost:8000`
+
+**Cause B — Service worker serving stale cached JS:**
+Once the service worker is registered (on first load), it may serve cached versions of JS files that predate the `batteryCapacityKWh`/`pvForBatteryKW` restructure. Subsequent code changes are not picked up.
+- **Diagnostic:** Check DevTools → Application → Service Workers; look for "Waiting to activate" state
+- **Fix:** DevTools → Application → Service Workers → "Skip waiting" and "Update", then hard reload; or unregister the service worker and reload
+
+**Cause C — Stale localStorage with old field names:**
+If `solarCalcState` in localStorage was saved before the battery model restructure, it won't contain `batteryCapacityKWh` or `pvForBatteryKW`. Those fields fall back to `defaultInputs` values, creating silent state/DOM mismatch.
+- **Diagnostic:** DevTools → Application → Local Storage → look at `solarCalcState` key
+- **Fix:** Delete `solarCalcState` from localStorage, or use the "Reset to Defaults" button (planned for M2)
+
+**Cause D — `defaultResults` in `state.js` has wrong hardcoded values:**
+After the home defaults were changed (₱20/kWh, 1kW solar, 10 kWh/day), the hardcoded `defaultResults` in `state.js` was not updated. It still contains stale values (e.g., `annualConsumptionKWh: 18200` should be `3640`, `dailySavings: 400` should be `80`). This only affects the initial display before any input change fires — it is NOT why updates don't propagate.
+
+**Root cause confirmed via browser console (2026-03-16):**
+
+```
+Uncaught TypeError: results.pvTotalCapacityKW is undefined
+    at updateSection2Results (ui.js:138)
+    at updateAllSectionResults (ui.js:243)
+    at updateAllKPIs (ui.js:277)
+    at setupUI (app.js:146)
+```
+
+`pvTotalCapacityKW` was added to the `calculateAll()` return object in `calc.js` as part of the v1.4.0 battery restructure, but was **never added to `defaultResults` in `state.js`**.
+
+**Why this breaks everything (not just Section 2):**
+On startup, `setupUI()` calls `updateAllKPIs(this.state.results)` using the hardcoded `defaultResults` — before any user input has fired. `updateSection2Results` reads `results.pvTotalCapacityKW`, which is `undefined`. Calling `.toFixed(1)` on `undefined` throws an uncaught `TypeError` that crashes the entire function. Because the crash is uncaught, the `updateAllKPIs` call in the `onChange` listener is also broken — **no results ever update in response to any input change**, not just the one field that caused the crash.
+
+**Fix applied:** Added `pvTotalCapacityKW: 2` to `defaultResults` in `state.js` (1 kW solar + 1 kW pvForBattery = 2 kW total with home defaults).
+
+**Pattern this exposes:** Any time a new field is added to `calculateAll()`'s return object in `calc.js`, it must also be:
+1. Added to `defaultResults` in `state.js` (with a correct computed value matching the home defaults)
+2. Handled in the relevant `updateSectionXResults()` function in `ui.js` defensively (null/undefined check before calling number methods)
+
+This rule has been added to the PRD as a standing development requirement (see PRD Section 12 "Milestone Execution Rules").
+
+**Status: RESOLVED ✅**
+
+---
+
+### 2026-03-17 — Milestone 2 Completion
+
+#### M2 Phase 2.7: Reset to Defaults Button
+
+**Implementation:** Added `bindResetButton()` method to `SolarCalcApp` in `app.js`. The handler:
+1. Calls `this.state.resetInputs()` — sets all 18 inputs back to `defaultInputs` via Proxy (triggering recalculation)
+2. Calls `localStorage.removeItem('solarCalcState')` — clears persisted state so next page load also starts fresh
+3. Calls `updateAllInputs(this.state.inputs)` — force-syncs all DOM input fields to show default values
+
+The button (`id="resetDefaults"`) was already in `index.html` at the bottom of the Quick Presets card. `bindResetButton()` is called from `setupUI()` alongside `bindPresetButtons()`.
+
+**M2 Checklist — All items verified:**
+- [x] All 4 section inline result panels present and updating
+- [x] All 11 KPI cards present and updating
+- [x] All 18 input fields bound to state
+- [x] Quick Presets load correctly and sync DOM inputs
+- [x] Reset to Defaults clears localStorage and restores all defaults
+- [x] 155/155 tests passing
+- [x] No console errors on startup
+
+**M2 Status: COMPLETE ✅**
 
 ---
 

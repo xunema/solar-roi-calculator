@@ -274,12 +274,14 @@ export function calculateAll(inputs) {
   // PV Total Capacity for Section 2 display
   const pvTotalCapacityKW = (solarCapacityKW || 0) + (pvForBatteryKW || 0);
 
-  // Step 5: CAPEX calculations (PRD v1.4.0)
-  const pvSystemCost = (solarCapacityKW || 0) * (solarPricePerKW || 0);
+  // Step 5: CAPEX calculations (PRD v1.6.0)
+  // pvSystemCost = ALL solar panels × price (daytime + battery-charging panels combined)
+  const pvSystemCost = totalSolarKW * (solarPricePerKW || 0);
   const totalPVCapex = pvSystemCost + (miscInfraCosts || 0);
   const batteryCost = effectiveBatteryCapacityKWh * (batteryPricePerKWh || 0);
+  // extraSolarCost is informational only (breakdown of battery-dedicated PV cost within pvSystemCost)
   const extraSolarCost = (pvForBatteryKW || 0) * (solarPricePerKW || 0);
-  const totalCapex = totalPVCapex + batteryCost + extraSolarCost;
+  const totalCapex = totalPVCapex + batteryCost; // extraSolarCost already included in pvSystemCost
 
   // Step 6: Energy generation and savings
   const annualGenerationKWh = calculateAnnualGenerationKWh(totalSolarKW, peakSunHoursPerDay, operatingDaysPerYear);
@@ -299,7 +301,7 @@ export function calculateAll(inputs) {
   // Step 9: Per-section result fields
   const annualConsumptionKWh = (dailyEnergyConsumptionKWh || 0) * operatingDaysPerYear;
   const projectedMonthlyCost = projectedAnnualCost / 12;
-  const dailyGenerationKWh = (solarCapacityKW || 0) * (peakSunHoursPerDay || 0);
+  const dailyGenerationKWh = totalSolarKW * (peakSunHoursPerDay || 0); // ALL panels: solarCapacityKW + pvForBatteryKW
   const dailySavings = dailyGenerationKWh * (electricityRate || 0);
 
   return {

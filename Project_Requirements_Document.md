@@ -1,6 +1,6 @@
 # Project Requirements Document: SolarCalc PH — Solar ROI & Battery Calculator
 
-> **Version:** 1.4.0
+> **Version:** 1.5.0
 > **Date:** 2026-03-16
 > **Source:** `250915 SOLAR ROI .xlsx` spreadsheet + `Solar_ROI_App_PRD_v2.md`
 > **Status:** Draft
@@ -176,8 +176,8 @@ A visual badge indicates the value is user-overwritten (not computed).
 
 #### Generation & Savings Chain
 ```
-PV Capacity (kW) × Peak Sun Hours (hrs/day)
-  = Daily Generation (kWh/day)
+(PV Capacity + PV for Battery) (kW) × Peak Sun Hours (hrs/day)
+  = Daily Generation (kWh/day)               ← total output from ALL installed panels
   × Electricity Rate (₱/kWh)
   = Daily Savings (₱/day)                    ← shown in Section 2 results
   × Operating Days/Year
@@ -188,13 +188,13 @@ PV Capacity (kW) × Peak Sun Hours (hrs/day)
 
 #### Cost Chain
 ```
-PV Capacity (kW) × Price per kW (₱/kW)
-  = PV Equipment Cost (₱)
+(PV Capacity + PV for Battery) (kW) × Price per kW (₱/kW)
+  = PV Equipment Cost (₱)                   ← ALL solar panels, including those charging the battery
   + Misc Infrastructure (₱)
   = Total PV CAPEX (₱)                      ← feeds into Dashboard Total CAPEX
 ```
 
-> **Total CAPEX** in the Dashboard = PV System CAPEX (Section 2) + Battery Storage cost (Section 3). The CAPEX KPI card links back to Section 2.
+> **Total CAPEX** in the Dashboard = Total PV CAPEX (Section 2) + Battery Cost (Section 3). The PV for Battery panels are included in PV Equipment Cost because they are purchased as part of the same installation. The CAPEX KPI card links back to Section 2.
 
 ---
 
@@ -360,7 +360,8 @@ A one-line summary with conditional tone based on ROI color:
 - All peso values use `formatPeso()`, percentages use `formatPercent()`, years use `formatYears()`
 - Each paragraph references the source section — tapping the section name scrolls to it
 - Narrative updates in real time as inputs change (same reactive pipeline as Dashboard KPIs)
-- A "Copy to Clipboard" button lets users share the narrative as plain text
+- A **"Copy to Clipboard"** button copies the full narrative as plain text
+- An **"Export as .txt"** button downloads the narrative as `solarcalc-report-YYYY-MM-DD.txt` — readable in any text editor, shareable via email or messaging
 
 ---
 
@@ -456,14 +457,25 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 
 **Target User:** Existing solar owner adding battery storage
 
+**Subtext:** Existing solar system — adding 50 kWh battery + 12.5 kW charging PV
+
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| **Solar System Size** | 0 kW | Existing system — adding only battery |
-| **Battery Price** | ₱25,000/kWh | Mid-range between residential and commercial |
+| **Electricity Rate** | ₱15/kWh | Meralco blended rate (default) |
+| **Operating Schedule** | 7 days/week, 52 weeks/year | Daily home use |
+| **Daily Consumption** | 40 kWh/day | Moderate home with existing solar partially offsetting grid draw |
+| **Solar System Size** | 0 kW | Existing system — adding only battery (and its charging PV) |
+| **Peak Sun Hours** | 4.0 hrs/day | Philippine average |
+| **Solar Price** | ₱50,000/kW | Mid-range pricing for the additional charging PV panels |
+| **Misc Costs** | ₱0 | No new structural or permitting costs (existing system) |
+| **Battery Price** | ₱25,000/kWh | Mid-range between residential and commercial LFP |
 | **Battery Capacity** | 50 kWh | 5 kW × 10 hours = 50 kWh backup capacity |
-| **PV for Battery** | 12.5 kW | 50 kWh ÷ 4 peak sun hours = 12.5 kW needed to fully charge |
-| **Nighttime kWh/Hr** | 5 kWh/hr | Moderate backup load (essential circuits only) — for reference only |
-| **Nighttime Duration** | 10 hours | Evening + early morning backup — for reference only |
+| **PV for Battery** | 12.5 kW | 50 kWh ÷ 4 peak sun hours = 12.5 kW needed to fully charge daily |
+| **Nighttime kWh/Hr** | 5 kWh/hr | Moderate backup load (essential circuits only) — for reference |
+| **Nighttime Duration** | 10 hours | Evening + early morning backup — for reference |
+| **Loan Principal** | ₱400,000 | ~50% financing of battery system cost |
+| **Interest Rate** | 0% | Interest-free instalment plan |
+| **Loan Term** | 60 months | 5-year repayment |
 
 ---
 
@@ -473,17 +485,21 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 
 | Parameter | Value | Source |
 |-----------|-------|--------|
-| **Daily Consumption** | 1,200 kWh/day | Spreadsheet assumption |
-| **Operating Schedule** | 6 days/week, 50 weeks/year (= 300 days) | Spreadsheet K5-K6 |
 | **Electricity Rate** | ₱11/kWh | Spreadsheet K4 |
+| **Operating Schedule** | 6 days/week, 50 weeks/year (= 300 days) | Spreadsheet K5-K6 |
+| **Daily Consumption** | 1,200 kWh/day | 300 kW × 4 PSH = 1,200 kWh/day generated (proxy for facility consumption) |
 | **Solar System Size** | 300 kW | Spreadsheet K13 (daytime use only) |
+| **Peak Sun Hours** | 4.0 hrs/day | Spreadsheet K7 |
 | **Solar Price** | ₱40,000/kW | Spreadsheet K8 |
+| **Misc Costs** | ₱2,000,000 | Spreadsheet K10 |
 | **Battery Price** | ₱5,000/kWh | Spreadsheet K9 (LFP bulk pricing) |
 | **Battery Capacity** | 0 kWh | Spreadsheet has no battery storage calculations |
 | **PV for Battery** | 0 kW | Spreadsheet has no battery storage calculations |
-| **Misc Costs** | ₱2,000,000 | Spreadsheet K10 |
+| **Nighttime kWh/Hr** | 0 | No battery modelled |
+| **Nighttime Duration** | 0 hours | No battery modelled |
 | **Loan Principal** | ₱14,000,000 | Spreadsheet S6 |
 | **Interest Rate** | 12% | Spreadsheet V5 |
+| **Loan Term** | 60 months | Spreadsheet S5 |
 
 ---
 
@@ -520,8 +536,8 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 | `pvForBatteryKW` | number | 1 | kW | ≥ 0 | 3 | — |
 | `nighttimeLoadKW` | number | 1 | kW | ≥ 0 | 3 | — |
 | `nighttimeDurationHours` | number | 10 | hours | ≥ 0, max 24 | 3 | — |
-| `loanPrincipal` | number | 0 | ₱ | ≥ 0 | 4 | S6 (14,000,000) |
-| `annualInterestRate` | number | 0 | % | 0–100 | 4 | V5 (12%) |
+| `loanPrincipal` | number | 180,000 | ₱ | ≥ 0 | 4 | S6 (14,000,000) |
+| `annualInterestRate` | number | 14 | % | 0–100 | 4 | V5 (12%) |
 | `loanTermMonths` | number | 60 | months | 1–360, integer | 4 | S5 (60) |
 
 ### 6.2 Computed Fields
@@ -532,9 +548,9 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 | `annualConsumptionKWh` | `dailyEnergyConsumptionKWh × operatingDaysPerYear` | kWh | 1 |
 | `projectedAnnualCost` | `annualConsumptionKWh × electricityRate` | ₱ | 1 |
 | `projectedMonthlyCost` | `projectedAnnualCost / 12` | ₱ | 1 |
-| `pvSystemCost` | `solarCapacityKW × solarPricePerKW` | ₱ | 2 |
+| `pvSystemCost` | `(solarCapacityKW + pvForBatteryKW) × solarPricePerKW` — all PV panels combined | ₱ | 2 |
 | `totalPVCapex` | `pvSystemCost + miscInfraCosts` | ₱ | 2 |
-| `dailyGenerationKWh` | `solarCapacityKW × peakSunHoursPerDay` | kWh | 2 |
+| `dailyGenerationKWh` | `(solarCapacityKW + pvForBatteryKW) × peakSunHoursPerDay` — total output from all installed panels | kWh | 2 |
 | `dailySavings` | `dailyGenerationKWh × electricityRate` | ₱/day | 2 |
 | `annualGenerationKWh` | `totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear` | kWh | 2 |
 | `pvTotalCapacityKW` | `solarCapacityKW + pvForBatteryKW` | kW | 2 |
@@ -544,7 +560,7 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 | `batteryChargePercent` | `IF batteryCapacityKWh > 0 THEN (dailyChargeCapacityKWh / batteryCapacityKWh) × 100 ELSE 0` — shows what % of battery can be charged per day with allocated PV | % | 3 |
 | `extraSolarCost` | `pvForBatteryKW × solarPricePerKW` | ₱ | 3 |
 | `totalSolarKW` | `solarCapacityKW + pvForBatteryKW` | kW | — |
-| `totalCapex` | `totalPVCapex + batteryCost + extraSolarCost` — Total investment = PV System (Section 2) + Battery Storage (Section 3) + Extra PV for Battery (Section 3) | ₱ | Dashboard |
+| `totalCapex` | `totalPVCapex + batteryCost` — Total investment = Total PV CAPEX (Section 2, already includes all solar panels) + Battery Storage cost (Section 3) | ₱ | Dashboard |
 | `annualSavings` | `annualGenerationKWh × electricityRate` — tooltip: `dailySavings × operatingDaysPerYear` | ₱ | Dashboard |
 | `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` — Annual Savings ÷ Total CAPEX. Measures what % of investment is recovered each year. Higher = faster recovery. | % | Dashboard |
 | `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` — the inverse of ROI: how many years until CAPEX is fully recovered. | years | Dashboard |
@@ -603,14 +619,14 @@ When `annualBill` is entered, it overrides `projectedAnnualCost` and `projectedM
 └─────────────────────────────────────────────┘
 ```
 
-> **Dashboard link:** Total PV CAPEX feeds into the Dashboard's **Total CAPEX** KPI. Total CAPEX = PV System cost (Section 2) + Battery Storage cost (Section 3) + Extra PV for Battery (Section 3). Tapping the Total CAPEX KPI card scrolls back to Section 2.
+> **Dashboard link:** Total PV CAPEX feeds into the Dashboard's **Total CAPEX** KPI. Total CAPEX = Total PV CAPEX (Section 2) + Battery Cost (Section 3). PV for Battery panels are already included in PV Equipment Cost. Tapping the Total CAPEX KPI card scrolls back to Section 2.
 
 **Formulas:**
 ```
 pvTotalCapacityKW   = solarCapacityKW + pvForBatteryKW
-pvSystemCost        = solarCapacityKW × solarPricePerKW
+pvSystemCost        = pvTotalCapacityKW × solarPricePerKW   ← ALL panels: daytime + battery charging
 totalPVCapex        = pvSystemCost + miscInfraCosts
-dailyGenerationKWh  = solarCapacityKW × peakSunHoursPerDay
+dailyGenerationKWh  = pvTotalCapacityKW × peakSunHoursPerDay  ← ALL installed panels generate
 dailySavings        = dailyGenerationKWh × electricityRate
 annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
 ```
@@ -651,7 +667,9 @@ batteryPricePerKWh       = User input (suggested: ₱30,000 residential, ₱12,0
 
 COMPUTED VALUES:
 batteryCost              = batteryCapacityKWh × batteryPricePerKWh
-extraSolarCost           = pvForBatteryKW × solarPricePerKW
+extraSolarCost           = pvForBatteryKW × solarPricePerKW   ← INFORMATIONAL ONLY
+                           (shows the battery-dedicated share of pvSystemCost — already included
+                            in Section 2 PV Equipment Cost; not added again to totalCapex)
 dailyChargeCapacityKWh   = pvForBatteryKW × peakSunHoursPerDay
 batteryChargePercent     = IF batteryCapacityKWh > 0 THEN (dailyChargeCapacityKWh / batteryCapacityKWh) × 100 ELSE 0
 
@@ -1060,9 +1078,76 @@ html.classList.toggle('dark', isDarkMode);
 
 ---
 
-## 12. Milestones & Deliverables
+## 12. Milestone Execution Rules
 
-Development is organized into 6 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
+These rules exist to prevent past breakages from recurring. **Every milestone must follow them without exception.**
+
+---
+
+### Rule 1 — `calc.js` ↔ `state.js` Field Parity (Critical)
+
+> **Every field returned by `calculateAll()` in `calc.js` must also exist in `defaultResults` in `state.js`.**
+
+**Why this matters:** On startup, `updateAllKPIs()` runs against the hardcoded `defaultResults` before any user input fires a recalculation. If a field is missing from `defaultResults`, it is `undefined`. Calling `.toFixed()`, `.toLocaleString()`, or any number method on `undefined` throws an uncaught `TypeError` that crashes the entire update chain — **no results will ever update**, not just the one missing field.
+
+**When adding a new computed field:**
+1. Add it to the `return` object in `calculateAll()` in `calc.js`
+2. Add it to `defaultResults` in `state.js` with the correct value computed from the home defaults
+3. Add a test for it in `tests/calc.test.js`
+4. Handle it in the relevant `updateSectionXResults()` function in `ui.js`
+
+**Verification:** After adding any new field, reload the app from scratch with no saved state and confirm no console errors appear.
+
+---
+
+### Rule 2 — Defensive Rendering in `ui.js`
+
+> **All `updateSectionXResults()` functions must guard against `undefined` / `null` before calling number methods.**
+
+Pattern:
+```javascript
+// WRONG — crashes if field is undefined
+el.textContent = results.someField.toFixed(1) + ' kW';
+
+// CORRECT — safe fallback
+el.textContent = (results.someField ?? 0).toFixed(1) + ' kW';
+// or for conditional display:
+el.textContent = results.someField != null
+  ? results.someField.toFixed(1) + ' kW'
+  : '—';
+```
+
+This prevents a single missing field from crashing the whole update chain.
+
+---
+
+### Rule 3 — New Input Fields Require Full Registration
+
+> **Every new input field added to `index.html` must be registered in all four locations:**
+
+| File | Location | Action |
+|------|----------|--------|
+| `js/state.js` | `defaultInputs` | Add with home default value |
+| `js/state.js` | `defaultResults` (if it also appears in results) | Add with computed default |
+| `js/ui.js` | `bindInputHandlers()` input ID list | Add field ID |
+| `js/ui.js` | `updateAllInputs()` input ID list | Add field ID |
+| `js/ui.js` | `getInputValues()` input ID list | Add field ID |
+
+Missing any of these causes silent failures: the field either doesn't trigger recalculation, doesn't restore from saved state, or doesn't sync when presets load.
+
+---
+
+### Rule 4 — No Console Errors on Load
+
+> **After completing any milestone phase, reload the app (no saved state) and confirm zero red errors in the browser console.**
+
+This is the single fastest way to catch Rule 1 and Rule 2 violations before they compound.
+
+---
+
+## 13. Milestones & Deliverables
+
+Development is organized into 7 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
 
 ---
 
@@ -1082,6 +1167,8 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - [ ] Amortization: ₱14M, 12%, 60mo → ₱311,422.27/mo
 - [ ] Division-by-zero guards work (0 savings → Infinity payback)
 - [ ] Projected monthly cost = annual cost / 12
+- [ ] **Field parity (Rule 1):** Every field in `calculateAll()` return object also exists in `defaultResults` — confirm by cross-checking both lists
+- [ ] No console errors on fresh load (open app with no saved state)
 
 ---
 
@@ -1096,6 +1183,11 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 | 2.4 | Section 3 — Battery Storage form + **Section 3 Results** | Battery inputs; inline battery kWh, cost, extra PV needed |
 | 2.5 | Section 4 — Financing form + **Section 4 Results** | Loan inputs; inline amortization, total cost, interest |
 | 2.6 | Results Dashboard with section references | All 11 KPIs display; tapping KPI scrolls to source section |
+| 2.7 | State persistence + Reset to Defaults | Inputs auto-save to `localStorage`; "Reset to Defaults" button restores all inputs to PRD defaults |
+
+> **Important — Hard Refresh Behavior:** A browser hard refresh (`Ctrl+Shift+R` / `Cmd+Shift+R`) clears cached files (HTML, CSS, JS) but does **not** clear `localStorage`. This means previously entered values will still load after a hard refresh. This is by design — users should not lose their work on refresh.
+>
+> To load the default values, the user must click **"Reset to Defaults"**. Clearing `localStorage` manually (DevTools → Application → Local Storage → Clear) also resets to defaults.
 
 **Review checklist:**
 - [ ] All 18 input fields render with correct labels, defaults, and units
@@ -1104,9 +1196,12 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - [ ] Tapping a KPI card scrolls to the source section
 - [ ] Projected Annual Cost AND Monthly Cost display in Section 1 results
 - [ ] Annual Bill override updates both annual and monthly projections
-- [ ] Battery section shows "No battery needed" when load/duration = 0
+- [ ] Battery section shows "No battery needed" when batteryCapacityKWh = 0
 - [ ] Financing section shows "Cash purchase" when loan = 0
-- [ ] No console errors
+- [ ] **"Reset to Defaults" button** restores all inputs to PRD default values and clears `localStorage`
+- [ ] After reset, all KPIs reflect the home default scenario (₱20/kWh, 1 kW, 5 kWh battery)
+- [ ] Hard refresh preserves previously entered values (does not reset)
+- [ ] **No console errors** on fresh load (open app with no saved state, all inputs at defaults)
 
 ---
 
@@ -1128,6 +1223,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - [ ] Sun hours calculator returns reasonable values for all regions
 - [ ] Sun hours "Use this value" populates the input and closes modal
 - [ ] External links open in new tab
+- [ ] No console errors on fresh load
 
 ---
 
@@ -1150,6 +1246,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - [ ] System `prefers-color-scheme` detected on first load
 - [ ] Layout toggle works at all screen widths
 - [ ] Desktop mode on small screen shows maximized single column
+- [ ] No console errors on fresh load
 
 ---
 
@@ -1160,7 +1257,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 |-------|-------------|---------------------|
 | 5.1 | Responsive polish | Visual check at 375px (iPhone SE), 768px (iPad), 1024px+ |
 | 5.2 | KPI conditional coloring | ROI/Payback/CashFlow colors match spec thresholds |
-| 5.3 | Edge case handling | All scenarios from Section 12 handled gracefully |
+| 5.3 | Edge case handling | All scenarios from Section 14 handled gracefully |
 | 5.4 | Accessibility audit | Tab order, labels, ARIA roles, focus trapping, touch targets |
 
 **Review checklist:**
@@ -1171,6 +1268,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - [ ] "Did you mean 12%?" hint when rate < 1
 - [ ] "Loan exceeds system cost" warning when loan > CAPEX
 - [ ] Keyboard navigation through all inputs in section order
+- [ ] No console errors on fresh load
 - [ ] No console errors on any interaction path
 - [ ] `prefers-reduced-motion` disables transitions
 
@@ -1185,23 +1283,158 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 | 6.2 | Narrative UI panel | Scrollable text panel below Dashboard (or toggle "Show Narrative"); all values formatted with `formatPeso()`, `formatPercent()`, `formatYears()` |
 | 6.3 | Conditional sections | Battery section hidden when no battery; Financing section hidden when cash purchase; Verdict tone matches ROI color |
 | 6.4 | Section back-references | Tapping a section name in the narrative scrolls to the source input section |
-| 6.5 | Copy to Clipboard | "Copy" button exports narrative as formatted plain text |
-| 6.6 | Real-time updates | Narrative re-renders on every input change via the same reactive state pipeline |
+| 6.5 | Copy to Clipboard | "Copy" button copies full narrative as formatted plain text to clipboard |
+| 6.6 | Export as .txt file | "Export" button triggers a browser file download of the narrative as a `.txt` file, named `solarcalc-report-{date}.txt` |
+| 6.7 | Real-time updates | Narrative re-renders on every input change via the same reactive state pipeline |
+
+**Export file format (`solarcalc-report-YYYY-MM-DD.txt`):**
+```
+SolarCalc PH — Solar ROI Report
+Generated: {date}
+================================
+
+YOUR CURRENT ELECTRICITY COSTS
+...
+
+PV SYSTEM
+...
+
+[all 7 sections, plain text, no HTML]
+
+================================
+Generated by SolarCalc PH | https://xunema.github.io/solar-roi-calculator/
+```
 
 **Review checklist:**
 - [ ] Narrative displays all 7 parts (Problem, Hypothesis, Battery, CAPEX, Return, Financing, Verdict)
-- [ ] Battery paragraph hidden when nighttimeLoadKW = 0
+- [ ] Battery paragraph hidden when batteryCapacityKWh = 0
 - [ ] Financing paragraph hidden when loanPrincipal = 0
 - [ ] Verdict text and tone match ROI color thresholds (green/yellow/red)
 - [ ] All peso values formatted correctly (₱ with commas)
 - [ ] Narrative updates instantly when any input changes
-- [ ] "Copy to Clipboard" produces clean plain text
+- [ ] "Copy to Clipboard" copies clean plain text (no HTML tags)
+- [ ] No console errors on fresh load
+- [ ] "Export as .txt" triggers a file download named `solarcalc-report-YYYY-MM-DD.txt`
+- [ ] Exported file opens correctly in any text editor
 - [ ] Section names in narrative are tappable and scroll to source section
 - [ ] Narrative reads coherently for: residential no-battery, commercial with battery, financed vs cash
 
 ---
 
-## 13. Edge Cases
+### Milestone 7: Save Specifications
+> **Goal:** Users can save the current set of inputs as a named specification, load it back later, and export/import specs as JSON files — enabling scenario comparison, client handoffs, and cross-device use.
+
+#### What is a Specification?
+
+A **specification** (or "spec") is a named snapshot of all current input values. Unlike the auto-save that `localStorage` performs continuously, specifications are **intentionally saved** by the user and persist independently. Multiple specs can be stored at once — a user might have "Home 5kW No Battery", "Home 5kW With Battery", and "Office 100kW" all saved and switchable.
+
+#### 7.0 — Spec Selector in the Header (Top of Page)
+
+The primary entry point for all spec operations is a **Spec Selector** at the very top of the page — always visible, above all sections. It has three controls in a single row:
+
+```
+┌────────────────────────────────────────────────────────┐
+│  [▼ Home 5kW With Battery      ]  [Save]  [Save As...]  │
+└────────────────────────────────────────────────────────┘
+```
+
+- **Dropdown (left)** — shows the currently active spec name (or "Unsaved" if no spec is loaded). Clicking opens a list of all saved specs. Selecting one loads it immediately.
+- **Save (middle)** — overwrites the currently active spec with the current inputs. Disabled / shows "Unsaved" if no spec is active yet.
+- **Save As… (right)** — prompts for a name and saves as a new spec. Becomes the active spec.
+
+**Dropdown list appearance:**
+```
+┌───────────────────────────────────────────────┐
+│  ● Home 5kW With Battery   (active)           │
+│    Home 5kW No Battery                        │
+│    Office 100kW Commercial                    │
+│  ──────────────────────────────────────────── │
+│  + New (unsaved)                              │
+└───────────────────────────────────────────────┘
+```
+
+- The active spec is marked with a filled circle (●)
+- Selecting "New (unsaved)" clears the active spec label to "Unsaved" but does NOT reset inputs — the user continues editing
+- Scrollable if more than 5 specs are saved
+
+#### Spec Data Structure
+
+```json
+{
+  "id": "spec_1710000000000",
+  "name": "Home 5kW With Battery",
+  "savedAt": "2026-03-16T10:30:00.000Z",
+  "inputs": {
+    "electricityRate": 20,
+    "operatingWeeksPerYear": 52,
+    "operatingDaysPerWeek": 7,
+    "dailyEnergyConsumptionKWh": 10,
+    "solarCapacityKW": 5,
+    "peakSunHoursPerDay": 4,
+    "solarPricePerKW": 60000,
+    "miscInfraCosts": 30000,
+    "batteryPricePerKWh": 30000,
+    "batteryCapacityKWh": 12,
+    "pvForBatteryKW": 3,
+    "nighttimeLoadKW": 1,
+    "nighttimeDurationHours": 10,
+    "loanPrincipal": 0,
+    "annualInterestRate": 0,
+    "loanTermMonths": 60
+  }
+}
+```
+
+Specs are stored in `localStorage` under key `solarCalcSpecs` as a JSON array. Maximum of **20 saved specs** per device.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 7.0 | Spec Selector in header | Dropdown + Save + Save As… always visible at top of page |
+| 7.1 | Save As… | Prompts for name; saves to `localStorage`; becomes active spec in dropdown |
+| 7.2 | Save (overwrite) | Overwrites current active spec with current inputs; updates `savedAt` timestamp |
+| 7.3 | Load via dropdown | Selecting a spec from dropdown loads all its inputs and triggers full recalculation |
+| 7.4 | Delete Spec | Manage panel: each spec has a delete (×) button; confirmation before delete |
+| 7.5 | Rename Spec | Manage panel: inline edit of spec name |
+| 7.6 | Export specs as JSON | "Export All" downloads all saved specs as `solarcalc-specs-YYYY-MM-DD.json` |
+| 7.7 | Import specs from JSON | "Import" accepts a `.json` file; merges with existing (skips duplicates by name) |
+
+**Manage Specs panel** (accessible from dropdown or a gear icon):
+```
+┌─────────────────────────────────────────────┐
+│  SAVED SPECIFICATIONS                   [×] │
+│                                             │
+│  🏠 Home 5kW With Battery     [Edit] [Del]  │
+│     5 kW + 12 kWh • ₱20/kWh                │
+│     CAPEX ₱600,000 • Payback 4.8 yr        │
+│     Saved: Mar 16, 2026 10:30am            │
+│                                             │
+│  🏢 Office 100kW Commercial   [Edit] [Del]  │
+│     100 kW • ₱15/kWh                       │
+│     CAPEX ₱5,500,000 • Payback 3.2 yr      │
+│     Saved: Mar 16, 2026 11:00am            │
+│                                             │
+│  [Export All as JSON]  [Import from JSON]   │
+└─────────────────────────────────────────────┘
+```
+
+**Review checklist:**
+- [ ] Spec Selector (dropdown + Save + Save As…) visible at the very top of the page
+- [ ] Dropdown shows all saved spec names; active spec is marked
+- [ ] "Save As…" prompts for name, saves, and activates the new spec
+- [ ] "Save" overwrites the active spec silently (no prompt if already named)
+- [ ] Loading a spec from dropdown populates all 18 input fields correctly
+- [ ] Loading a spec triggers full recalculation — all KPIs update
+- [ ] Delete with confirmation removes spec from list and `localStorage`
+- [ ] Rename updates the spec name in `localStorage` and in the dropdown
+- [ ] Export downloads valid `.json` file with all saved specs
+- [ ] Import reads `.json` file and adds specs to the list (skips duplicates)
+- [ ] Max 20 specs enforced — "Saved specs limit reached" message if exceeded
+- [ ] Specs persist across page reloads, hard refresh, and browser restarts
+- [ ] No console errors on fresh load
+
+---
+
+## 14. Edge Cases
 
 | Scenario | Behavior |
 |----------|----------|
@@ -1218,7 +1451,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 
 ---
 
-## 14. Testing Checklist
+## 15. Testing Checklist
 
 - [ ] `node tests/calc.test.js` — all assertions pass
 - [ ] PWA installs on Android Chrome
@@ -1244,6 +1477,32 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 ---
 
 ## Changelog
+
+### v1.7.0 (2026-03-16) — PV Equipment Cost Formula & Preset Completeness
+- **Fixed:** `pvSystemCost` formula now uses `(solarCapacityKW + pvForBatteryKW) × solarPricePerKW` — all PV panels (daytime + battery-charging) are one purchase, priced together
+- **Fixed:** `totalCapex` = `totalPVCapex + batteryCost` only — `extraSolarCost` is no longer double-counted (it's informational breakdown shown in Section 3)
+- **Fixed:** Spreadsheet preset `dailyEnergyConsumptionKWh` corrected from 818 to 1,200 (= 300 kW × 4 PSH)
+- **Updated:** Battery Only preset table now lists all 15 parameters with rationale
+- **Updated:** Spreadsheet preset table now lists all 15 parameters including loan term
+- **Added:** Note on `extraSolarCost` — informational only, not added to `totalCapex`
+
+### v1.6.0 (2026-03-16) — Milestone Execution Rules
+- **Added:** Section 12 "Milestone Execution Rules" — 4 standing development rules to prevent regressions
+  - Rule 1: `calc.js` ↔ `state.js` field parity — every `calculateAll()` return field must exist in `defaultResults`
+  - Rule 2: Defensive rendering in `ui.js` — guard against `undefined`/`null` before calling number methods
+  - Rule 3: New input field registration checklist — 5 locations must be updated in sync
+  - Rule 4: No console errors on fresh load — mandatory gate for every milestone
+- **Added:** "Field parity" and "no console errors" checks to every milestone review checklist
+- **Renumbered:** Old Section 12 (Milestones) → 13; Edge Cases → 14; Testing → 15
+
+### v1.5.0 (2026-03-16)
+- **Added:** Milestone 7 "Save Specifications" — named save/load/export/import of input configurations
+- **Added:** Spec data structure (`id`, `name`, `savedAt`, `inputs`) stored in `localStorage` key `solarCalcSpecs`
+- **Added:** Saved Specs panel with card view (name, date, system size, CAPEX, payback)
+- **Added:** Export specs as `solarcalc-specs-YYYY-MM-DD.json`; import from `.json` file
+- **Added:** Max 20 specs per device limit
+- **Updated:** Milestone count from 6 to 7
+- **Clarified:** Hard refresh behavior — `localStorage` is not cleared on hard refresh; "Reset to Defaults" button is the correct way to restore defaults
 
 ### v1.4.0 (2026-03-16) — Battery Section Restructure
 - **Major Restructure:** Battery Storage section (Section 3) reorganized with new input fields
