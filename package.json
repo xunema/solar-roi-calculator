@@ -1,0 +1,19 @@
+{
+  "name": "solarcalc-ph",
+  "version": "1.1.0",
+  "description": "Solar ROI Calculator for the Philippines - Know your payback before you pay",
+  "type": "module",
+  "main": "js/app.js",
+  "scripts": {
+    "test": "node tests/calc.test.js"
+  },
+  "keywords": [
+    "solar",
+    "roi",
+    "calculator",
+    "philippines",
+    "pwa"
+  ],
+  "author": "",
+  "license": "MIT"
+}

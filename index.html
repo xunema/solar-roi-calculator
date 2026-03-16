@@ -4,21 +4,117 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SolarCalc PH ☀️ | Know Your Payback</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config for Dark Mode -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            teal: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Styles -->
   <style>
     * { font-family: 'Inter', system-ui, sans-serif; }
-    .kpi-value { font-size: 28px; font-weight: 700; }
-    @media (max-width: 768px) { .kpi-value { font-size: 22px; } }
-    .tooltip { display: none; }
-    .tooltip.active { display: block; }
+    
+    .kpi-value { 
+      font-size: 28px; 
+      font-weight: 700; 
+    }
+    
+    @media (max-width: 768px) { 
+      .kpi-value { font-size: 22px; } 
+    }
+    
+    /* Tooltip Styles */
+    .tooltip { 
+      display: none; 
+    }
+    
+    .tooltip.active { 
+      display: block; 
+    }
+    
+    /* Hide number input spinners */
     input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    
+    /* Layout Modes */
+    [data-layout="phone"] .kpi-sidebar {
+      position: relative !important;
+    }
+    
+    [data-layout="phone"] .main-content {
+      flex-direction: column !important;
+    }
+    
+    [data-layout="desktop"] .kpi-sidebar {
+      position: sticky;
+    }
+    
+    /* Dark Mode Styles */
+    .dark body {
+      background-color: #0f172a;
+      color: #f1f5f9;
+    }
+    
+    .dark .card {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+    
+    .dark .input-field {
+      background-color: #0f172a;
+      border-color: #334155;
+      color: #f1f5f9;
+    }
+    
+    .dark .section-header {
+      background-color: #1e293b;
+      border-color: #334155;
+    }
+    
+    /* Smooth transitions */
+    .card, .input-field {
+      transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+    }
   </style>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#0f766e">
 </head>
 <body class="bg-gray-50 min-h-screen">
   <!-- Header -->
-  <header class="bg-teal-700 text-white py-4 px-4 shadow-lg">
+  <header class="bg-teal-700 text-white py-4 px-4 shadow-lg dark:bg-teal-800">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-2">
         <span class="text-2xl">☀️</span>
@@ -27,147 +123,184 @@
           <p class="text-xs text-teal-200">Know your payback before you pay</p>
         </div>
       </div>
-      <button onclick="toggleOnboarding()" class="text-sm bg-teal-600 hover:bg-teal-500 px-3 py-1 rounded-lg transition">
-        ❓ Help
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- Theme Toggle -->
+        <button id="themeToggle" class="p-2 rounded-lg bg-teal-600 hover:bg-teal-500 transition" title="Toggle Theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <!-- Layout Toggle -->
+        <button id="layoutToggle" class="p-2 rounded-lg bg-teal-600 hover:bg-teal-500 transition" title="Toggle Layout">
+          <span id="layoutIcon">📱</span>
+        </button>
+        <!-- Help Button -->
+        <button id="helpBtn" class="text-sm bg-teal-600 hover:bg-teal-500 px-3 py-2 rounded-lg transition">
+          ❓ Help
+        </button>
+      </div>
     </div>
   </header>
 
-  <div class="max-w-7xl mx-auto p-4 lg:flex lg:gap-6">
+  <div class="max-w-7xl mx-auto p-4 lg:flex lg:gap-6 main-content">
     <!-- Input Sections -->
     <div class="lg:w-3/5 space-y-4">
       
       <!-- Section 1: Status Quo -->
-      <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+      <section class="card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="section-header bg-gray-100 px-4 py-3 border-b border-gray-200">
           <h2 class="font-semibold text-gray-800 flex items-center gap-2">
             <span>1️⃣</span> Status Quo
           </h2>
         </div>
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Electricity Rate -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Electricity Rate
-              <button onclick="toggleTooltip('rate-tip')" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
+              <button data-tooltip="rate-tip" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-              <input type="number" id="electricityRate" value="10" step="0.01" min="0"
-                class="w-full pl-8 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="electricityRate" step="0.01" min="0"
+                class="input-field w-full pl-8 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">/kWh</span>
             </div>
             <div id="rate-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              Your blended rate = Total Bill ÷ Total kWh consumed
+              Your blended rate = Total Bill ÷ Total kWh consumed. Typical: ₱9-12/kWh
             </div>
           </div>
           
+          <!-- Operating Weeks -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Operating Weeks/Year
             </label>
-            <input type="number" id="operatingWeeksPerYear" value="52" min="1" max="52"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              oninput="updateCalculations()">
+            <input type="number" id="operatingWeeksPerYear" min="1" max="52"
+              class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
           </div>
           
+          <!-- Operating Days -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Operating Days/Week
             </label>
-            <input type="number" id="operatingDaysPerWeek" value="7" min="1" max="7"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-              oninput="updateCalculations()">
+            <input type="number" id="operatingDaysPerWeek" min="1" max="7"
+              class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
           </div>
           
+          <!-- Daily Energy Consumption -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Annual Bill (Optional)
-              <button onclick="toggleTooltip('bill-tip')" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
+              Daily Energy Consumption
+              <button data-tooltip="consumption-tip" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
+            </label>
+            <div class="relative">
+              <input type="number" id="dailyEnergyConsumptionKWh" step="0.1" min="0"
+                class="input-field w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">kWh</span>
+            </div>
+            <div id="consumption-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              Average daily electricity consumption. Check your bill for monthly kWh and divide by 30.
+            </div>
+          </div>
+          
+          <!-- Annual Bill (Optional) -->
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Annual Bill (Optional - overrides projected cost)
+              <button data-tooltip="bill-tip" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-              <input type="number" id="annualBill" placeholder="e.g. 5000000" min="0"
-                class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="reverseCalculateRate()">
+              <input type="number" id="annualBill" placeholder="Enter to override projected cost" min="0"
+                class="input-field w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
             </div>
             <div id="bill-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              Enter your annual bill to auto-calculate your electricity rate
+              Enter your actual annual bill to override the projected cost calculation.
             </div>
           </div>
         </div>
       </section>
 
       <!-- Section 2: Solar System -->
-      <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+      <section class="card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="section-header bg-gray-100 px-4 py-3 border-b border-gray-200">
           <h2 class="font-semibold text-gray-800 flex items-center gap-2">
             <span>2️⃣</span> Solar System
           </h2>
         </div>
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Solar Capacity -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Solar Capacity
-              <button onclick="toggleTooltip('capacity-tip')" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
+              <button data-tooltip="capacity-tip" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
             </label>
             <div class="relative">
-              <input type="number" id="solarCapacityKW" value="10" step="0.1" min="0"
-                class="w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="solarCapacityKW" step="0.1" min="0"
+                class="input-field w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">kW</span>
             </div>
             <div id="capacity-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              Total solar panel capacity in kilowatts. Typical residential: 3-10 kW
+              Total solar panel capacity. Typical residential: 3-10 kW, Commercial: 50-500 kW
             </div>
           </div>
           
+          <!-- Peak Sun Hours -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Peak Sun Hours/Day
+              <button id="sunHoursBtn" class="text-blue-500 hover:text-blue-700 text-xs ml-1 underline">Calculate</button>
+              <button data-tooltip="sunhours-tip" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
             </label>
             <div class="relative">
-              <input type="number" id="peakSunHoursPerDay" value="4" step="0.1" min="0.5" max="8"
-                class="w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="peakSunHoursPerDay" step="0.1" min="0.5" max="8"
+                class="input-field w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">hrs</span>
+            </div>
+            <div id="sunhours-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+              Equivalent hours of full sun per day. Philippine average: 4-5 hrs.
+              <br><br>
+              <strong>External Resources:</strong><br>
+              🔗 <a href="https://www.google.com/get/sunroof" target="_blank" class="text-blue-600 underline">Google Project Sunroof</a><br>
+              🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Maps</a><br>
+              🔗 <a href="https://pvwatts.nrel.gov/" target="_blank" class="text-blue-600 underline">PVWatts Calculator</a>
             </div>
           </div>
           
+          <!-- Solar Price -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Solar Price/kW
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-              <input type="number" id="solarPricePerKW" value="30000" step="1000" min="0"
-                class="w-full pl-8 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="solarPricePerKW" step="1000" min="0"
+                class="input-field w-full pl-8 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">/kW</span>
             </div>
           </div>
           
+          <!-- Misc Costs -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Misc Infrastructure Costs
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-              <input type="number" id="miscInfraCosts" value="0" step="1000" min="0"
-                class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="miscInfraCosts" step="1000" min="0"
+                class="input-field w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
             </div>
           </div>
           
+          <!-- Battery Price -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Battery Price/kWh
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-              <input type="number" id="batteryPricePerKWh" value="12000" step="1000" min="0"
-                class="w-full pl-8 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="batteryPricePerKWh" step="1000" min="0"
+                class="input-field w-full pl-8 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">/kWh</span>
             </div>
           </div>
@@ -175,41 +308,42 @@
       </section>
 
       <!-- Section 3: Battery Storage -->
-      <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+      <section class="card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="section-header bg-gray-100 px-4 py-3 border-b border-gray-200">
           <h2 class="font-semibold text-gray-800 flex items-center gap-2">
             <span>3️⃣</span> Battery Storage
           </h2>
         </div>
         <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Nighttime Load -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Nighttime Load
-              <button onclick="toggleTooltip('load-tip')" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
+              <button data-tooltip="load-tip" class="text-gray-400 hover:text-gray-600 ml-1">❓</button>
             </label>
             <div class="relative">
-              <input type="number" id="nighttimeLoadKW" value="0" step="0.1" min="0"
-                class="w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="nighttimeLoadKW" step="0.1" min="0"
+                class="input-field w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">kW</span>
             </div>
             <div id="load-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              Average power consumption during nighttime hours
+              Average power consumption during nighttime hours (when solar isn't producing)
             </div>
           </div>
           
+          <!-- Nighttime Duration -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Nighttime Duration
             </label>
             <div class="relative">
-              <input type="number" id="nighttimeDurationHours" value="0" step="0.5" min="0" max="24"
-                class="w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="nighttimeDurationHours" step="0.5" min="0" max="24"
+                class="input-field w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">hrs</span>
             </div>
           </div>
           
+          <!-- Battery Calculations Display -->
           <div class="md:col-span-2 bg-teal-50 p-3 rounded-lg border border-teal-200">
             <div class="flex justify-between items-center">
               <span class="text-sm text-teal-800">Required Battery:</span>
@@ -224,45 +358,45 @@
       </section>
 
       <!-- Section 4: Financing -->
-      <section class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
+      <section class="card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="section-header bg-gray-100 px-4 py-3 border-b border-gray-200">
           <h2 class="font-semibold text-gray-800 flex items-center gap-2">
             <span>4️⃣</span> Financing
           </h2>
         </div>
         <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Loan Principal -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Loan Principal
             </label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-              <input type="number" id="loanPrincipal" value="0" step="10000" min="0"
-                class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="loanPrincipal" step="10000" min="0"
+                class="input-field w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
             </div>
           </div>
           
+          <!-- Interest Rate -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Annual Interest Rate
             </label>
             <div class="relative">
-              <input type="number" id="annualInterestRate" value="0" step="0.1" min="0" max="100"
-                class="w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="annualInterestRate" step="0.1" min="0" max="100"
+                class="input-field w-full px-3 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">%</span>
             </div>
           </div>
           
+          <!-- Loan Term -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
               Loan Term
             </label>
             <div class="relative">
-              <input type="number" id="loanTermMonths" value="60" step="12" min="1" max="360"
-                class="w-full px-3 pr-16 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                oninput="updateCalculations()">
+              <input type="number" id="loanTermMonths" step="12" min="1" max="360"
+                class="input-field w-full px-3 pr-16 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">months</span>
             </div>
           </div>
@@ -271,10 +405,10 @@
     </div>
 
     <!-- KPI Dashboard (Sticky Sidebar) -->
-    <div class="lg:w-2/5 mt-6 lg:mt-0">
+    <div class="lg:w-2/5 mt-6 lg:mt-0 kpi-sidebar">
       <div class="lg:sticky lg:top-4">
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div class="bg-teal-700 text-white px-4 py-3">
+        <div class="card bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <div class="bg-teal-700 text-white px-4 py-3 dark:bg-teal-800">
             <h2 class="font-semibold flex items-center gap-2">
               <span>📊</span> Results Dashboard
             </h2>
@@ -287,11 +421,18 @@
               <div id="totalCapex" class="kpi-value text-gray-900">₱0</div>
             </div>
             
+            <!-- Projected Annual Cost -->
+            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+              <div class="text-sm text-red-600 mb-1">Projected Annual Cost</div>
+              <div id="projectedAnnualCost" class="kpi-value text-red-600">₱0</div>
+              <div class="text-xs text-red-400">/year (without solar)</div>
+            </div>
+            
             <!-- Annual Savings -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="text-sm text-gray-600 mb-1">Annual Savings</div>
+            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+              <div class="text-sm text-green-600 mb-1">Annual Savings</div>
               <div id="annualSavings" class="kpi-value text-green-600">₱0</div>
-              <div class="text-xs text-gray-500">/year</div>
+              <div class="text-xs text-green-500">/year</div>
             </div>
             
             <!-- Simple ROI -->
@@ -313,10 +454,10 @@
               <div id="monthlySavings" class="kpi-value text-teal-600">₱0</div>
             </div>
             
-            <!-- Financing (conditional) -->
+            <!-- Financing Section (Conditional) -->
             <div id="financingSection" class="hidden space-y-4 pt-4 border-t border-gray-200">
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="text-sm text-gray-600 mb-1">Monthly Amortization</div>
+              <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                <div class="text-sm text-orange-600 mb-1">Monthly Amortization</div>
                 <div id="monthlyAmortization" class="kpi-value text-orange-600">₱0</div>
               </div>
               
@@ -325,8 +466,8 @@
                 <div id="netMonthlyCashFlow" class="kpi-value text-gray-400">₱0</div>
               </div>
               
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="text-sm text-gray-600 mb-1">Total Interest Paid</div>
+              <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                <div class="text-sm text-red-600 mb-1">Total Interest Paid</div>
                 <div id="totalInterestPaid" class="kpi-value text-red-600">₱0</div>
               </div>
             </div>
@@ -334,19 +475,19 @@
         </div>
         
         <!-- Quick Presets -->
-        <div class="mt-4 bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div class="mt-4 card bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <h3 class="text-sm font-semibold text-gray-700 mb-3">Quick Presets</h3>
           <div class="grid grid-cols-2 gap-2">
-            <button onclick="loadPreset('residential')" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+            <button id="preset-residential" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
               🏠 Residential
             </button>
-            <button onclick="loadPreset('commercial')" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+            <button id="preset-commercial" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
               🏢 Commercial
             </button>
-            <button onclick="loadPreset('batteryOnly')" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+            <button id="preset-batteryOnly" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
               🔋 Battery Only
             </button>
-            <button onclick="loadPreset('spreadsheet')" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+            <button id="preset-spreadsheet" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
               📋 Spreadsheet
             </button>
           </div>
@@ -356,7 +497,7 @@
   </div>
 
   <!-- Onboarding Modal -->
-  <div id="onboardingModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div id="onboardingModal" class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
       <div id="onboardingContent">
         <div class="text-center mb-4">
@@ -364,13 +505,13 @@
           <h2 class="text-xl font-bold mt-2">Welcome to SolarCalc PH</h2>
         </div>
         <div id="slideContent" class="text-gray-600 mb-6">
-          <!-- Slide content injected by JS -->
+          Loading...
         </div>
         <div class="flex justify-between">
-          <button id="prevBtn" onclick="prevSlide()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg hidden">
+          <button id="prevBtn" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg hidden">
             ← Back
           </button>
-          <button id="nextBtn" onclick="nextSlide()" class="ml-auto px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+          <button id="nextBtn" class="ml-auto px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
             Next →
           </button>
         </div>
@@ -384,306 +525,125 @@
     </div>
   </div>
 
+  <!-- Sun Hours Calculator Modal -->
+  <div id="sunHoursModal" class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">☀️ Sun Hours Calculator</h2>
+        <button class="close-modal text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Region</label>
+          <select id="sunHoursRegion" class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg">
+            <option value="4.0">Metro Manila (4.0 hrs)</option>
+            <option value="4.5">Region I - Ilocos (4.5 hrs)</option>
+            <option value="4.3">Region II - Cagayan Valley (4.3 hrs)</option>
+            <option value="4.4">Region III - Central Luzon (4.4 hrs)</option>
+            <option value="4.0">Region IV-A - Calabarzon (4.0 hrs)</option>
+            <option value="4.2">Region IV-B - Mimaropa (4.2 hrs)</option>
+            <option value="3.9">Region V - Bicol (3.9 hrs)</option>
+            <option value="4.1">Region VI - Western Visayas (4.1 hrs)</option>
+            <option value="4.2">Region VII - Central Visayas (4.2 hrs)</option>
+            <option value="4.0">Region VIII - Eastern Visayas (4.0 hrs)</option>
+            <option value="4.3">Region IX - Zamboanga (4.3 hrs)</option>
+            <option value="4.1">Region X - Northern Mindanao (4.1 hrs)</option>
+            <option value="4.2">Region XI - Davao (4.2 hrs)</option>
+            <option value="4.3">Region XII - Soccsksargen (4.3 hrs)</option>
+            <option value="3.9">Region XIII - Caraga (3.9 hrs)</option>
+            <option value="4.0">Cordillera (CAR) (4.0 hrs)</option>
+            <option value="4.1">Negros Island Region (4.1 hrs)</option>
+            <option value="4.4">BARMM (4.4 hrs)</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Roof Orientation</label>
+          <select id="roofOrientation" class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg">
+            <option value="0">South (Optimal)</option>
+            <option value="-0.2">Southeast/Southwest</option>
+            <option value="-0.4">East</option>
+            <option value="-0.4">West</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Roof Angle</label>
+          <select id="roofAngle" class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg">
+            <option value="0">15-30° (Standard/Optimal)</option>
+            <option value="-0.1">0-15° (Flat)</option>
+            <option value="-0.1">30-45° (Steep)</option>
+          </select>
+        </div>
+        
+        <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+          <div class="text-center">
+            <div class="text-sm text-teal-800 mb-1">Estimated Peak Sun Hours</div>
+            <div id="calculatedSunHours" class="text-3xl font-bold text-teal-700">4.0 hrs</div>
+          </div>
+        </div>
+        
+        <button id="applySunHours" class="w-full py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
+          Apply to Calculator
+        </button>
+      </div>
+      
+      <div class="mt-4 text-xs text-gray-500">
+        <strong>External References:</strong><br>
+        🔗 <a href="https://www.google.com/get/sunroof" target="_blank" class="text-blue-600 underline">Google Project Sunroof</a><br>
+        🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Maps</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Script -->
+  <script type="module" src="js/app.js"></script>
+  
+  <!-- Sun Hours Calculator Logic -->
   <script>
-    // State management
-    let currentSlide = 0;
-    const slides = [
-      {
-        title: "Welcome to SolarCalc PH",
-        content: "Calculate your solar ROI in real-time. This app helps you understand the financial benefits of installing solar panels and battery storage for your home or business."
-      },
-      {
-        title: "Find Your Electricity Rate",
-        content: "Look at your Meralco or utility bill. Divide your <strong>Total Bill Amount</strong> by <strong>Total kWh Consumed</strong> to get your blended rate per kWh. Typical range: ₱9-12/kWh."
-      },
-      {
-        title: "Solar System Sizing",
-        content: "Enter your desired solar capacity in kW. For reference: A typical Philippine home uses 3-10 kW systems. Peak sun hours average 4 hours/day nationwide."
-      },
-      {
-        title: "You're Ready!",
-        content: "Adjust any value and see results update instantly. Try the Quick Presets to explore different scenarios. All calculations happen on your device—no data is sent anywhere."
-      }
-    ];
-
-    // Format currency
-    function formatPeso(value) {
-      if (!isFinite(value) || isNaN(value)) return '—';
-      return '₱' + value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // Format percentage
-    function formatPercent(value) {
-      if (!isFinite(value) || isNaN(value)) return '—';
-      return value.toFixed(1) + '%';
-    }
-
-    // Format years
-    function formatYears(value) {
-      if (!isFinite(value) || isNaN(value)) return '—';
-      return value.toFixed(1) + ' years';
-    }
-
-    // Get input values
-    function getInputs() {
-      return {
-        electricityRate: parseFloat(document.getElementById('electricityRate').value) || 0,
-        operatingWeeksPerYear: parseInt(document.getElementById('operatingWeeksPerYear').value) || 0,
-        operatingDaysPerWeek: parseInt(document.getElementById('operatingDaysPerWeek').value) || 0,
-        solarCapacityKW: parseFloat(document.getElementById('solarCapacityKW').value) || 0,
-        peakSunHoursPerDay: parseFloat(document.getElementById('peakSunHoursPerDay').value) || 0,
-        solarPricePerKW: parseFloat(document.getElementById('solarPricePerKW').value) || 0,
-        miscInfraCosts: parseFloat(document.getElementById('miscInfraCosts').value) || 0,
-        batteryPricePerKWh: parseFloat(document.getElementById('batteryPricePerKWh').value) || 0,
-        nighttimeLoadKW: parseFloat(document.getElementById('nighttimeLoadKW').value) || 0,
-        nighttimeDurationHours: parseFloat(document.getElementById('nighttimeDurationHours').value) || 0,
-        loanPrincipal: parseFloat(document.getElementById('loanPrincipal').value) || 0,
-        annualInterestRate: parseFloat(document.getElementById('annualInterestRate').value) || 0,
-        loanTermMonths: parseInt(document.getElementById('loanTermMonths').value) || 0
-      };
-    }
-
-    // Calculate amortization
-    function calculateAmortization(principal, annualRate, months) {
-      if (principal <= 0 || months <= 0) return 0;
-      if (annualRate <= 0) return principal / months;
-      const monthlyRate = annualRate / 100 / 12;
-      const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-                      (Math.pow(1 + monthlyRate, months) - 1);
-      return payment;
-    }
-
-    // Update all calculations
-    function updateCalculations() {
-      const inputs = getInputs();
+    // Simple sun hours calculator (non-module, inline)
+    document.addEventListener('DOMContentLoaded', () => {
+      const regionSelect = document.getElementById('sunHoursRegion');
+      const orientationSelect = document.getElementById('roofOrientation');
+      const angleSelect = document.getElementById('roofAngle');
+      const resultDisplay = document.getElementById('calculatedSunHours');
+      const applyBtn = document.getElementById('applySunHours');
       
-      // Operating days per year
-      const operatingDaysPerYear = inputs.operatingWeeksPerYear * inputs.operatingDaysPerWeek;
-      
-      // Battery calculations
-      const requiredBatteryKWh = inputs.nighttimeLoadKW * inputs.nighttimeDurationHours;
-      const extraSolarForBatteryKW = requiredBatteryKWh > 0 && inputs.peakSunHoursPerDay > 0
-        ? requiredBatteryKWh / inputs.peakSunHoursPerDay 
-        : 0;
-      
-      // Total solar
-      const totalSolarKW = inputs.solarCapacityKW + extraSolarForBatteryKW;
-      
-      // CAPEX
-      const totalCapex = (totalSolarKW * inputs.solarPricePerKW) + 
-                         (requiredBatteryKWh * inputs.batteryPricePerKWh) + 
-                         inputs.miscInfraCosts;
-      
-      // Energy generation
-      const annualGenerationKWh = totalSolarKW * inputs.peakSunHoursPerDay * operatingDaysPerYear;
-      const annualSavings = annualGenerationKWh * inputs.electricityRate;
-      
-      // ROI
-      const simpleROI = totalCapex > 0 ? (annualSavings / totalCapex) * 100 : 0;
-      const paybackYears = annualSavings > 0 ? totalCapex / annualSavings : Infinity;
-      
-      // Monthly
-      const monthlySavings = annualSavings / 12;
-      const monthlyAmortization = calculateAmortization(
-        inputs.loanPrincipal, 
-        inputs.annualInterestRate, 
-        inputs.loanTermMonths
-      );
-      const netMonthlyCashFlow = monthlySavings - monthlyAmortization;
-      const totalLoanCost = monthlyAmortization * inputs.loanTermMonths;
-      const totalInterestPaid = totalLoanCost - inputs.loanPrincipal;
-      
-      // Update battery display
-      document.getElementById('requiredBatteryKWh').textContent = requiredBatteryKWh.toFixed(1) + ' kWh';
-      document.getElementById('extraSolarKW').textContent = extraSolarForBatteryKW.toFixed(1) + ' kW';
-      
-      // Update KPIs
-      document.getElementById('totalCapex').textContent = formatPeso(totalCapex);
-      document.getElementById('annualSavings').textContent = formatPeso(annualSavings);
-      document.getElementById('monthlySavings').textContent = formatPeso(monthlySavings);
-      
-      // ROI with color coding
-      const roiEl = document.getElementById('simpleROI');
-      roiEl.textContent = formatPercent(simpleROI);
-      roiEl.className = 'kpi-value ' + (simpleROI >= 15 ? 'text-green-600' : simpleROI >= 8 ? 'text-yellow-600' : 'text-red-600');
-      
-      // Payback with color coding
-      const paybackEl = document.getElementById('paybackYears');
-      paybackEl.textContent = formatYears(paybackYears);
-      if (isFinite(paybackYears)) {
-        paybackEl.className = 'kpi-value ' + (paybackYears <= 5 ? 'text-green-600' : paybackYears <= 8 ? 'text-yellow-600' : 'text-red-600');
-      }
-      
-      // Financing section
-      const financingSection = document.getElementById('financingSection');
-      if (inputs.loanPrincipal > 0) {
-        financingSection.classList.remove('hidden');
-        document.getElementById('monthlyAmortization').textContent = formatPeso(monthlyAmortization);
+      function calculateSunHours() {
+        const baseHours = parseFloat(regionSelect.value);
+        const orientationAdjust = parseFloat(orientationSelect.value);
+        const angleAdjust = parseFloat(angleSelect.value);
         
-        const cashflowEl = document.getElementById('netMonthlyCashFlow');
-        cashflowEl.textContent = formatPeso(netMonthlyCashFlow);
-        cashflowEl.className = 'kpi-value ' + (netMonthlyCashFlow >= 0 ? 'text-green-600' : 'text-red-600');
-        
-        document.getElementById('totalInterestPaid').textContent = formatPeso(totalInterestPaid);
-      } else {
-        financingSection.classList.add('hidden');
+        const result = Math.max(0.5, baseHours + orientationAdjust + angleAdjust);
+        resultDisplay.textContent = result.toFixed(1) + ' hrs';
+        return result;
       }
-    }
-
-    // Reverse calculate rate from annual bill
-    function reverseCalculateRate() {
-      const annualBill = parseFloat(document.getElementById('annualBill').value);
-      const operatingDaysPerYear = (parseInt(document.getElementById('operatingWeeksPerYear').value) || 0) * 
-                                   (parseInt(document.getElementById('operatingDaysPerWeek').value) || 0);
-      const solarCapacity = parseFloat(document.getElementById('solarCapacityKW').value) || 0;
-      const peakSunHours = parseFloat(document.getElementById('peakSunHoursPerDay').value) || 0;
       
-      if (annualBill > 0 && operatingDaysPerYear > 0 && solarCapacity > 0 && peakSunHours > 0) {
-        const annualGeneration = solarCapacity * peakSunHours * operatingDaysPerYear;
-        const rate = annualBill / annualGeneration;
-        if (rate > 0 && rate < 100) {
-          document.getElementById('electricityRate').value = rate.toFixed(2);
-          updateCalculations();
+      regionSelect?.addEventListener('change', calculateSunHours);
+      orientationSelect?.addEventListener('change', calculateSunHours);
+      angleSelect?.addEventListener('change', calculateSunHours);
+      
+      applyBtn?.addEventListener('click', () => {
+        const hours = calculateSunHours();
+        const peakSunInput = document.getElementById('peakSunHoursPerDay');
+        if (peakSunInput) {
+          peakSunInput.value = hours.toFixed(1);
+          peakSunInput.dispatchEvent(new Event('input'));
         }
-      }
-    }
-
-    // Toggle tooltip
-    function toggleTooltip(id) {
-      const tooltip = document.getElementById(id);
-      tooltip.classList.toggle('active');
-    }
-
-    // Onboarding functions
-    function toggleOnboarding() {
-      const modal = document.getElementById('onboardingModal');
-      modal.classList.toggle('hidden');
-      modal.classList.toggle('flex');
-      if (!modal.classList.contains('hidden')) {
-        currentSlide = 0;
-        renderSlide();
-      }
-    }
-
-    function renderSlide() {
-      const slide = slides[currentSlide];
-      document.querySelector('#onboardingContent h2').textContent = slide.title;
-      document.getElementById('slideContent').innerHTML = slide.content;
-      
-      document.getElementById('prevBtn').classList.toggle('hidden', currentSlide === 0);
-      document.getElementById('nextBtn').textContent = currentSlide === slides.length - 1 ? 'Get Started →' : 'Next →';
-      
-      // Update dots
-      for (let i = 0; i < 4; i++) {
-        document.getElementById(`dot${i}`).className = `w-2 h-2 rounded-full ${i === currentSlide ? 'bg-teal-600' : 'bg-gray-300'}`;
-      }
-    }
-
-    function nextSlide() {
-      if (currentSlide < slides.length - 1) {
-        currentSlide++;
-        renderSlide();
-      } else {
-        toggleOnboarding();
-      }
-    }
-
-    function prevSlide() {
-      if (currentSlide > 0) {
-        currentSlide--;
-        renderSlide();
-      }
-    }
-
-    // Load presets
-    function loadPreset(type) {
-      const presets = {
-        residential: {
-          electricityRate: 11,
-          operatingWeeksPerYear: 52,
-          operatingDaysPerWeek: 7,
-          solarCapacityKW: 5,
-          peakSunHoursPerDay: 4,
-          solarPricePerKW: 35000,
-          miscInfraCosts: 50000,
-          batteryPricePerKWh: 15000,
-          nighttimeLoadKW: 1.5,
-          nighttimeDurationHours: 8,
-          loanPrincipal: 200000,
-          annualInterestRate: 8,
-          loanTermMonths: 60
-        },
-        commercial: {
-          electricityRate: 10,
-          operatingWeeksPerYear: 50,
-          operatingDaysPerWeek: 6,
-          solarCapacityKW: 100,
-          peakSunHoursPerDay: 4,
-          solarPricePerKW: 30000,
-          miscInfraCosts: 500000,
-          batteryPricePerKWh: 12000,
-          nighttimeLoadKW: 20,
-          nighttimeDurationHours: 10,
-          loanPrincipal: 3500000,
-          annualInterestRate: 10,
-          loanTermMonths: 60
-        },
-        batteryOnly: {
-          electricityRate: 11,
-          operatingWeeksPerYear: 52,
-          operatingDaysPerWeek: 7,
-          solarCapacityKW: 0,
-          peakSunHoursPerDay: 4,
-          solarPricePerKW: 30000,
-          miscInfraCosts: 0,
-          batteryPricePerKWh: 8000,
-          nighttimeLoadKW: 5,
-          nighttimeDurationHours: 10,
-          loanPrincipal: 400000,
-          annualInterestRate: 0,
-          loanTermMonths: 60
-        },
-        spreadsheet: {
-          electricityRate: 11,
-          operatingWeeksPerYear: 50,
-          operatingDaysPerWeek: 6,
-          solarCapacityKW: 300,
-          peakSunHoursPerDay: 4,
-          solarPricePerKW: 40000,
-          miscInfraCosts: 2000000,
-          batteryPricePerKWh: 5000,
-          nighttimeLoadKW: 0,
-          nighttimeDurationHours: 0,
-          loanPrincipal: 14000000,
-          annualInterestRate: 12,
-          loanTermMonths: 60
-        }
-      };
-      
-      const p = presets[type];
-      Object.keys(p).forEach(key => {
-        const el = document.getElementById(key);
-        if (el) el.value = p[key];
+        document.getElementById('sunHoursModal')?.classList.add('hidden');
+        document.getElementById('sunHoursModal')?.classList.remove('flex');
       });
-      updateCalculations();
-    }
-
-    // Register service worker
+    });
+  </script>
+  
+  <!-- Service Worker Registration -->
+  <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
         .then((reg) => console.log('Service Worker registered:', reg))
         .catch((err) => console.log('Service Worker registration failed:', err));
     }
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      updateCalculations();
-      // Show onboarding on first visit
-      if (!localStorage.getItem('solarCalcOnboarded')) {
-        toggleOnboarding();
-        localStorage.setItem('solarCalcOnboarded', 'true');
-      }
-    });
   </script>
 </body>
 </html>
