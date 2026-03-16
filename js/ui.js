@@ -174,24 +174,29 @@ export function updateSection3Results(results) {
 
 /**
  * Update Section 4 (Financing) results panel
+ * Shows loan details if financing, cash purchase message if not
  * @param {Object} results - Calculation results
  */
 export function updateSection4Results(results) {
+  const section4Results = document.getElementById('section4-results');
+  const cashPurchaseMsg = document.getElementById('section4-cashPurchase');
   const monthlyPaymentEl = document.getElementById('section4-monthlyPayment');
   const totalLoanCostEl = document.getElementById('section4-totalLoanCost');
   const totalInterestEl = document.getElementById('section4-totalInterest');
-  const cashPurchaseEl = document.getElementById('section4-cashPurchase');
   
   if (results.hasFinancing) {
+    // Show loan results, hide cash purchase message
+    if (section4Results) section4Results.classList.remove('hidden');
+    if (cashPurchaseMsg) cashPurchaseMsg.classList.add('hidden');
+    
+    // Update loan values
     if (monthlyPaymentEl) monthlyPaymentEl.textContent = formatPeso(results.monthlyAmortization);
     if (totalLoanCostEl) totalLoanCostEl.textContent = formatPeso(results.totalLoanCost);
     if (totalInterestEl) totalInterestEl.textContent = formatPeso(results.totalInterestPaid);
-    if (cashPurchaseEl) cashPurchaseEl.classList.add('hidden');
   } else {
-    if (monthlyPaymentEl) monthlyPaymentEl.textContent = '—';
-    if (totalLoanCostEl) totalLoanCostEl.textContent = '—';
-    if (totalInterestEl) totalInterestEl.textContent = '—';
-    if (cashPurchaseEl) cashPurchaseEl.classList.remove('hidden');
+    // Hide loan results, show cash purchase message
+    if (section4Results) section4Results.classList.add('hidden');
+    if (cashPurchaseMsg) cashPurchaseMsg.classList.remove('hidden');
   }
 }
 

@@ -268,7 +268,14 @@ Total Loan Cost - Principal = Total Interest Paid
 Monthly Savings (from solar) - Monthly Payment = Net Monthly Cash Flow
 ```
 
-If loan principal is 0, the section shows: **"Cash purchase — no financing."**
+If loan principal is 0 or empty:
+- **Section 4 Results panel is hidden entirely**
+- A **"Cash purchase — no financing"** message displays instead of loan calculations
+- No financing KPIs appear in the Results Dashboard
+
+If loan principal > 0:
+- Section 4 Results panel shows loan details (Monthly Payment, Total Loan Cost, Total Interest)
+- Financing KPIs appear in the Results Dashboard
 
 If the net monthly cash flow is positive, the solar system pays for itself even during the loan period. If negative, the user is paying more per month than they save until the loan is paid off.
 
@@ -591,6 +598,7 @@ batteryChargePercent     = (dailyChargeCapacityKWh / requiredBatteryKWh) × 100
 
 #### Section 4 — Financing Results
 
+When `loanPrincipal > 0`:
 ```
 ┌─────────────────────────────────────────────┐
 │  LOAN SUMMARY                               │
@@ -601,7 +609,17 @@ batteryChargePercent     = (dailyChargeCapacityKWh / requiredBatteryKWh) × 100
 └─────────────────────────────────────────────┘
 ```
 
-If loanPrincipal is 0, show: "Cash purchase — no financing."
+When `loanPrincipal = 0` or empty:
+- **Section 4 Results panel is hidden**
+- A "💰 Cash Purchase — No Financing" message displays instead:
+```
+┌─────────────────────────────────────────────┐
+│  💰 Cash Purchase — No Financing            │
+│                                             │
+│  No loan costs. Your full monthly savings   │
+│  go straight to recovering your investment. │
+└─────────────────────────────────────────────┘
+```
 
 ### 6.4 Spreadsheet Verification (from "250915 SOLAR ROI .xlsx")
 
