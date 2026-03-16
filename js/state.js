@@ -223,7 +223,7 @@ export function createAppState() {
           electricityRate: 15,  // ₱15/kWh for commercial
           operatingWeeksPerYear: 50,
           operatingDaysPerWeek: 5,      // 5 days/week (business days)
-          dailyEnergyConsumptionKWh: 500,
+          dailyEnergyConsumptionKWh: 100, // 100 employees × 1 kWh/person/day
           solarCapacityKW: 100,
           peakSunHoursPerDay: 4,
           solarPricePerKW: 50000,       // ₱50,000/kW commercial bulk pricing (PRD 5.6)

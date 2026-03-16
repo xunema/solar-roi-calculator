@@ -384,7 +384,7 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| **Daily Consumption** | 500 kWh/day | 100 employees × 5 kWh/person/day (computers, AC, lighting, equipment) |
+| **Daily Consumption** | 100 kWh/day | 100 employees × 1 kWh/person/day (computers, AC, lighting, equipment) |
 | **Operating Schedule** | 5 days/week, 52 weeks/year | Standard business operations |
 | **Electricity Rate** | ₱15/kWh | Meralco commercial blended rate (lower per-kWh than residential) |
 | **Solar System Size** | 100 kW | Medium commercial rooftop or ground-mount installation |
