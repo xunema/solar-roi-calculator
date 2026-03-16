@@ -76,20 +76,11 @@ export function updateKPIDisplay(id, value, color = 'gray') {
  */
 export function updateBatteryDisplay(results) {
   const requiredEl = document.getElementById('requiredBatteryKWh');
-  const extraEl = document.getElementById('extraSolarKW');
-  
   if (requiredEl) {
     // Show "0 kWh" without decimal when zero
     requiredEl.textContent = results.requiredBatteryKWh === 0 
       ? '0 kWh' 
       : formatWithUnit(results.requiredBatteryKWh, 'kWh', 1);
-  }
-  
-  if (extraEl) {
-    // Show "0 kW" without decimal when zero
-    extraEl.textContent = results.extraSolarForBatteryKW === 0 
-      ? '0 kW' 
-      : formatWithUnit(results.extraSolarForBatteryKW, 'kW', 1);
   }
 }
 
@@ -134,12 +125,18 @@ export function updateSection1Results(results) {
  * @param {Object} results - Calculation results
  */
 export function updateSection2Results(results) {
+  const pvTotalCapacityEl = document.getElementById('section2-pvTotalCapacity');
   const pvCostEl = document.getElementById('section2-pvSystemCost');
   const totalPVCapexEl = document.getElementById('section2-totalPVCapex');
   const dailyGenEl = document.getElementById('section2-dailyGeneration');
   const dailySavingsEl = document.getElementById('section2-dailySavings');
   const annualGenEl = document.getElementById('section2-annualGeneration');
   
+  if (pvTotalCapacityEl) {
+    pvTotalCapacityEl.textContent = results.pvTotalCapacityKW === 0 
+      ? '0 kW' 
+      : results.pvTotalCapacityKW.toFixed(1) + ' kW';
+  }
   if (pvCostEl) pvCostEl.textContent = formatPeso(results.pvSystemCost);
   if (totalPVCapexEl) totalPVCapexEl.textContent = formatPeso(results.totalPVCapex);
   if (dailyGenEl) dailyGenEl.textContent = Math.round(results.dailyGenerationKWh) + ' kWh';
@@ -154,40 +151,54 @@ export function updateSection2Results(results) {
 export function updateSection3Results(results) {
   const batteryKWhEl = document.getElementById('section3-batteryKWh');
   const batteryCostEl = document.getElementById('section3-batteryCost');
-  const extraSolarEl = document.getElementById('section3-extraSolar');
-  const totalSolarEl = document.getElementById('section3-totalSolar');
+  const pvForBatteryEl = document.getElementById('section3-pvForBattery');
+  const dailyChargeEl = document.getElementById('section3-dailyCharge');
   const extraSolarCostEl = document.getElementById('section3-extraSolarCost');
+  const chargePercentEl = document.getElementById('section3-chargePercent');
   const noBatteryMsg = document.getElementById('section3-noBattery');
   
-  // Calculate extra PV cost
-  const extraSolarCost = results.extraSolarForBatteryKW * (results.solarPricePerKW || 0);
-  
   if (batteryKWhEl) {
-    // Show "0 kWh" without decimal when zero, otherwise show 1 decimal place
-    const batteryValue = results.requiredBatteryKWh === 0 
+    batteryKWhEl.textContent = results.batteryCapacityKWh === 0 
       ? '0 kWh' 
-      : results.requiredBatteryKWh.toFixed(1) + ' kWh';
-    batteryKWhEl.textContent = batteryValue;
+      : results.batteryCapacityKWh.toFixed(1) + ' kWh';
   }
   if (batteryCostEl) batteryCostEl.textContent = formatPeso(results.batteryCost);
   
-  if (extraSolarEl) {
-    extraSolarEl.textContent = results.extraSolarForBatteryKW === 0 
+  if (pvForBatteryEl) {
+    pvForBatteryEl.textContent = results.pvForBatteryKW === 0 
       ? '0 kW' 
-      : results.extraSolarForBatteryKW.toFixed(1) + ' kW';
+      : results.pvForBatteryKW.toFixed(1) + ' kW';
   }
   
-  if (totalSolarEl) {
-    totalSolarEl.textContent = results.totalSolarKW === 0 
-      ? '0 kW' 
-      : results.totalSolarKW.toFixed(1) + ' kW';
+  if (dailyChargeEl) {
+    dailyChargeEl.textContent = results.dailyChargeCapacityKWh === 0 
+      ? '0 kWh' 
+      : results.dailyChargeCapacityKWh.toFixed(1) + ' kWh';
   }
   
-  if (extraSolarCostEl) extraSolarCostEl.textContent = formatPeso(extraSolarCost);
+  if (extraSolarCostEl) extraSolarCostEl.textContent = formatPeso(results.extraSolarCost);
   
-  // Show/hide "No battery needed" message
+  if (chargePercentEl) {
+    const percent = results.batteryChargePercent || 0;
+    let colorClass = 'text-emerald-800';
+    let indicator = '';
+    if (percent >= 100) {
+      indicator = ' ✓';
+      colorClass = 'text-green-600';
+    } else if (percent >= 50) {
+      indicator = ' ⚠';
+      colorClass = 'text-yellow-600';
+    } else if (percent > 0) {
+      indicator = ' ⚠';
+      colorClass = 'text-red-600';
+    }
+    chargePercentEl.textContent = percent.toFixed(1) + '%' + indicator;
+    chargePercentEl.className = 'text-lg font-bold ' + colorClass;
+  }
+  
+  // Show/hide "No battery configured" message
   if (noBatteryMsg) {
-    if (results.requiredBatteryKWh === 0) {
+    if (results.batteryCapacityKWh === 0) {
       noBatteryMsg.classList.remove('hidden');
     } else {
       noBatteryMsg.classList.add('hidden');
@@ -282,6 +293,8 @@ export function updateAllInputs(inputs) {
     'solarPricePerKW',
     'miscInfraCosts',
     'batteryPricePerKWh',
+    'batteryCapacityKWh',
+    'pvForBatteryKW',
     'nighttimeLoadKW',
     'nighttimeDurationHours',
     'loanPrincipal',
@@ -367,6 +380,8 @@ export function getInputValues() {
     'solarPricePerKW',
     'miscInfraCosts',
     'batteryPricePerKWh',
+    'batteryCapacityKWh',
+    'pvForBatteryKW',
     'nighttimeLoadKW',
     'nighttimeDurationHours',
     'loanPrincipal',
@@ -407,6 +422,8 @@ export function bindInputHandlers(onChange) {
     'solarPricePerKW',
     'miscInfraCosts',
     'batteryPricePerKWh',
+    'batteryCapacityKWh',
+    'pvForBatteryKW',
     'nighttimeLoadKW',
     'nighttimeDurationHours',
     'loanPrincipal',

@@ -1,6 +1,6 @@
 # Project Requirements Document: SolarCalc PH — Solar ROI & Battery Calculator
 
-> **Version:** 1.3.0
+> **Version:** 1.4.0
 > **Date:** 2026-03-16
 > **Source:** `250915 SOLAR ROI .xlsx` spreadsheet + `Solar_ROI_App_PRD_v2.md`
 > **Status:** Draft
@@ -169,11 +169,10 @@ A visual badge indicates the value is user-overwritten (not computed).
 **The core question:** *How much solar energy will my system generate each day and year?*
 
 #### Key Inputs
-- **PV Capacity (kW)** — the "engine size" of the solar plant. Rule of thumb: 1 kW needs ~10 m² of unshaded roof.
+- **PV Capacity (kW)** — the "engine size" of the solar plant for direct daytime use. Rule of thumb: 1 kW needs ~10 m² of unshaded roof.
 - **Peak Sun Hours/day** — effective full-power output hours (see Section 7 for PSH calculator). Philippine default: 4.0 hours.
-- **Price per kW** — total installed cost per kilowatt of solar capacity.
+- **Price per kW** — total installed cost per kilowatt of solar capacity. Suggested default: ₱80,000/kW residential, ₱50,000/kW commercial. Users can adjust based on actual quotes.
 - **Misc Infrastructure** — roof waterproofing, structural reinforcement, rewiring, net-metering fees.
-- **Battery Price per kWh** — unit cost for battery storage (used in Section 3 calculations).
 
 #### Generation & Savings Chain
 ```
@@ -206,42 +205,49 @@ PV Capacity (kW) × Price per kW (₱/kW)
 **The core question:** *How many kWh of battery do I need, how much solar do I allocate to charge it, and is that enough?*
 
 #### Key Inputs
-- **Nighttime Load (kW)** — total power draw of appliances running on battery at night
-- **Nighttime Duration (hours)** — how many hours after sunset battery power is needed
-- **Solar Allocated for Battery (kW)** — how many kW of PV capacity the user dedicates to charging the battery (defaults to the computed `extraSolarForBatteryKW` but can be adjusted)
+- **Battery Price per kWh** — unit cost for battery storage capacity. Suggested default: ₱30,000/kWh residential, ₱12,000/kWh commercial. Users can adjust based on actual quotes.
+- **Battery Capacity (kWh)** — the size of the battery system you want to install. Can be entered manually or calculated from nighttime load needs.
+- **PV for Battery (kW)** — how many kW of PV capacity the user dedicates to charging the battery. This is additional capacity on top of the Section 2 PV Capacity.
+- **Nighttime kWh/Hr** — average power consumption per hour during nighttime (optional, for reference calculation). Note: This is measured in kW (kilowatts), which is equivalent to kWh/hr (kilowatt-hours per hour).
+- **Nighttime Duration (hours)** — how many hours after sunset battery power is needed (optional, for reference calculation)
 
-#### Battery Chain
+#### Battery Cost Chain
 ```
-Nighttime Load (kW) × Duration (hours)
-  = Required Battery (kWh)
-  × Battery Price (₱/kWh)
+Battery Capacity (kWh) × Battery Price per kWh (₱/kWh)
   = Battery Cost (₱)
 ```
 
-#### Solar Allocation for Battery Charging
+#### Battery Charge Percentage
 ```
-Required Battery (kWh) ÷ Peak Sun Hours (hrs/day)
-  = Extra PV Needed (kW)  — minimum solar to fully charge the battery each day
-
-Solar Allocated for Battery (kW) × Peak Sun Hours (hrs/day)
+PV for Battery (kW) × Peak Sun Hours (hrs/day)
   = Daily Charge Capacity (kWh)
 
-Battery Charge % = (Daily Charge Capacity / Required Battery kWh) × 100
+Battery Charge % = (Daily Charge Capacity / Battery Capacity kWh) × 100
 ```
 
 This tells the user: **"Your allocated solar can charge {batteryChargePercent}% of the battery per day."**
 
 - **100% or more** — fully charged every day (green indicator)
 - **50–99%** — partially charged; battery won't last the full nighttime duration (yellow indicator)
-- **Below 50%** — significantly under-allocated; consider adding more solar or reducing nighttime load (red indicator)
+- **Below 50%** — significantly under-allocated; consider adding more solar or reducing battery size (red indicator)
 
-#### Extra PV Cost
+#### Extra PV Cost for Battery Charging
 ```
-Extra PV Needed (kW) × PV Price per kW (₱/kW)
-  = Extra PV Cost (₱)
+PV for Battery (kW) × Price per kW (₱/kW, from Section 2)
+  = Extra PV Cost for Battery Charging (₱)
 ```
 
-If nighttime load and duration are both 0, the section shows: **"No battery needed."**
+This cost is added to the **Total PV CAPEX** shown in Section 2 results.
+
+#### Reference: Required Battery Calculation (Optional)
+```
+Nighttime kWh/Hr × Duration (hours)
+  = Reference Required Battery (kWh)
+```
+
+This calculation provides a reference/suggestion for battery sizing but does not auto-populate the Battery Capacity field. Users can use this as guidance when deciding on their actual battery size.
+
+> **Note:** Battery Capacity = 0 means "no battery needed." The Section 3 Results panel will show a friendly message: *"No battery configured — battery capacity is zero."*
 
 ---
 
@@ -302,14 +308,16 @@ If `annualBill` was entered as an override, note:
 
 **Part 3 — Battery Storage (if applicable)**
 
-If `nighttimeLoadKW > 0` and `nighttimeDurationHours > 0`:
+If `batteryCapacityKWh > 0`:
 
-> To power **{nighttimeLoadKW} kW** of nighttime load for **{nighttimeDurationHours} hours**, you need **{requiredBatteryKWh} kWh** of battery storage, costing **₱{batteryCost}**.
+> You've configured **{batteryCapacityKWh} kWh** of battery storage, costing **₱{batteryCost}**.
 >
-> Charging these batteries requires allocating an additional **{extraSolarForBatteryKW} kW** of solar capacity beyond your base {solarCapacityKW} kW — bringing your total PV to **{totalSolarKW} kW**. The extra panels add **₱{extraSolarForBatteryKW × solarPricePerKW}** to the system cost.
+> To charge these batteries, you've allocated **{pvForBatteryKW} kW** of solar capacity dedicated to battery charging — bringing your total PV to **{totalSolarKW} kW**. The extra panels add **₱{extraSolarCost}** to the system cost.
+>
+> With **{peakSunHoursPerDay} peak sun hours/day**, your allocated PV can generate **{dailyChargeCapacityKWh} kWh/day** for battery charging — that's **{batteryChargePercent}%** of your battery capacity charged per day.
 
 If no battery needed:
-> No battery storage needed — your facility operates only during daylight hours.
+> No battery storage configured — your facility operates with solar only during daylight hours.
 
 **Part 4 — The Investment: Total CAPEX**
 
@@ -366,14 +374,16 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| **Daily Consumption** | 30 kWh/day | Typical 3-bedroom home with AC, fridge, appliances |
+| **Daily Consumption** | 5 kWh/day | Typical small home with basic appliances, lighting, fans |
 | **Operating Schedule** | 7 days/week, 52 weeks/year | Home occupied daily |
-| **Electricity Rate** | ₱20/kWh | Meralco residential blended rate (higher due to lifeline subsidies, universal charges) |
+| **Electricity Rate** | ₱15/kWh | Uses app default — users should adjust based on their actual Meralco bill
 | **Solar System Size** | 5 kW | Typical residential rooftop installation |
-| **Solar Price** | ₱80,000/kW | **Retail/residential pricing** — higher per-kW cost due to lower volume, permits, smaller installer margins, consumer-grade equipment (e.g., Jackery, EcoFlow Delta pricing equivalent) |
-| **Battery Price** | ₱30,000/kWh | Consumer/residential battery storage pricing (portable power stations, home backup systems) |
-| **Nighttime Load** | 1.5 kW | Aircon (0.75-1.5 kW) + Fridge (0.05-0.1 kW) + Fans/Routers (0.1 kW) |
-| **Nighttime Duration** | 8 hours | 10pm - 6am typical usage |
+| **Solar Price** | ₱80,000/kW | **Suggested default** — retail/residential pricing. Users can adjust based on actual quotes. |
+| **Battery Price** | ₱30,000/kWh | **Suggested default** — typical consumer battery pricing. Users can adjust based on actual quotes. |
+| **Battery Capacity** | 12 kWh | 1.5 kW × 8 hours = 12 kWh for typical nighttime needs |
+| **PV for Battery** | 3 kW | 12 kWh ÷ 4 peak sun hours = 3 kW needed to fully charge |
+| **Nighttime kWh/Hr** | 1.5 kWh/hr | Aircon (0.75-1.5 kW) + Fridge (0.05-0.1 kW) + Fans/Routers (0.1 kW) — for reference only |
+| **Nighttime Duration** | 8 hours | 10pm - 6am typical usage — for reference only |
 | **Loan Principal** | ₱200,000 | Partial financing (~50% of system cost) |
 | **Interest Rate** | 8% | Typical personal/home improvement loan |
 
@@ -393,12 +403,14 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 |-----------|-------|-----------|
 | **Daily Consumption** | 100 kWh/day | 100 employees × 1 kWh/person/day (computers, AC, lighting, equipment) |
 | **Operating Schedule** | 5 days/week, 52 weeks/year | Standard business operations |
-| **Electricity Rate** | ₱15/kWh | Meralco commercial blended rate (lower per-kWh than residential) |
+| **Electricity Rate** | ₱15/kWh | Uses app default — users should adjust based on their actual Meralco bill
 | **Solar System Size** | 100 kW | Medium commercial rooftop or ground-mount installation |
 | **Solar Price** | ₱50,000/kW | **Commercial pricing** — lower per-kW due to bulk purchasing, streamlined permitting, industrial-grade equipment |
 | **Battery Price** | ₱12,000/kWh | Commercial/industrial LFP battery pricing (bulk procurement, rack-mounted systems) |
-| **Nighttime Load** | 15 kW | Security lights (0.5 kW) + Servers/Network (1 kW) + Refrigeration (2 kW) + CCTV (0.2 kW) + Emergency lighting (0.3 kW) + other 24/7 loads |
-| **Nighttime Duration** | 12 hours | 6pm - 6am business closure |
+| **Battery Capacity** | 180 kWh | 15 kW × 12 hours = 180 kWh for nighttime operations |
+| **PV for Battery** | 45 kW | 180 kWh ÷ 4 peak sun hours = 45 kW needed to fully charge |
+| **Nighttime kWh/Hr** | 15 kWh/hr | Security lights (0.5 kW) + Servers/Network (1 kW) + Refrigeration (2 kW) + CCTV (0.2 kW) + Emergency lighting (0.3 kW) + other 24/7 loads — for reference only |
+| **Nighttime Duration** | 12 hours | 6pm - 6am business closure — for reference only |
 | **Loan Principal** | ₱2,500,000 | Partial financing (~50% of system cost) |
 | **Interest Rate** | 10% | Typical commercial equipment financing |
 
@@ -418,8 +430,10 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 |-----------|-------|-----------|
 | **Solar System Size** | 0 kW | Existing system — adding only battery |
 | **Battery Price** | ₱25,000/kWh | Mid-range between residential and commercial |
-| **Nighttime Load** | 5 kW | Moderate backup load (essential circuits only) |
-| **Nighttime Duration** | 10 hours | Evening + early morning backup |
+| **Battery Capacity** | 50 kWh | 5 kW × 10 hours = 50 kWh backup capacity |
+| **PV for Battery** | 12.5 kW | 50 kWh ÷ 4 peak sun hours = 12.5 kW needed to fully charge |
+| **Nighttime kWh/Hr** | 5 kWh/hr | Moderate backup load (essential circuits only) — for reference only |
+| **Nighttime Duration** | 10 hours | Evening + early morning backup — for reference only |
 
 ---
 
@@ -432,9 +446,11 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 | **Daily Consumption** | 1,200 kWh/day | Spreadsheet assumption |
 | **Operating Schedule** | 6 days/week, 50 weeks/year (= 300 days) | Spreadsheet K5-K6 |
 | **Electricity Rate** | ₱11/kWh | Spreadsheet K4 |
-| **Solar System Size** | 300 kW | Spreadsheet K13 |
+| **Solar System Size** | 300 kW | Spreadsheet K13 (daytime use only) |
 | **Solar Price** | ₱40,000/kW | Spreadsheet K8 |
 | **Battery Price** | ₱5,000/kWh | Spreadsheet K9 (LFP bulk pricing) |
+| **Battery Capacity** | 0 kWh | Spreadsheet has no battery storage calculations |
+| **PV for Battery** | 0 kW | Spreadsheet has no battery storage calculations |
 | **Misc Costs** | ₱2,000,000 | Spreadsheet K10 |
 | **Loan Principal** | ₱14,000,000 | Spreadsheet S6 |
 | **Interest Rate** | 12% | Spreadsheet V5 |
@@ -459,19 +475,21 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 
 | Field | Type | Default | Unit | Validation | Section | Spreadsheet Cell(s) |
 |-------|------|---------|------|------------|---------|---------------------|
-| `electricityRate` | number | 15.00 | ₱/kWh | > 0, max 100 | 1 | K4 (COST PER KW = 11) |
+| `electricityRate` | number | 20.00 | ₱/kWh | > 0, max 100 | 1 | K4 (COST PER KW = 11) |
 | `operatingWeeksPerYear` | number | 52 | weeks | 1–52, integer | 1 | K5 (50) |
 | `operatingDaysPerWeek` | number | 7 | days | 1–7, integer | 1 | K6 (6) |
-| `dailyEnergyConsumptionKWh` | number | 50 | kWh | ≥ 0 | 1 | — |
+| `dailyEnergyConsumptionKWh` | number | 10 | kWh | ≥ 0 | 1 | — |
 | `projectedAnnualCost` | number | computed | ₱ | computed, overwritable | 1 | — |
 | `annualBill` | number | null | ₱ | ≥ 0 or null | 1 | O5 (5,000,000) |
-| `solarCapacityKW` | number | 10 | kW | > 0, max 100,000 | 2 | K13 (300) |
+| `solarCapacityKW` | number | 1 | kW | > 0, max 100,000 | 2 | K13 (300) |
 | `peakSunHoursPerDay` | number | 4.0 | hours | 0.5–8, step 0.1 | 2 | K7 (4) |
-| `solarPricePerKW` | number | 30,000 | ₱/kW | > 0 | 2 | K8 (40,000) |
-| `miscInfraCosts` | number | 0 | ₱ | ≥ 0 | 2 | K10 (2,000,000) |
-| `batteryPricePerKWh` | number | 12,000 | ₱/kWh | > 0 | 2 | K9 (5,000) |
-| `nighttimeLoadKW` | number | 0 | kW | ≥ 0 | 3 | — |
-| `nighttimeDurationHours` | number | 0 | hours | ≥ 0, max 24 | 3 | — |
+| `solarPricePerKW` | number | 60,000 | ₱/kW | > 0 | 2 | K8 (40,000) |
+| `miscInfraCosts` | number | 30,000 | ₱ | ≥ 0 | 2 | K10 (2,000,000) |
+| `batteryPricePerKWh` | number | 30,000 | ₱/kWh | > 0 | 3 | K9 (5,000) |
+| `batteryCapacityKWh` | number | 5 | kWh | ≥ 0 | 3 | — |
+| `pvForBatteryKW` | number | 1 | kW | ≥ 0 | 3 | — |
+| `nighttimeLoadKW` | number | 1 | kW | ≥ 0 | 3 | — |
+| `nighttimeDurationHours` | number | 10 | hours | ≥ 0, max 24 | 3 | — |
 | `loanPrincipal` | number | 0 | ₱ | ≥ 0 | 4 | S6 (14,000,000) |
 | `annualInterestRate` | number | 0 | % | 0–100 | 4 | V5 (12%) |
 | `loanTermMonths` | number | 60 | months | 1–360, integer | 4 | S5 (60) |
@@ -489,12 +507,14 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 | `dailyGenerationKWh` | `solarCapacityKW × peakSunHoursPerDay` | kWh | 2 |
 | `dailySavings` | `dailyGenerationKWh × electricityRate` | ₱/day | 2 |
 | `annualGenerationKWh` | `totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear` | kWh | 2 |
+| `pvTotalCapacityKW` | `solarCapacityKW + pvForBatteryKW` | kW | 2 |
 | `requiredBatteryKWh` | `nighttimeLoadKW × nighttimeDurationHours` | kWh | 3 |
-| `batteryCost` | `requiredBatteryKWh × batteryPricePerKWh` | ₱ | 3 |
-| `extraSolarForBatteryKW` | `IF requiredBatteryKWh > 0 THEN requiredBatteryKWh / peakSunHoursPerDay ELSE 0` | kW | 3 |
-| `batteryChargePercent` | `IF requiredBatteryKWh > 0 THEN (extraSolarForBatteryKW × peakSunHoursPerDay / requiredBatteryKWh) × 100 ELSE 0` — shows if allocated solar is sufficient to fully charge the battery each day | % | 3 |
-| `totalSolarKW` | `solarCapacityKW + extraSolarForBatteryKW` | kW | — |
-| `totalCapex` | `totalPVCapex + batteryCost + (extraSolarForBatteryKW × solarPricePerKW)` — see Section 2 (PV System) + Section 3 (Battery Storage) | ₱ | Dashboard |
+| `batteryCost` | `batteryCapacityKWh × batteryPricePerKWh` | ₱ | 3 |
+| `dailyChargeCapacityKWh` | `pvForBatteryKW × peakSunHoursPerDay` | kWh | 3 |
+| `batteryChargePercent` | `IF batteryCapacityKWh > 0 THEN (dailyChargeCapacityKWh / batteryCapacityKWh) × 100 ELSE 0` — shows what % of battery can be charged per day with allocated PV | % | 3 |
+| `extraSolarCost` | `pvForBatteryKW × solarPricePerKW` | ₱ | 3 |
+| `totalSolarKW` | `solarCapacityKW + pvForBatteryKW` | kW | — |
+| `totalCapex` | `totalPVCapex + batteryCost + extraSolarCost` — Total investment = PV System (Section 2) + Battery Storage (Section 3) + Extra PV for Battery (Section 3) | ₱ | Dashboard |
 | `annualSavings` | `annualGenerationKWh × electricityRate` — tooltip: `dailySavings × operatingDaysPerYear` | ₱ | Dashboard |
 | `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` — Annual Savings ÷ Total CAPEX. Measures what % of investment is recovered each year. Higher = faster recovery. | % | Dashboard |
 | `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` — the inverse of ROI: how many years until CAPEX is fully recovered. | years | Dashboard |
@@ -544,6 +564,7 @@ When `annualBill` is entered, it overrides `projectedAnnualCost` and `projectedM
 ┌─────────────────────────────────────────────┐
 │  PV SYSTEM OUTPUT                           │
 │                                             │
+│  PV Total Capacity        13.0 kW           │  ← NEW: shows total including battery PV
 │  PV Equipment Cost        ₱300,000.00       │
 │  Total PV CAPEX           ₱300,000.00       │
 │  Daily Generation         40.0 kWh/day      │
@@ -552,10 +573,11 @@ When `annualBill` is entered, it overrides `projectedAnnualCost` and `projectedM
 └─────────────────────────────────────────────┘
 ```
 
-> **Dashboard link:** Total PV CAPEX feeds into the Dashboard's **Total CAPEX** KPI. Total CAPEX = PV System cost (Section 2) + Battery Storage cost (Section 3). Tapping the Total CAPEX KPI card scrolls back to Section 2.
+> **Dashboard link:** Total PV CAPEX feeds into the Dashboard's **Total CAPEX** KPI. Total CAPEX = PV System cost (Section 2) + Battery Storage cost (Section 3) + Extra PV for Battery (Section 3). Tapping the Total CAPEX KPI card scrolls back to Section 2.
 
 **Formulas:**
 ```
+pvTotalCapacityKW   = solarCapacityKW + pvForBatteryKW
 pvSystemCost        = solarCapacityKW × solarPricePerKW
 totalPVCapex        = pvSystemCost + miscInfraCosts
 dailyGenerationKWh  = solarCapacityKW × peakSunHoursPerDay
@@ -569,13 +591,17 @@ annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
 
 ```
 ┌─────────────────────────────────────────────┐
-│  BATTERY REQUIREMENTS                       │
+│  BATTERY STORAGE                            │
 │                                             │
-│  Required Battery         40.0 kWh          │
-│  Battery Cost             ₱480,000.00       │
-│  Extra PV for Charging    10.0 kW           │
-│  Extra PV Cost            ₱300,000.00       │
-│  Battery Charge %         100.0% ✓          │
+│  Battery Capacity         40.0 kWh          │  ← User input (not auto-calculated)
+│  Battery Cost             ₱480,000.00       │  ← batteryCapacityKWh × batteryPricePerKWh
+│  PV for Battery           10.0 kW           │  ← User input for dedicated charging
+│  Extra PV Cost            ₱300,000.00       │  ← pvForBatteryKW × solarPricePerKW
+│  Daily Charge Capacity    40.0 kWh/day      │  ← pvForBatteryKW × peakSunHoursPerDay
+│  Battery Charge %         100.0% ✓          │  ← (dailyChargeCapacity / batteryCapacity) × 100
+│                                             │
+│  ── Reference Calculation ──                │
+│  Required Battery (Ref)   40.0 kWh          │  ← nighttimeLoadKW × nighttimeDurationHours
 └─────────────────────────────────────────────┘
 ```
 
@@ -584,16 +610,23 @@ annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
 - **50–99%** — yellow warning, partial charge only
 - **< 50%** — red alert, significantly under-allocated
 
-If nighttimeLoadKW and nighttimeDurationHours are both 0, show: "No battery needed."
+If batteryCapacityKWh is 0, show: **"No battery configured — battery capacity is zero."**
 
 **Formulas:**
 ```
+INPUT FIELDS (Section 3):
+batteryCapacityKWh       = User input (default 0, can use requiredBatteryKWh as reference)
+pvForBatteryKW           = User input (default 0, can be calculated from battery capacity needs)
+batteryPricePerKWh       = User input (suggested: ₱30,000 residential, ₱12,000 commercial)
+
+COMPUTED VALUES:
+batteryCost              = batteryCapacityKWh × batteryPricePerKWh
+extraSolarCost           = pvForBatteryKW × solarPricePerKW
+dailyChargeCapacityKWh   = pvForBatteryKW × peakSunHoursPerDay
+batteryChargePercent     = IF batteryCapacityKWh > 0 THEN (dailyChargeCapacityKWh / batteryCapacityKWh) × 100 ELSE 0
+
+REFERENCE CALCULATION (for guidance only):
 requiredBatteryKWh       = nighttimeLoadKW × nighttimeDurationHours
-batteryCost              = requiredBatteryKWh × batteryPricePerKWh
-extraSolarForBatteryKW   = requiredBatteryKWh / peakSunHoursPerDay
-extraSolarCost           = extraSolarForBatteryKW × solarPricePerKW
-dailyChargeCapacityKWh   = extraSolarForBatteryKW × peakSunHoursPerDay
-batteryChargePercent     = (dailyChargeCapacityKWh / requiredBatteryKWh) × 100
 ```
 
 #### Section 4 — Financing Results
@@ -1035,7 +1068,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 | 2.6 | Results Dashboard with section references | All 11 KPIs display; tapping KPI scrolls to source section |
 
 **Review checklist:**
-- [ ] All 16 input fields render with correct labels, defaults, and units
+- [ ] All 18 input fields render with correct labels, defaults, and units
 - [ ] Each section shows its own results panel that updates in real time
 - [ ] Results Dashboard shows all 11 KPIs
 - [ ] Tapping a KPI card scrolls to the source section
@@ -1161,7 +1194,7 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 - [ ] PWA installs on Android Chrome
 - [ ] PWA installs on iOS Safari
 - [ ] App works fully offline after first load
-- [ ] All 16 input fields render with correct labels, defaults, tooltips
+- [ ] All 18 input fields render with correct labels, defaults, tooltips
 - [ ] All 11 KPI cards in Results Dashboard render and update in real time
 - [ ] Each section displays its own inline results panel
 - [ ] KPI cards navigate to source section on tap/click
@@ -1181,6 +1214,26 @@ Development is organized into 6 milestones. Each milestone produces a reviewable
 ---
 
 ## Changelog
+
+### v1.4.0 (2026-03-16) — Battery Section Restructure
+- **Major Restructure:** Battery Storage section (Section 3) reorganized with new input fields
+  - **Moved:** `batteryPricePerKWh` from Section 2 to Section 3 (now a battery-specific input)
+  - **Added:** `batteryCapacityKWh` input field — user-defined battery size (not auto-calculated from load)
+  - **Added:** `pvForBatteryKW` input field — dedicated PV capacity for battery charging
+  - **Added:** `dailyChargeCapacityKWh` computed field — shows how much the allocated PV can charge per day
+  - **Updated:** `batteryChargePercent` formula now uses user inputs: `(pvForBatteryKW × peakSunHours) / batteryCapacityKWh × 100`
+  - **Updated:** `batteryCost` formula now uses user input: `batteryCapacityKWh × batteryPricePerKWh`
+  - **Updated:** `extraSolarCost` formula: `pvForBatteryKW × solarPricePerKW` (replaces calculated extraSolarForBatteryKW)
+  - **Reference only:** Nighttime kWh/Hr and Nighttime Duration now provide guidance for battery sizing but don't auto-populate Battery Capacity
+- **Updated:** Section 2 Results now shows **PV Total Capacity** (`solarCapacityKW + pvForBatteryKW`) as first line
+- **Updated:** Pricing philosophy — Solar Price/kW and Battery Price/kWh are now **editable defaults** (suggestions, not locked values)
+- **Updated:** Residential preset defaults — 5 kWh/day consumption, 7 days/week operation, 12 kWh battery, 3 kW PV for battery, ₱15/kWh electricity rate (uses app default)
+- **Updated:** Commercial preset defaults — 100 kWh/day consumption (100 employees × 1 kWh/person), 5 days/week operation, 180 kWh battery, 45 kW PV for battery, ₱15/kWh electricity rate (uses app default)
+- **Removed:** Preset-specific electricity rates (₱20/kWh residential, ₱15/kWh commercial) — both now use the app default ₱15/kWh with guidance for users to adjust based on actual bills
+- **Updated:** Input field count from 16 to 18 (added batteryCapacityKWh and pvForBatteryKW)
+- **Updated:** Narrative (Story Mode) Part 3 to reflect new battery input structure
+- **Updated:** All preset tables to include new battery fields with calculated examples
+- **Updated:** PRD version to 1.4.0
 
 ### v1.3.0 (2026-03-16)
 - **Added:** Section 5 "Section-by-Section Explanation" — detailed walkthrough of all 4 input sections with user stories, formulas, and examples

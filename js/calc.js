@@ -239,6 +239,8 @@ export function calculateAll(inputs) {
     solarPricePerKW = 0,
     miscInfraCosts = 0,
     batteryPricePerKWh = 0,
+    batteryCapacityKWh = 0,
+    pvForBatteryKW = 0,
     nighttimeLoadKW = 0,
     nighttimeDurationHours = 0,
     loanPrincipal = 0,
@@ -255,15 +257,29 @@ export function calculateAll(inputs) {
   // If annual bill is provided, use it instead (but keep projected for reference)
   const effectiveAnnualCost = annualBill !== null && annualBill !== undefined ? annualBill : projectedAnnualCost;
 
-  // Step 3: Battery calculations
+  // Step 3: Battery calculations (PRD v1.4.0)
+  // Reference calculation (for guidance only)
   const requiredBatteryKWh = calculateRequiredBatteryKWh(nighttimeLoadKW, nighttimeDurationHours);
-  const extraSolarForBatteryKW = calculateExtraSolarForBatteryKW(requiredBatteryKWh, peakSunHoursPerDay);
+  // User-defined battery capacity (primary input)
+  const effectiveBatteryCapacityKWh = batteryCapacityKWh || 0;
+  // Daily charge capacity from allocated PV
+  const dailyChargeCapacityKWh = (pvForBatteryKW || 0) * (peakSunHoursPerDay || 0);
+  // Battery charge percentage
+  const batteryChargePercent = effectiveBatteryCapacityKWh > 0
+    ? (dailyChargeCapacityKWh / effectiveBatteryCapacityKWh) * 100
+    : 0;
 
-  // Step 4: Total solar capacity
-  const totalSolarKW = calculateTotalSolarKW(solarCapacityKW, extraSolarForBatteryKW);
+  // Step 4: Total solar capacity (PRD v1.4.0: user-defined pvForBatteryKW)
+  const totalSolarKW = calculateTotalSolarKW(solarCapacityKW, pvForBatteryKW);
+  // PV Total Capacity for Section 2 display
+  const pvTotalCapacityKW = (solarCapacityKW || 0) + (pvForBatteryKW || 0);
 
-  // Step 5: CAPEX
-  const totalCapex = calculateTotalCapex(totalSolarKW, solarPricePerKW, requiredBatteryKWh, batteryPricePerKWh, miscInfraCosts);
+  // Step 5: CAPEX calculations (PRD v1.4.0)
+  const pvSystemCost = (solarCapacityKW || 0) * (solarPricePerKW || 0);
+  const totalPVCapex = pvSystemCost + (miscInfraCosts || 0);
+  const batteryCost = effectiveBatteryCapacityKWh * (batteryPricePerKWh || 0);
+  const extraSolarCost = (pvForBatteryKW || 0) * (solarPricePerKW || 0);
+  const totalCapex = totalPVCapex + batteryCost + extraSolarCost;
 
   // Step 6: Energy generation and savings
   const annualGenerationKWh = calculateAnnualGenerationKWh(totalSolarKW, peakSunHoursPerDay, operatingDaysPerYear);
@@ -280,14 +296,11 @@ export function calculateAll(inputs) {
   const totalLoanCost = calculateTotalLoanCost(monthlyAmortization, loanTermMonths);
   const totalInterestPaid = calculateTotalInterestPaid(totalLoanCost, loanPrincipal);
 
-  // Step 9: Per-section result fields (PRD v1.3)
+  // Step 9: Per-section result fields
   const annualConsumptionKWh = (dailyEnergyConsumptionKWh || 0) * operatingDaysPerYear;
   const projectedMonthlyCost = projectedAnnualCost / 12;
-  const pvSystemCost = (solarCapacityKW || 0) * (solarPricePerKW || 0);
-  const totalPVCapex = pvSystemCost + (miscInfraCosts || 0);
   const dailyGenerationKWh = (solarCapacityKW || 0) * (peakSunHoursPerDay || 0);
   const dailySavings = dailyGenerationKWh * (electricityRate || 0);
-  const batteryCost = (requiredBatteryKWh || 0) * (batteryPricePerKWh || 0);
 
   return {
     // Section 1: Status Quo results
@@ -299,21 +312,25 @@ export function calculateAll(inputs) {
     effectiveAnnualCost,
 
     // Section 2: PhotoVoltaic System results
+    pvTotalCapacityKW,       // NEW: Total PV capacity including battery PV
     pvSystemCost,
     totalPVCapex,
     dailyGenerationKWh,
     dailySavings,
     annualGenerationKWh,
     totalSolarKW,
+    solarPricePerKW,         // Needed for extra PV cost calculation in Section 3
 
-    // Section 3: Battery Storage results
-    requiredBatteryKWh,
+    // Section 3: Battery Storage results (PRD v1.4.0)
+    batteryCapacityKWh: effectiveBatteryCapacityKWh,
     batteryCost,
-    extraSolarForBatteryKW,
-    batteryChargePercent: requiredBatteryKWh > 0
-      ? ((extraSolarForBatteryKW * (peakSunHoursPerDay || 0)) / requiredBatteryKWh) * 100
-      : 0,
-    solarPricePerKW,  // Needed for extra PV cost calculation
+    pvForBatteryKW,
+    dailyChargeCapacityKWh,
+    extraSolarCost,
+    batteryChargePercent,
+    requiredBatteryKWh,      // Reference calculation for guidance
+    // Backward compatibility (deprecated but kept for tests)
+    extraSolarForBatteryKW: pvForBatteryKW,
 
     // Section 4: Financing results
     monthlyAmortization,

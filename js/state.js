@@ -9,23 +9,25 @@ import { calculateAll } from './calc.js';
  * Default input values based on PRD specifications
  */
 export const defaultInputs = {
-  // Section 1: Status Quo
-  electricityRate: 15.00,  // Updated: ₱15/kWh default (commercial baseline)
+  // Section 1: Status Quo (Home defaults)
+  electricityRate: 20.00,        // ₱20/kWh for residential
   operatingWeeksPerYear: 52,
   operatingDaysPerWeek: 7,
-  dailyEnergyConsumptionKWh: 50,
+  dailyEnergyConsumptionKWh: 10, // 10 kWh/day typical small home
   annualBill: null, // null means use projected cost
   
-  // Section 2: PhotoVoltaic System
-  solarCapacityKW: 10,
+  // Section 2: PhotoVoltaic System (Home defaults)
+  solarCapacityKW: 1,            // 1 kW starter system
   peakSunHoursPerDay: 4.0,
-  solarPricePerKW: 30000,
-  miscInfraCosts: 0,
-  batteryPricePerKWh: 12000,
+  solarPricePerKW: 60000,        // ₱60,000/kW residential
+  miscInfraCosts: 30000,         // Permits, installation overhead
   
-  // Section 3: Battery Storage
-  nighttimeLoadKW: 0,
-  nighttimeDurationHours: 0,
+  // Section 3: Battery Storage (Home defaults)
+  batteryPricePerKWh: 30000,     // ₱30,000/kWh residential
+  batteryCapacityKWh: 5,         // 5 kWh battery for nighttime backup
+  pvForBatteryKW: 1,             // 1 kW dedicated to charging battery
+  nighttimeLoadKW: 1,            // Reference: 1 kWh/hr nighttime consumption
+  nighttimeDurationHours: 10,     // Reference: 10 hours of backup needed
   
   // Section 4: Financing
   loanPrincipal: 0,
@@ -37,37 +39,40 @@ export const defaultInputs = {
  * Default calculated results (initial state)
  */
 export const defaultResults = {
-  // Section 1: Status Quo (updated for ₱15/kWh default)
+  // Section 1: Status Quo (Home defaults: 10kWh × 364 days × ₱20)
   operatingDaysPerYear: 364,
-  annualConsumptionKWh: 18200,
-  dailyEnergyConsumptionKWh: 50,
-  projectedAnnualCost: 273000,  // 50 * 364 * 15
-  projectedMonthlyCost: 22750,  // 273000 / 12
-  effectiveAnnualCost: 273000,
-  // Section 2: PhotoVoltaic System
-  pvSystemCost: 300000,
-  totalPVCapex: 300000,
-  dailyGenerationKWh: 40,
-  dailySavings: 600,  // 40 * 15
-  annualGenerationKWh: 14560,
-  totalSolarKW: 10,
-  // Section 3: Battery Storage
-  requiredBatteryKWh: 0,
-  batteryCost: 0,
-  extraSolarForBatteryKW: 0,
-  batteryChargePercent: 0,
-  solarPricePerKW: 30000,
+  annualConsumptionKWh: 3640,    // 10 × 364
+  dailyEnergyConsumptionKWh: 10,
+  projectedAnnualCost: 72800,    // 3640 × 20
+  projectedMonthlyCost: 6066.67, // 72800 / 12
+  effectiveAnnualCost: 72800,
+  // Section 2: PhotoVoltaic System (Home defaults)
+  pvSystemCost: 60000,           // 1 × 60000
+  totalPVCapex: 90000,           // 60000 + 30000
+  dailyGenerationKWh: 4,         // 1 × 4
+  dailySavings: 80,              // 4 × 20
+  annualGenerationKWh: 2912,     // 2 × 4 × 364
+  totalSolarKW: 2,               // 1 + 1
+  // Section 3: Battery Storage (Home defaults)
+  requiredBatteryKWh: 10,        // 1 × 10 (reference)
+  batteryCapacityKWh: 5,
+  batteryCost: 150000,           // 5 × 30000
+  pvForBatteryKW: 1,
+  dailyChargeCapacityKWh: 4,     // 1 × 4
+  extraSolarCost: 60000,         // 1 × 60000
+  batteryChargePercent: 80,      // (4/5) × 100
+  solarPricePerKW: 60000,
   // Section 4: Financing
   monthlyAmortization: 0,
   totalLoanCost: 0,
   totalInterestPaid: 0,
-  // Dashboard KPIs
-  totalCapex: 300000,
-  annualSavings: 145600,
-  simpleROI: 48.53,
-  paybackYears: 2.06,
-  monthlySavings: 12133.33,
-  netMonthlyCashFlow: 12133.33,
+  // Dashboard KPIs (Home defaults)
+  totalCapex: 300000,            // 90000 + 150000 + 60000
+  annualSavings: 58240,          // 2912 × 20
+  simpleROI: 19.41,              // (58240/300000) × 100
+  paybackYears: 5.15,            // 300000 / 58240
+  monthlySavings: 4853.33,       // 58240 / 12
+  netMonthlyCashFlow: 4853.33,   // No loan = monthly savings
   // UI helpers
   roiColor: 'green',
   paybackColor: 'green',
@@ -204,49 +209,55 @@ export function createAppState() {
     loadPreset(presetName) {
       const presets = {
         residential: {
-          electricityRate: 20,  // ₱20/kWh for residential
+          electricityRate: 15,          // Uses app default
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
-          dailyEnergyConsumptionKWh: 30,
+          dailyEnergyConsumptionKWh: 5, // Typical small home
           solarCapacityKW: 5,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 80000,       // ₱80,000/kW retail/residential pricing (PRD 5.6)
+          solarPricePerKW: 80000,       // ₱80,000/kW retail/residential pricing
           miscInfraCosts: 50000,        // Permits, inspection, small job overhead
-          batteryPricePerKWh: 30000,    // ₱30,000/kWh consumer battery (Jackery/EcoFlow class)
-          nighttimeLoadKW: 1.5,         // Aircon + fridge + 24/7 appliances
-          nighttimeDurationHours: 8,    // 10pm - 6am typical
-          loanPrincipal: 200000,        // ~50% financing of ~₱400k system
+          batteryPricePerKWh: 30000,    // ₱30,000/kWh consumer battery
+          batteryCapacityKWh: 12,       // 1.5 kW × 8 hours
+          pvForBatteryKW: 3,            // 12 kWh ÷ 4 peak sun hours
+          nighttimeLoadKW: 1.5,         // Reference: Aircon + fridge + 24/7 appliances
+          nighttimeDurationHours: 8,    // Reference: 10pm - 6am typical
+          loanPrincipal: 200000,        // ~50% financing
           annualInterestRate: 8,
           loanTermMonths: 60
         },
         commercial: {
-          electricityRate: 15,  // ₱15/kWh for commercial
-          operatingWeeksPerYear: 50,
+          electricityRate: 15,          // Uses app default
+          operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 5,      // 5 days/week (business days)
           dailyEnergyConsumptionKWh: 100, // 100 employees × 1 kWh/person/day
           solarCapacityKW: 100,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 50000,       // ₱50,000/kW commercial bulk pricing (PRD 5.6)
+          solarPricePerKW: 50000,       // ₱50,000/kW commercial bulk pricing
           miscInfraCosts: 500000,       // Commercial permitting, engineering
           batteryPricePerKWh: 12000,    // ₱12,000/kWh commercial LFP
-          nighttimeLoadKW: 15,          // Security lights, servers, refrigeration
-          nighttimeDurationHours: 12,   // 6pm - 6am typical for commercial
-          loanPrincipal: 2500000,       // ~50% financing of ~₱5M system
+          batteryCapacityKWh: 180,      // 15 kW × 12 hours
+          pvForBatteryKW: 45,           // 180 kWh ÷ 4 peak sun hours
+          nighttimeLoadKW: 15,          // Reference: Security lights, servers, refrigeration
+          nighttimeDurationHours: 12,   // Reference: 6pm - 6am typical
+          loanPrincipal: 2500000,       // ~50% financing
           annualInterestRate: 10,
           loanTermMonths: 60
         },
         batteryOnly: {
-          electricityRate: 18,  // ₱18/kWh typical for residential battery backup
+          electricityRate: 15,          // Uses app default
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
           dailyEnergyConsumptionKWh: 40,
-          solarCapacityKW: 0,
+          solarCapacityKW: 0,           // Existing system — adding only battery
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 30000,
+          solarPricePerKW: 50000,       // Mid-range pricing
           miscInfraCosts: 0,
-          batteryPricePerKWh: 8000,
-          nighttimeLoadKW: 5,
-          nighttimeDurationHours: 10,
+          batteryPricePerKWh: 25000,    // Mid-range between residential and commercial
+          batteryCapacityKWh: 50,       // 5 kW × 10 hours
+          pvForBatteryKW: 12.5,         // 50 kWh ÷ 4 peak sun hours
+          nighttimeLoadKW: 5,           // Reference: Moderate backup load
+          nighttimeDurationHours: 10,   // Reference: Evening + early morning
           loanPrincipal: 400000,
           annualInterestRate: 0,
           loanTermMonths: 60
@@ -261,6 +272,8 @@ export function createAppState() {
           solarPricePerKW: 40000,
           miscInfraCosts: 2000000,
           batteryPricePerKWh: 5000,
+          batteryCapacityKWh: 0,          // Spreadsheet has no battery
+          pvForBatteryKW: 0,              // Spreadsheet has no battery
           nighttimeLoadKW: 0,
           nighttimeDurationHours: 0,
           loanPrincipal: 14000000,

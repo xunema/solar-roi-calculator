@@ -705,7 +705,7 @@ test('Scenario A at ₱10/kWh: savings = ₱3,600,000, payback ≈ 3.89 yr', () 
 // ============================================
 group('🧮 calculateAll — Spreadsheet Scenario C: Solar + Battery');
 
-test('300 kW solar + 400 kWh battery (40 kW × 10 hrs)', () => {
+test('300 kW solar + 400 kWh battery (PRD v1.4 user-defined)', () => {
   const results = calculateAll({
     electricityRate: 11,
     operatingWeeksPerYear: 50,
@@ -716,16 +716,20 @@ test('300 kW solar + 400 kWh battery (40 kW × 10 hrs)', () => {
     solarPricePerKW: 40000,
     miscInfraCosts: 2000000,
     batteryPricePerKWh: 8000,
-    nighttimeLoadKW: 40,
-    nighttimeDurationHours: 10,
+    batteryCapacityKWh: 400,    // User-defined (was calculated from load)
+    pvForBatteryKW: 100,        // User-defined: 400 kWh ÷ 4 PSH = 100 kW
+    nighttimeLoadKW: 40,        // Reference only
+    nighttimeDurationHours: 10, // Reference only
     loanPrincipal: 0,
     annualInterestRate: 0,
     loanTermMonths: 60
   });
 
-  assertEqual(results.requiredBatteryKWh, 400, 'Battery = 400 kWh');
-  assertEqual(results.extraSolarForBatteryKW, 100, 'Extra solar = 100 kW');
+  assertEqual(results.requiredBatteryKWh, 400, 'Reference battery = 400 kWh');
+  assertEqual(results.batteryCapacityKWh, 400, 'User battery = 400 kWh');
+  assertEqual(results.pvForBatteryKW, 100, 'PV for battery = 100 kW');
   assertEqual(results.totalSolarKW, 400, 'Total solar = 400 kW');
+  assertEqual(results.batteryChargePercent, 100, 'Charge % = 100% (100×4=400)');
   // CAPEX: 400×40000 + 400×8000 + 2000000 = 16M + 3.2M + 2M = 21.2M
   assertClose(results.totalCapex, 21200000, 1, 'CAPEX = ₱21,200,000');
   assertEqual(results.annualGenerationKWh, 480000, 'Generation = 480,000 kWh');
@@ -1026,20 +1030,22 @@ test('createAppState returns inputs, results, ui', () => {
   assertType(app.ui.theme, 'string');
 });
 
-test('Default inputs match PRD spec', () => {
+test('Default inputs match PRD spec (Home defaults)', () => {
   const app = createAppState();
-  assertEqual(app.inputs.electricityRate, 15, 'Default rate = ₱15');
+  assertEqual(app.inputs.electricityRate, 20, 'Default rate = ₱20 (home)');
   assertEqual(app.inputs.operatingWeeksPerYear, 52, 'Default weeks = 52');
   assertEqual(app.inputs.operatingDaysPerWeek, 7, 'Default days = 7');
-  assertEqual(app.inputs.dailyEnergyConsumptionKWh, 50, 'Default consumption = 50');
+  assertEqual(app.inputs.dailyEnergyConsumptionKWh, 10, 'Default consumption = 10 kWh (home)');
   assertNull(app.inputs.annualBill, 'Default annual bill = null');
-  assertEqual(app.inputs.solarCapacityKW, 10, 'Default solar = 10 kW');
+  assertEqual(app.inputs.solarCapacityKW, 1, 'Default solar = 1 kW (home)');
   assertEqual(app.inputs.peakSunHoursPerDay, 4, 'Default PSH = 4');
-  assertEqual(app.inputs.solarPricePerKW, 30000, 'Default price = ₱30,000');
-  assertEqual(app.inputs.miscInfraCosts, 0, 'Default misc = 0');
-  assertEqual(app.inputs.batteryPricePerKWh, 12000, 'Default battery = ₱12,000');
-  assertEqual(app.inputs.nighttimeLoadKW, 0, 'Default night load = 0');
-  assertEqual(app.inputs.nighttimeDurationHours, 0, 'Default night hours = 0');
+  assertEqual(app.inputs.solarPricePerKW, 60000, 'Default price = ₱60,000 (home)');
+  assertEqual(app.inputs.miscInfraCosts, 30000, 'Default misc = ₱30,000 (home)');
+  assertEqual(app.inputs.batteryPricePerKWh, 30000, 'Default battery price = ₱30,000');
+  assertEqual(app.inputs.batteryCapacityKWh, 5, 'Default battery capacity = 5 kWh (home)');
+  assertEqual(app.inputs.pvForBatteryKW, 1, 'Default PV for battery = 1 kW (home)');
+  assertEqual(app.inputs.nighttimeLoadKW, 1, 'Default night load = 1 kWh/hr (home)');
+  assertEqual(app.inputs.nighttimeDurationHours, 10, 'Default night hours = 10 (home)');
   assertEqual(app.inputs.loanPrincipal, 0, 'Default loan = 0');
   assertEqual(app.inputs.annualInterestRate, 0, 'Default rate = 0%');
   assertEqual(app.inputs.loanTermMonths, 60, 'Default term = 60mo');
@@ -1048,9 +1054,9 @@ test('Default inputs match PRD spec', () => {
 test('Changing input triggers recalculation', () => {
   const app = createAppState();
   const oldCapex = app.results.totalCapex;
-  app.inputs.solarCapacityKW = 20; // Double capacity
-  // CAPEX should change: 20 × 30000 = 600,000 (was 300,000)
-  assertEqual(app.results.totalCapex, 600000, 'CAPEX should update');
+  app.inputs.solarCapacityKW = 2; // Double capacity from 1 to 2
+  // CAPEX should update (was 300,000 with 1kW, now higher with 2kW)
+  assertTrue(app.results.totalCapex > oldCapex, 'CAPEX should increase');
   assertTrue(app.results.totalCapex !== oldCapex, 'CAPEX should differ');
 });
 
@@ -1079,8 +1085,8 @@ test('resetInputs restores PRD defaults', () => {
   app.inputs.electricityRate = 99;
   app.inputs.solarCapacityKW = 500;
   app.resetInputs();
-  assertEqual(app.inputs.electricityRate, 15);
-  assertEqual(app.inputs.solarCapacityKW, 10);
+  assertEqual(app.inputs.electricityRate, 20);
+  assertEqual(app.inputs.solarCapacityKW, 1);
 });
 
 test('loadPreset("spreadsheet") sets spreadsheet values', () => {
@@ -1112,13 +1118,20 @@ group('📋 PRD v1.2 — Per-Section Result Fields in calculateAll');
 // These test that calculateAll returns the section-level intermediate values
 // needed by the per-section results panels
 test('calculateAll returns projectedAnnualCost (Section 1)', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    dailyEnergyConsumptionKWh: 50,
+    electricityRate: 15
+  });
   assertType(r.projectedAnnualCost, 'number');
   assertEqual(r.projectedAnnualCost, 273000); // 50 × 15 × 364
 });
 
 test('calculateAll returns annualConsumptionKWh (Section 1)', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    dailyEnergyConsumptionKWh: 50
+  });
   assertEqual(r.annualConsumptionKWh, 18200); // 50 kWh/day × 364 days
 });
 
@@ -1128,61 +1141,97 @@ test('annualConsumptionKWh with commercial schedule: 500 × 300 = 150,000', () =
 });
 
 test('calculateAll returns effectiveAnnualCost (Section 1)', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    dailyEnergyConsumptionKWh: 50,
+    electricityRate: 15
+  });
   assertEqual(r.effectiveAnnualCost, 273000); // 50 × 15 × 364
 });
 
 test('calculateAll returns projectedMonthlyCost (Section 1)', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    dailyEnergyConsumptionKWh: 50,
+    electricityRate: 15
+  });
   assertClose(r.projectedMonthlyCost, 22750, 0.01); // 273000 / 12
 });
 
 test('calculateAll returns dailySavings (Section 2)', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    solarCapacityKW: 10,
+    peakSunHoursPerDay: 4,
+    electricityRate: 15
+  });
   assertEqual(r.dailySavings, 600); // 40 kWh/day × ₱15/kWh
 });
 
 test('dailySavings with ₱11/kWh: 40 × 11 = ₱440/day', () => {
-  const r = calculateAll({ ...defaultInputs, electricityRate: 11 });
+  const r = calculateAll({ 
+    ...defaultInputs, 
+    solarCapacityKW: 10,
+    peakSunHoursPerDay: 4,
+    electricityRate: 11 
+  });
   assertEqual(r.dailySavings, 440);
 });
 
 test('calculateAll returns pvSystemCost (Section 2)', () => {
-  const r = calculateAll({ ...defaultInputs });
-  assertEqual(r.pvSystemCost, 300000); // 10 × 30000
+  const r = calculateAll({ 
+    ...defaultInputs,
+    solarCapacityKW: 10,
+    solarPricePerKW: 80000
+  });
+  assertEqual(r.pvSystemCost, 800000); // 10 × 80000
 });
 
 test('calculateAll returns totalPVCapex (Section 2)', () => {
-  const r = calculateAll({ ...defaultInputs });
-  assertEqual(r.totalPVCapex, 300000); // 300000 + 0 misc
+  const r = calculateAll({ 
+    ...defaultInputs,
+    solarCapacityKW: 10,
+    solarPricePerKW: 80000,
+    miscInfraCosts: 0
+  });
+  assertEqual(r.totalPVCapex, 800000); // 800000 + 0 misc
 });
 
 test('calculateAll returns dailyGenerationKWh (Section 2)', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    solarCapacityKW: 10,
+    peakSunHoursPerDay: 4
+  });
   assertEqual(r.dailyGenerationKWh, 40); // 10 × 4
 });
 
 test('calculateAll returns batteryCost (Section 3)', () => {
   const r = calculateAll({
     ...defaultInputs,
-    nighttimeLoadKW: 5,
-    nighttimeDurationHours: 10
+    batteryCapacityKWh: 50,  // User-defined battery size (PRD v1.4)
+    batteryPricePerKWh: 12000
   });
   assertEqual(r.batteryCost, 600000); // 50 × 12000
 });
 
-test('batteryChargePercent = 100% when extra solar matches battery need', () => {
+test('batteryChargePercent = 100% when PV for battery matches need', () => {
   const r = calculateAll({
     ...defaultInputs,
-    nighttimeLoadKW: 5,
-    nighttimeDurationHours: 10
+    batteryCapacityKWh: 50,  // User defines 50 kWh battery
+    pvForBatteryKW: 12.5,     // 12.5 kW × 4 PSH = 50 kWh/day charge capacity
+    peakSunHoursPerDay: 4
   });
-  // extraSolarForBatteryKW = 50/4 = 12.5, dailyCharge = 12.5*4 = 50, 50/50 = 100%
+  // dailyChargeCapacity = 12.5 × 4 = 50, batteryCapacity = 50, charge% = 100%
   assertClose(r.batteryChargePercent, 100, 0.01);
 });
 
 test('batteryChargePercent = 0 when no battery needed', () => {
-  const r = calculateAll({ ...defaultInputs });
+  const r = calculateAll({ 
+    ...defaultInputs,
+    batteryCapacityKWh: 0,
+    pvForBatteryKW: 0
+  });
   assertEqual(r.batteryChargePercent, 0);
 });
 
