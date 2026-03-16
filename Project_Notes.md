@@ -110,6 +110,83 @@ Each section's results update in real time. The main Results Dashboard still agg
 
 ---
 
+### 2026-03-16 — Milestone 1 Testing
+
+#### Problem 9: calc.js Missing PRD v1.2 Per-Section Result Fields
+**Issue:** The M1 test suite (`node tests/calc.test.js`) runs 148 tests. 143 pass, 0 fail, but **5 are TODO** — meaning `calculateAll()` in `calc.js` does not yet return the per-section intermediate computed fields added in PRD v1.2:
+
+| Missing Field | Section | Formula | Status |
+|---------------|---------|---------|--------|
+| `projectedMonthlyCost` | Section 1 | `projectedAnnualCost / 12` | ⏭️ TODO |
+| `pvSystemCost` | Section 2 | `solarCapacityKW × solarPricePerKW` | ⏭️ TODO |
+| `totalPVCapex` | Section 2 | `pvSystemCost + miscInfraCosts` | ⏭️ TODO |
+| `dailyGenerationKWh` | Section 2 | `solarCapacityKW × peakSunHoursPerDay` | ⏭️ TODO |
+| `batteryCost` | Section 3 | `requiredBatteryKWh × batteryPricePerKWh` | ⏭️ TODO |
+
+These fields are needed by the per-section inline results panels (PRD Section 5.3).
+
+**Corrective Action:**
+1. Open `js/calc.js`, find the `calculateAll()` function (line ~230)
+2. Add the 5 missing computed fields inside the function body, after the existing calculations:
+   ```javascript
+   // PRD v1.2: Per-section result fields
+   const projectedMonthlyCost = projectedAnnualCost / 12;
+   const pvSystemCost = (solarCapacityKW || 0) * (solarPricePerKW || 0);
+   const totalPVCapex = pvSystemCost + (miscInfraCosts || 0);
+   const dailyGenerationKWh = (solarCapacityKW || 0) * (peakSunHoursPerDay || 0);
+   const batteryCost = (requiredBatteryKWh || 0) * (batteryPricePerKWh || 0);
+   ```
+3. Add them to the return object:
+   ```javascript
+   return {
+     // ... existing fields ...
+     projectedMonthlyCost,
+     pvSystemCost,
+     totalPVCapex,
+     dailyGenerationKWh,
+     batteryCost,
+   };
+   ```
+4. In `tests/calc.test.js`, change the 5 `todo(...)` calls to `test(...)` calls
+5. Run `node tests/calc.test.js` — expect 148/148 pass, 0 TODO
+6. Also update `state.js` `defaultResults` to include these 5 new fields with computed defaults
+
+**Verification command:** `node tests/calc.test.js`
+
+---
+
+#### Test Results Summary (2026-03-16)
+
+```
+═══════════════════════════════════════════════════════
+ MILESTONE 1 TEST SUMMARY
+═══════════════════════════════════════════════════════
+  Total:   148
+  ✅ Pass:  143
+  ❌ Fail:  0
+  ⏭️  TODO:  5 (PRD v1.2 fields not yet in calc.js)
+═══════════════════════════════════════════════════════
+```
+
+**Test coverage by module:**
+
+| Module | Tests | Status |
+|--------|-------|--------|
+| `calc.js` — individual functions | 87 | ✅ All pass |
+| `calc.js` — `calculateAll()` integration | 22 | ✅ All pass |
+| `calc.js` — PRD v1.2 section fields | 7 (2 pass, 5 TODO) | ⏭️ 5 need calc.js update |
+| `format.js` — formatting & parsing | 22 | ✅ All pass |
+| `state.js` — reactive state & app manager | 10 | ✅ All pass |
+
+**Scenarios verified against spreadsheet:**
+- Scenario A (Solar Only, 300 kW @ ₱10 and ₱11/kWh) ✅
+- Scenario B (Battery Only, ROI 28.13%) ✅
+- Scenario C (Combined, 400 kW total) ✅
+- Loan (₱14M @ 12% / 60mo = ₱311,422.27/mo) ✅
+- PRD defaults (10 kW residential) ✅
+
+---
+
 ## Patterns & Conventions
 
 ### Naming
