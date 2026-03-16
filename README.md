@@ -119,8 +119,8 @@ The app ships with current market rates for the Philippines. **App default: ₱1
 | Parameter | Residential | Commercial | Notes |
 |-----------|-------------|------------|-------|
 | **Electricity Rate** | ₱20/kWh | ₱15/kWh | Meralco blended rate |
-| **Solar Price** | ₱20,000/kW | ₱15,000/kW | Installed cost per kW |
-| **Battery Price** | ₱12,000/kWh | ₱10,000/kWh | LFP lithium batteries |
+| **Solar Price** | ₱80,000/kW | ₱50,000/kW | Installed cost per kW |
+| **Battery Price** | ₱30,000/kWh | ₱15,000/kWh | LFP lithium batteries |
 | **Peak Sun Hours** | 4.0 hrs/day | 4.0 hrs/day | Philippine average |
 | **Loan Term** | 60 months | 60 months | 5-year financing |
 
@@ -128,8 +128,8 @@ The app ships with current market rates for the Philippines. **App default: ₱1
 
 | Preset | System Size | Solar Price | Typical Night Load |
 |--------|-------------|-------------|-------------------|
-| 🏠 **Residential** | 5 kW | ₱20,000/kW | 1.5 kW (AC, fridge, fans) |
-| 🏢 **Commercial** | 100 kW | ₱15,000/kW | 15 kW (lights, servers, security) |
+| 🏠 **Residential** | 25 kW | ₱80,000/kW | 1.5 kW (AC, fridge, fans) |
+| 🏢 **Commercial** | 100 kW | ₱50,000/kW | 15 kW (lights, servers, security) |
 | 🔋 **Battery Only** | — | — | 5 kW (existing solar + storage) |
 | 📋 **Spreadsheet** | 300 kW | ₱40,000/kW | Reference data from Excel model |
 
