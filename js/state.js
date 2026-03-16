@@ -16,7 +16,7 @@ export const defaultInputs = {
   dailyEnergyConsumptionKWh: 50,
   annualBill: null, // null means use projected cost
   
-  // Section 2: Solar System
+  // Section 2: PhotoVoltaic System
   solarCapacityKW: 10,
   peakSunHoursPerDay: 4.0,
   solarPricePerKW: 30000,
@@ -37,22 +37,33 @@ export const defaultInputs = {
  * Default calculated results (initial state)
  */
 export const defaultResults = {
+  // Section 1: Status Quo
   operatingDaysPerYear: 364,
   projectedAnnualCost: 182000,
+  projectedMonthlyCost: 15166.67,
   effectiveAnnualCost: 182000,
-  requiredBatteryKWh: 0,
-  extraSolarForBatteryKW: 0,
-  totalSolarKW: 10,
+  // Section 2: PhotoVoltaic System
+  pvSystemCost: 300000,
+  totalPVCapex: 300000,
+  dailyGenerationKWh: 40,
   annualGenerationKWh: 14560,
+  totalSolarKW: 10,
+  // Section 3: Battery Storage
+  requiredBatteryKWh: 0,
+  batteryCost: 0,
+  extraSolarForBatteryKW: 0,
+  // Section 4: Financing
+  monthlyAmortization: 0,
+  totalLoanCost: 0,
+  totalInterestPaid: 0,
+  // Dashboard KPIs
   totalCapex: 300000,
   annualSavings: 145600,
   simpleROI: 48.53,
-  paybackYears: 2.1,
+  paybackYears: 2.06,
   monthlySavings: 12133.33,
-  monthlyAmortization: 0,
   netMonthlyCashFlow: 12133.33,
-  totalLoanCost: 0,
-  totalInterestPaid: 0,
+  // UI helpers
   roiColor: 'green',
   paybackColor: 'green',
   cashFlowColor: 'green',

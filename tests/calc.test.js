@@ -1121,27 +1121,27 @@ test('calculateAll returns effectiveAnnualCost (Section 1)', () => {
   assertEqual(r.effectiveAnnualCost, 182000);
 });
 
-todo('calculateAll returns projectedMonthlyCost (Section 1)', () => {
+test('calculateAll returns projectedMonthlyCost (Section 1)', () => {
   const r = calculateAll({ ...defaultInputs });
   assertClose(r.projectedMonthlyCost, 15166.67, 0.01);
 });
 
-todo('calculateAll returns pvSystemCost (Section 2)', () => {
+test('calculateAll returns pvSystemCost (Section 2)', () => {
   const r = calculateAll({ ...defaultInputs });
   assertEqual(r.pvSystemCost, 300000); // 10 × 30000
 });
 
-todo('calculateAll returns totalPVCapex (Section 2)', () => {
+test('calculateAll returns totalPVCapex (Section 2)', () => {
   const r = calculateAll({ ...defaultInputs });
   assertEqual(r.totalPVCapex, 300000); // 300000 + 0 misc
 });
 
-todo('calculateAll returns dailyGenerationKWh (Section 2)', () => {
+test('calculateAll returns dailyGenerationKWh (Section 2)', () => {
   const r = calculateAll({ ...defaultInputs });
   assertEqual(r.dailyGenerationKWh, 40); // 10 × 4
 });
 
-todo('calculateAll returns batteryCost (Section 3)', () => {
+test('calculateAll returns batteryCost (Section 3)', () => {
   const r = calculateAll({
     ...defaultInputs,
     nighttimeLoadKW: 5,

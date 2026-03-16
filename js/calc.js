@@ -280,32 +280,50 @@ export function calculateAll(inputs) {
   const totalLoanCost = calculateTotalLoanCost(monthlyAmortization, loanTermMonths);
   const totalInterestPaid = calculateTotalInterestPaid(totalLoanCost, loanPrincipal);
 
+  // Step 9: Per-section result fields (PRD v1.2)
+  const projectedMonthlyCost = projectedAnnualCost / 12;
+  const pvSystemCost = (solarCapacityKW || 0) * (solarPricePerKW || 0);
+  const totalPVCapex = pvSystemCost + (miscInfraCosts || 0);
+  const dailyGenerationKWh = (solarCapacityKW || 0) * (peakSunHoursPerDay || 0);
+  const batteryCost = (requiredBatteryKWh || 0) * (batteryPricePerKWh || 0);
+
   return {
-    // Intermediate values
+    // Section 1: Status Quo results
     operatingDaysPerYear,
     projectedAnnualCost,
+    projectedMonthlyCost,
     effectiveAnnualCost,
-    requiredBatteryKWh,
-    extraSolarForBatteryKW,
-    totalSolarKW,
+
+    // Section 2: PhotoVoltaic System results
+    pvSystemCost,
+    totalPVCapex,
+    dailyGenerationKWh,
     annualGenerationKWh,
-    
-    // Main KPIs
+    totalSolarKW,
+
+    // Section 3: Battery Storage results
+    requiredBatteryKWh,
+    batteryCost,
+    extraSolarForBatteryKW,
+
+    // Section 4: Financing results
+    monthlyAmortization,
+    totalLoanCost,
+    totalInterestPaid,
+
+    // Dashboard KPIs
     totalCapex,
     annualSavings,
     simpleROI,
     paybackYears,
     monthlySavings,
-    monthlyAmortization,
     netMonthlyCashFlow,
-    totalLoanCost,
-    totalInterestPaid,
-    
+
     // Color categories for UI
     roiColor: getROIColor(simpleROI),
     paybackColor: getPaybackColor(paybackYears),
     cashFlowColor: getCashFlowColor(netMonthlyCashFlow),
-    
+
     // Financing flag
     hasFinancing: loanPrincipal > 0
   };

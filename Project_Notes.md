@@ -151,21 +151,36 @@ These fields are needed by the per-section inline results panels (PRD Section 5.
 5. Run `node tests/calc.test.js` — expect 148/148 pass, 0 TODO
 6. Also update `state.js` `defaultResults` to include these 5 new fields with computed defaults
 
-**Verification command:** `node tests/calc.test.js`
+**Resolution:** Applied all 6 corrective actions. Added the 5 missing fields to `calculateAll()` in `calc.js`, updated `defaultResults` in `state.js`, converted `todo()` → `test()` in test suite.
+
+**Verification:** `node tests/calc.test.js` → 148/148 pass ✅
 
 ---
 
-#### Test Results Summary (2026-03-16)
+#### Problem 10: "Solar System" Still Present in Code Files
+**Issue:** PRD and docs were renamed to "PhotoVoltaic System" but `index.html`, `app.js`, and `state.js` still contained "Solar System" in UI-facing strings and comments.
+
+**Files affected:**
+- `index.html` line 224: `<!-- Section 2: Solar System -->` and line 228 heading text
+- `js/app.js` line 30: `title: "Solar System Sizing"`
+- `js/state.js` line 19: `// Section 2: Solar System`
+
+**Resolution:** Renamed all occurrences to "PhotoVoltaic System" across all code files. Verified with grep — only historical references in Project Notes changelog remain.
+
+---
+
+#### Test Results Summary (2026-03-16) — FINAL
 
 ```
 ═══════════════════════════════════════════════════════
  MILESTONE 1 TEST SUMMARY
 ═══════════════════════════════════════════════════════
   Total:   148
-  ✅ Pass:  143
+  ✅ Pass:  148
   ❌ Fail:  0
-  ⏭️  TODO:  5 (PRD v1.2 fields not yet in calc.js)
+  ⏭️  TODO:  0
 ═══════════════════════════════════════════════════════
+  🎉 All tests passed! M1 complete.
 ```
 
 **Test coverage by module:**
@@ -174,7 +189,7 @@ These fields are needed by the per-section inline results panels (PRD Section 5.
 |--------|-------|--------|
 | `calc.js` — individual functions | 87 | ✅ All pass |
 | `calc.js` — `calculateAll()` integration | 22 | ✅ All pass |
-| `calc.js` — PRD v1.2 section fields | 7 (2 pass, 5 TODO) | ⏭️ 5 need calc.js update |
+| `calc.js` — PRD v1.2 section fields | 7 | ✅ All pass |
 | `format.js` — formatting & parsing | 22 | ✅ All pass |
 | `state.js` — reactive state & app manager | 10 | ✅ All pass |
 

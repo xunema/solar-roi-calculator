@@ -27,8 +27,8 @@ const onboardingSlides = [
     content: "Look at your Meralco or utility bill. Divide your <strong>Total Bill Amount</strong> by <strong>Total kWh Consumed</strong> to get your blended rate per kWh. Typical range: ₱9-12/kWh."
   },
   {
-    title: "Solar System Sizing",
-    content: "Enter your desired solar capacity in kW. For reference: A typical Philippine home uses 3-10 kW systems. Use our Sun Hours Calculator to find your location's peak sun hours."
+    title: "PhotoVoltaic System Sizing",
+    content: "Enter your desired PV capacity in kW. For reference: A typical Philippine home uses 3-10 kW systems. Use our Sun Hours Calculator to find your location's peak sun hours."
   },
   {
     title: "You're Ready!",
