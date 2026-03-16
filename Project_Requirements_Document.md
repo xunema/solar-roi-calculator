@@ -368,57 +368,87 @@ A one-line summary with conditional tone based on ROI color:
 
 Quick Presets allow users to load pre-configured scenarios with a single click. These presets serve as **benchmarks** — users can start from a realistic scenario and adjust to match their specific situation.
 
-#### 🏠 Residential Preset
+#### 🏠 Residential Preset — 5kW @ ₱80,000/kW
 
 **Target User:** Homeowner with typical Meralco residential service
 
+**Subtext:** 30 kWh/day • ₱20/kWh • Night: AC, fridge, fans (1.5kW)
+
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| **Daily Consumption** | 5 kWh/day | Typical small home with basic appliances, lighting, fans |
+| **Daily Consumption** | 30 kWh/day | Typical home with AC, refrigerator, appliances |
 | **Operating Schedule** | 7 days/week, 52 weeks/year | Home occupied daily |
-| **Electricity Rate** | ₱15/kWh | Uses app default — users should adjust based on their actual Meralco bill
+| **Electricity Rate** | ₱20/kWh | Meralco residential blended rate |
 | **Solar System Size** | 5 kW | Typical residential rooftop installation |
-| **Solar Price** | ₱80,000/kW | **Suggested default** — retail/residential pricing. Users can adjust based on actual quotes. |
-| **Battery Price** | ₱30,000/kWh | **Suggested default** — typical consumer battery pricing. Users can adjust based on actual quotes. |
+| **Solar Price** | ₱80,000/kW | **The "Entry-Level" Reality** — includes residential overhead |
+| **Battery Price** | ₱30,000/kWh | Consumer-grade LFP (wall-mounted units) |
 | **Battery Capacity** | 12 kWh | 1.5 kW × 8 hours = 12 kWh for typical nighttime needs |
 | **PV for Battery** | 3 kW | 12 kWh ÷ 4 peak sun hours = 3 kW needed to fully charge |
-| **Nighttime kWh/Hr** | 1.5 kWh/hr | Aircon (0.75-1.5 kW) + Fridge (0.05-0.1 kW) + Fans/Routers (0.1 kW) — for reference only |
-| **Nighttime Duration** | 8 hours | 10pm - 6am typical usage — for reference only |
-| **Loan Principal** | ₱200,000 | Partial financing (~50% of system cost) |
+| **Nighttime kWh/Hr** | 1.5 kWh/hr | Aircon (0.75-1.5 kW) + Fridge (0.05-0.1 kW) + Fans/Routers (0.1 kW) |
+| **Nighttime Duration** | 8 hours | 10pm - 6am typical usage |
+| **Misc Costs** | ₱50,000 | Permits, inspection, small job overhead |
+| **Loan Principal** | ₱250,000 | Partial financing (~50% of system cost) |
 | **Interest Rate** | 8% | Typical personal/home improvement loan |
 
-**Note:** Residential solar costs more per kW than commercial due to:
-- Smaller system volume (no economies of scale)
-- Higher permitting and inspection costs per kW
-- Residential-grade equipment vs. industrial-grade
-- Higher installer overhead for small jobs
+**The Residential "Entry Tax" — Why ₱80k/kW?**
+
+Residential buyers face a **70–100% price premium** compared to commercial buyers due to:
+
+1. **Soft Costs Barrier** — Permitting, engineering, and logistics costs are nearly the same for a small house as for a small warehouse. On a per-kW basis, this creates a steep "entry tax" for residential systems.
+
+2. **Volume Barrier** — Small-scale buyers cannot access Tier 1 factory-direct pricing or volume logistics discounts. Residential buyers pay retail markup on every component.
+
+3. **High Labor-to-Watt Ratio** — A 5kW residential system requires nearly the same crew and labor hours as a 20kW commercial system, but spread over fewer kW.
+
+4. **Individual Permitting** — Each residential system requires customized structural assessment, individual net-metering applications, and bespoke mounting solutions.
+
+5. **All-In Cost** — The ₱80k/kW rate includes the "Residential Overhead": labor, permitting, engineering, and installation complexity.
+
+6. **Battery Inclusion** — This rate assumes a standard Hybrid LFP setup (5–10 kWh) to cover the 1.5 kW nighttime load.
+
+**ROI Reality:** Expect 7–9 year payback due to higher per-kW costs, though this improves significantly if you can negotiate better pricing or qualify for incentives.
 
 ---
 
-#### 🏢 Commercial Preset
+#### 🏢 Commercial Preset — 100kW @ ₱50,000/kW
 
 **Target User:** Business with 100 office employees
+
+**Subtext:** 100 kWh/day • ₱15/kWh • 100 employees • Night: 15kW
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
 | **Daily Consumption** | 100 kWh/day | 100 employees × 1 kWh/person/day (computers, AC, lighting, equipment) |
 | **Operating Schedule** | 5 days/week, 52 weeks/year | Standard business operations |
-| **Electricity Rate** | ₱15/kWh | Uses app default — users should adjust based on their actual Meralco bill
+| **Electricity Rate** | ₱15/kWh | Meralco commercial blended rate (lower than residential) |
 | **Solar System Size** | 100 kW | Medium commercial rooftop or ground-mount installation |
-| **Solar Price** | ₱50,000/kW | **Commercial pricing** — lower per-kW due to bulk purchasing, streamlined permitting, industrial-grade equipment |
-| **Battery Price** | ₱12,000/kWh | Commercial/industrial LFP battery pricing (bulk procurement, rack-mounted systems) |
+| **Solar Price** | ₱50,000/kW | **The "Volume Advantage"** — sharp pricing territory |
+| **Battery Price** | ₱12,000/kWh | Industrial LFP racks (48V or high voltage) — cheaper per kWh than residential wall units |
 | **Battery Capacity** | 180 kWh | 15 kW × 12 hours = 180 kWh for nighttime operations |
 | **PV for Battery** | 45 kW | 180 kWh ÷ 4 peak sun hours = 45 kW needed to fully charge |
-| **Nighttime kWh/Hr** | 15 kWh/hr | Security lights (0.5 kW) + Servers/Network (1 kW) + Refrigeration (2 kW) + CCTV (0.2 kW) + Emergency lighting (0.3 kW) + other 24/7 loads — for reference only |
-| **Nighttime Duration** | 12 hours | 6pm - 6am business closure — for reference only |
+| **Nighttime kWh/Hr** | 15 kWh/hr | Security lights (0.5 kW) + Servers/Network (1 kW) + Refrigeration (2 kW) + CCTV + Emergency lighting |
+| **Nighttime Duration** | 12 hours | 6pm - 6am business closure |
+| **Misc Costs** | ₱500,000 | Commercial permitting, engineering, net metering |
 | **Loan Principal** | ₱2,500,000 | Partial financing (~50% of system cost) |
 | **Interest Rate** | 10% | Typical commercial equipment financing |
 
-**Note:** Commercial solar benefits from:
-- Economies of scale (bulk panel purchasing)
-- Lower per-kW permitting and labor costs
-- Industrial-grade inverters and BOS (balance of system)
-- Negotiated volume pricing with suppliers
+**The Commercial "Volume Advantage" — Why ₱50k/kW?**
+
+At 100kW+, the system enters **"Sharp Pricing" territory** with significant advantages:
+
+1. **Economies of Scale** — Bulk panel purchasing, standardized mounting systems, and efficient crew deployment spread fixed costs over many kW.
+
+2. **Procurement Power** — Ability to "bid out" multi-million PHP setups forces installers to work on thinner margins. Buyers can negotiate factory-direct or Tier 1 distributor pricing.
+
+3. **Streamlined Logistics** — Single delivery, single crew, single permitting process for the entire system reduces per-kW overhead.
+
+4. **Industrial-Grade Equipment** — Commercial systems use rack-mounted inverters and standardized BOS (balance of system) components that are cheaper per Watt than residential equivalents.
+
+5. **Battery Scaling** — The ₱12k/kWh rate reflects industrial-grade LFP racks (48V or high voltage) which are dramatically cheaper per kWh than residential wall-mounted units. A 180 kWh commercial battery costs less than 6× a 5 kWh residential battery.
+
+6. **ROI Acceleration** — The lower cost per kW (₱50k vs ₱80k) directly results in significantly faster ROI: **typically 3–4 years for commercial vs. 7–9 years for residential**.
+
+**The Volume Threshold:** Most installers offer meaningful price breaks at 20kW, 50kW, and 100kW tiers. The 100kW preset represents the "sweet spot" where pricing becomes highly competitive.
 
 ---
 

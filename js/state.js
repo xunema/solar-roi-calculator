@@ -209,37 +209,37 @@ export function createAppState() {
     loadPreset(presetName) {
       const presets = {
         residential: {
-          electricityRate: 15,          // Uses app default
+          electricityRate: 20,          // ₱20/kWh Meralco residential
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
-          dailyEnergyConsumptionKWh: 5, // Typical small home
+          dailyEnergyConsumptionKWh: 30, // 30 kWh/day typical home with AC
           solarCapacityKW: 5,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 80000,       // ₱80,000/kW retail/residential pricing
-          miscInfraCosts: 50000,        // Permits, inspection, small job overhead
-          batteryPricePerKWh: 30000,    // ₱30,000/kWh consumer battery
-          batteryCapacityKWh: 12,       // 1.5 kW × 8 hours
+          solarPricePerKW: 80000,       // ₱80,000/kW — The "Entry Tax" reality
+          miscInfraCosts: 50000,        // Soft costs: permits, inspection, overhead
+          batteryPricePerKWh: 30000,    // ₱30,000/kWh consumer LFP
+          batteryCapacityKWh: 12,       // 1.5 kW × 8 hours for night backup
           pvForBatteryKW: 3,            // 12 kWh ÷ 4 peak sun hours
-          nighttimeLoadKW: 1.5,         // Reference: Aircon + fridge + 24/7 appliances
-          nighttimeDurationHours: 8,    // Reference: 10pm - 6am typical
-          loanPrincipal: 200000,        // ~50% financing
+          nighttimeLoadKW: 1.5,         // Reference: AC + fridge + fans
+          nighttimeDurationHours: 8,    // Reference: 10pm - 6am
+          loanPrincipal: 250000,        // ~50% financing
           annualInterestRate: 8,
           loanTermMonths: 60
         },
         commercial: {
-          electricityRate: 15,          // Uses app default
+          electricityRate: 15,          // ₱15/kWh Meralco commercial
           operatingWeeksPerYear: 52,
-          operatingDaysPerWeek: 5,      // 5 days/week (business days)
+          operatingDaysPerWeek: 5,      // 5 days/week business operations
           dailyEnergyConsumptionKWh: 100, // 100 employees × 1 kWh/person/day
-          solarCapacityKW: 100,
+          solarCapacityKW: 100,         // 100kW — "Sharp Pricing" territory
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 50000,       // ₱50,000/kW commercial bulk pricing
-          miscInfraCosts: 500000,       // Commercial permitting, engineering
-          batteryPricePerKWh: 12000,    // ₱12,000/kWh commercial LFP
-          batteryCapacityKWh: 180,      // 15 kW × 12 hours
+          solarPricePerKW: 50000,       // ₱50,000/kW — Volume Advantage
+          miscInfraCosts: 500000,       // Commercial permitting, engineering, net metering
+          batteryPricePerKWh: 12000,    // ₱12,000/kWh industrial LFP racks
+          batteryCapacityKWh: 180,      // 15 kW × 12 hours night operations
           pvForBatteryKW: 45,           // 180 kWh ÷ 4 peak sun hours
-          nighttimeLoadKW: 15,          // Reference: Security lights, servers, refrigeration
-          nighttimeDurationHours: 12,   // Reference: 6pm - 6am typical
+          nighttimeLoadKW: 15,          // Reference: Security, servers, refrigeration
+          nighttimeDurationHours: 12,   // Reference: 6pm - 6am
           loanPrincipal: 2500000,       // ~50% financing
           annualInterestRate: 10,
           loanTermMonths: 60
