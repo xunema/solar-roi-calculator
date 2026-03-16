@@ -39,6 +39,8 @@ export const defaultInputs = {
 export const defaultResults = {
   // Section 1: Status Quo
   operatingDaysPerYear: 364,
+  annualConsumptionKWh: 18200,
+  dailyEnergyConsumptionKWh: 50,
   projectedAnnualCost: 182000,
   projectedMonthlyCost: 15166.67,
   effectiveAnnualCost: 182000,
@@ -46,12 +48,14 @@ export const defaultResults = {
   pvSystemCost: 300000,
   totalPVCapex: 300000,
   dailyGenerationKWh: 40,
+  dailySavings: 400,
   annualGenerationKWh: 14560,
   totalSolarKW: 10,
   // Section 3: Battery Storage
   requiredBatteryKWh: 0,
   batteryCost: 0,
   extraSolarForBatteryKW: 0,
+  solarPricePerKW: 30000,
   // Section 4: Financing
   monthlyAmortization: 0,
   totalLoanCost: 0,

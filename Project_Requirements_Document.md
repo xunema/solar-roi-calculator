@@ -1,6 +1,6 @@
 # Project Requirements Document: SolarCalc PH — Solar ROI & Battery Calculator
 
-> **Version:** 1.2.0
+> **Version:** 1.3.0
 > **Date:** 2026-03-16
 > **Source:** `250915 SOLAR ROI .xlsx` spreadsheet + `Solar_ROI_App_PRD_v2.md`
 > **Status:** Draft
@@ -82,9 +82,182 @@ The existing Excel spreadsheet (`250915 SOLAR ROI .xlsx`) provides a powerful RO
 
 ---
 
-## 5. Data Model
+## 5. Section-by-Section Explanation
 
-### 5.1 Input Fields
+Each of the four sections builds on the previous one. Together they answer: **"What am I paying now, what will solar cost, do I need a battery, and how do I finance it?"**
+
+---
+
+### 5.1 Section 1 — Status Quo: "How much electricity are you consuming and paying for?"
+
+**Purpose:** Establish the user's current electricity cost baseline. This is the number that solar savings are measured against — if you don't know what you're paying now, you can't calculate what you'll save.
+
+**The core question:** *How many kWh do you consume, and at what price?*
+
+#### User Story
+A homeowner or business owner opens the app. They may know their electricity rate, or they may only have a Meralco bill total. The Status Quo section supports both paths:
+
+**Path A — "I know my consumption":**
+1. Enter **electricity rate** (₱/kWh) — the blended rate from their bill
+2. Enter **average daily consumption** (kWh/day) — how much power they use per day
+3. Enter **operating schedule** — how many weeks/year and days/week
+4. The app computes: daily kWh → **annual kWh** → **annual cost** → **monthly cost**
+
+**Path B — "I just know my bill total":**
+1. Enter **electricity rate** (₱/kWh)
+2. Enter **annual bill** (₱) directly — the app reverse-calculates daily consumption
+
+#### Electricity Rate Benchmarks
+
+| Type | Typical Blended Rate | Notes |
+|------|---------------------|-------|
+| **Residential** (Meralco) | ₱11–₱13/kWh | Higher per-kWh due to lifeline subsidies, universal charge |
+| **Commercial** (Meralco) | ₱9–₱11/kWh | Lower per-kWh but higher absolute bills |
+| **Industrial** | ₱7–₱9/kWh | Bulk rates, demand charges separate |
+| **Provincial utilities** | ₱8–₱15/kWh | Varies widely by electric cooperative |
+
+> **How to calculate your blended rate:** Total Bill Amount ÷ Total kWh Consumed. Do NOT use just the "Generation Charge" line — that's only one component. The blended rate includes transmission, distribution, metering, universal charges, and VAT.
+
+**Default:** ₱10/kWh (conservative midpoint suitable for both residential and commercial).
+
+#### Consumption Chain
+
+The key insight is that the user enters **daily** consumption, and the app builds up to annual:
+
+```
+Daily Consumption (kWh/day)
+  × Operating Days/Year (weeks × days/week)
+  = Annual Consumption (kWh/year)           ← new computed field
+  × Electricity Rate (₱/kWh)
+  = Annual Cost (₱/year)
+  ÷ 12
+  = Monthly Cost (₱/month)
+```
+
+**Example — Small residential:**
+```
+30 kWh/day × 364 days = 10,920 kWh/year × ₱12/kWh = ₱131,040/year = ₱10,920/month
+```
+
+**Example — Medium commercial:**
+```
+500 kWh/day × 300 days = 150,000 kWh/year × ₱10/kWh = ₱1,500,000/year = ₱125,000/month
+```
+
+**Example — Large commercial (from spreadsheet):**
+```
+1,200 kWh/day × 300 days = 360,000 kWh/year × ₱11/kWh = ₱3,960,000/year = ₱330,000/month
+```
+
+#### Annual Bill Override
+
+If the user enters an `annualBill` value, it **overrides** the computed annual cost and the app **reverse-calculates** daily consumption:
+
+```
+dailyConsumption = annualBill / (electricityRate × operatingDaysPerYear)
+annualConsumptionKWh = annualBill / electricityRate
+```
+
+A visual badge indicates the value is user-overwritten (not computed).
+
+---
+
+### 5.2 Section 2 — PhotoVoltaic System: "How big a solar system, and what will it cost?"
+
+**Purpose:** Size the PV system and calculate its energy output and equipment cost. This is the "engine" — how many kilowatts of solar capacity, how many hours of effective sun, and what the panels will produce.
+
+**The core question:** *How much solar energy will my system generate each day and year?*
+
+#### Key Inputs
+- **PV Capacity (kW)** — the "engine size" of the solar plant. Rule of thumb: 1 kW needs ~10 m² of unshaded roof.
+- **Peak Sun Hours/day** — effective full-power output hours (see Section 6 for PSH calculator). Philippine default: 4.0 hours.
+- **Price per kW** — total installed cost per kilowatt of solar capacity.
+- **Misc Infrastructure** — roof waterproofing, structural reinforcement, rewiring, net-metering fees.
+- **Battery Price per kWh** — unit cost for battery storage (used in Section 3 calculations).
+
+#### Generation & Savings Chain
+```
+PV Capacity (kW) × Peak Sun Hours (hrs/day)
+  = Daily Generation (kWh/day)
+  × Electricity Rate (₱/kWh)
+  = Daily Savings (₱/day)                    ← shown in Section 2 results
+  × Operating Days/Year
+  = Annual Savings (₱/year)                  ← shown in Dashboard
+```
+
+> **Tooltip on Annual Savings KPI:** "Savings Per Day × Operating Weeks/Year × Operating Days/Week"
+
+#### Cost Chain
+```
+PV Capacity (kW) × Price per kW (₱/kW)
+  = PV Equipment Cost (₱)
+  + Misc Infrastructure (₱)
+  = Total PV CAPEX (₱)                      ← feeds into Dashboard Total CAPEX
+```
+
+> **Total CAPEX** in the Dashboard = PV System CAPEX (Section 2) + Battery Storage cost (Section 3). The CAPEX KPI card links back to Section 2.
+
+---
+
+### 5.3 Section 3 — Battery Storage: "Do I need batteries for nighttime power?"
+
+**Purpose:** Calculate battery requirements for nighttime operation. Solar panels only produce during the day — if the user needs power at night (security, aircon, refrigeration), they need battery storage.
+
+**The core question:** *How many kWh of battery do I need, and how much extra solar to charge it?*
+
+#### Key Inputs
+- **Nighttime Load (kW)** — total power draw of appliances running on battery at night
+- **Nighttime Duration (hours)** — how many hours after sunset battery power is needed
+
+#### Battery Chain
+```
+Nighttime Load (kW) × Duration (hours)
+  = Required Battery (kWh)
+  × Battery Price (₱/kWh)
+  = Battery Cost (₱)
+
+Required Battery (kWh) ÷ Peak Sun Hours
+  = Extra PV Needed (kW) — additional solar panels to charge the battery during the day
+  × PV Price per kW
+  = Extra PV Cost (₱)
+```
+
+If nighttime load and duration are both 0, the section shows: **"No battery needed."**
+
+---
+
+### 5.4 Section 4 — Financing: "How do I pay for it?"
+
+**Purpose:** Model loan financing for the solar investment. Many buyers finance 40–100% of the system cost. This section shows the true cost of borrowing.
+
+**The core question:** *What's my monthly payment, and does solar still save me money after the loan payment?*
+
+#### Key Inputs
+- **Loan Principal (₱)** — how much of the total system cost is being financed
+- **Annual Interest Rate (%)** — the bank's annual rate (Philippine typical: 8–12%)
+- **Loan Term (months)** — repayment period (typical: 60 months = 5 years)
+
+#### Financing Chain
+```
+Standard Annuity Formula:
+  Monthly Payment = P × [r(1+r)^n] / [(1+r)^n - 1]
+  where P = principal, r = monthly rate, n = months
+
+Monthly Payment × Loan Term = Total Loan Cost
+Total Loan Cost - Principal = Total Interest Paid
+
+Monthly Savings (from solar) - Monthly Payment = Net Monthly Cash Flow
+```
+
+If loan principal is 0, the section shows: **"Cash purchase — no financing."**
+
+If the net monthly cash flow is positive, the solar system pays for itself even during the loan period. If negative, the user is paying more per month than they save until the loan is paid off.
+
+---
+
+## 6. Data Model
+
+### 6.1 Input Fields
 
 | Field | Type | Default | Unit | Validation | Section | Spreadsheet Cell(s) |
 |-------|------|---------|------|------------|---------|---------------------|
@@ -110,24 +283,26 @@ The existing Excel spreadsheet (`250915 SOLAR ROI .xlsx`) provides a powerful RO
 | Field | Formula | Unit | Section |
 |-------|---------|------|---------|
 | `operatingDaysPerYear` | `operatingWeeksPerYear × operatingDaysPerWeek` | days | 1 |
-| `projectedAnnualCost` | `dailyEnergyConsumptionKWh × electricityRate × operatingDaysPerYear` | ₱ | 1 |
+| `annualConsumptionKWh` | `dailyEnergyConsumptionKWh × operatingDaysPerYear` | kWh | 1 |
+| `projectedAnnualCost` | `annualConsumptionKWh × electricityRate` | ₱ | 1 |
 | `projectedMonthlyCost` | `projectedAnnualCost / 12` | ₱ | 1 |
 | `pvSystemCost` | `solarCapacityKW × solarPricePerKW` | ₱ | 2 |
 | `totalPVCapex` | `pvSystemCost + miscInfraCosts` | ₱ | 2 |
 | `dailyGenerationKWh` | `solarCapacityKW × peakSunHoursPerDay` | kWh | 2 |
+| `dailySavings` | `dailyGenerationKWh × electricityRate` | ₱/day | 2 |
 | `annualGenerationKWh` | `totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear` | kWh | 2 |
 | `requiredBatteryKWh` | `nighttimeLoadKW × nighttimeDurationHours` | kWh | 3 |
 | `batteryCost` | `requiredBatteryKWh × batteryPricePerKWh` | ₱ | 3 |
 | `extraSolarForBatteryKW` | `IF requiredBatteryKWh > 0 THEN requiredBatteryKWh / peakSunHoursPerDay ELSE 0` | kW | 3 |
 | `totalSolarKW` | `solarCapacityKW + extraSolarForBatteryKW` | kW | — |
-| `totalCapex` | `totalPVCapex + batteryCost + (extraSolarForBatteryKW × solarPricePerKW)` | ₱ | Dashboard |
-| `annualSavings` | `annualGenerationKWh × electricityRate` | ₱ | Dashboard |
-| `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` | % | Dashboard |
-| `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` | years | Dashboard |
+| `totalCapex` | `totalPVCapex + batteryCost + (extraSolarForBatteryKW × solarPricePerKW)` — see Section 2 (PV System) + Section 3 (Battery Storage) | ₱ | Dashboard |
+| `annualSavings` | `annualGenerationKWh × electricityRate` — tooltip: `dailySavings × operatingDaysPerYear` | ₱ | Dashboard |
+| `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` — Annual Savings ÷ Total CAPEX. Measures what % of investment is recovered each year. Higher = faster recovery. | % | Dashboard |
+| `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` — the inverse of ROI: how many years until CAPEX is fully recovered. | years | Dashboard |
 | `monthlyAmortization` | Standard annuity formula (see PRD Section 7) | ₱/month | 4 |
 | `totalLoanCost` | `monthlyAmortization × loanTermMonths` | ₱ | 4 |
 | `totalInterestPaid` | `totalLoanCost - loanPrincipal` | ₱ | 4 |
-| `monthlySavings` | `annualSavings / 12` | ₱/month | Dashboard |
+| `monthlySavings` | `annualSavings / 12` — note: this is Annual Savings divided by 12 months, not a direct calculation from daily savings × 30 | ₱/month | Dashboard |
 | `netMonthlyCashFlow` | `monthlySavings - monthlyAmortization` | ₱/month | Dashboard |
 
 ### 5.3 Section Results Panels
@@ -141,6 +316,7 @@ Each section displays its own inline results panel below its inputs. These give 
 │  YOUR CURRENT ELECTRICITY COSTS             │
 │                                             │
 │  Operating Days/Year      364 days          │
+│  Annual Consumption       18,200 kWh/yr     │
 │  Projected Annual Cost    ₱182,000.00 /yr   │
 │  Projected Monthly Cost   ₱15,166.67 /mo    │
 │                                             │
@@ -151,7 +327,8 @@ Each section displays its own inline results panel below its inputs. These give 
 **Formulas:**
 ```
 operatingDaysPerYear  = operatingWeeksPerYear × operatingDaysPerWeek
-projectedAnnualCost   = dailyEnergyConsumptionKWh × electricityRate × operatingDaysPerYear
+annualConsumptionKWh  = dailyEnergyConsumptionKWh × operatingDaysPerYear
+projectedAnnualCost   = annualConsumptionKWh × electricityRate
 projectedMonthlyCost  = projectedAnnualCost / 12
 ```
 
@@ -171,17 +348,23 @@ When `annualBill` is entered, it overrides `projectedAnnualCost` and `projectedM
 │  PV Equipment Cost        ₱300,000.00       │
 │  Total PV CAPEX           ₱300,000.00       │
 │  Daily Generation         40.0 kWh/day      │
+│  Daily Savings            ₱400.00 /day      │
 │  Annual Generation        14,600 kWh/yr     │
 └─────────────────────────────────────────────┘
 ```
+
+> **Dashboard link:** Total PV CAPEX feeds into the Dashboard's **Total CAPEX** KPI. Total CAPEX = PV System cost (Section 2) + Battery Storage cost (Section 3). Tapping the Total CAPEX KPI card scrolls back to Section 2.
 
 **Formulas:**
 ```
 pvSystemCost        = solarCapacityKW × solarPricePerKW
 totalPVCapex        = pvSystemCost + miscInfraCosts
 dailyGenerationKWh  = solarCapacityKW × peakSunHoursPerDay
+dailySavings        = dailyGenerationKWh × electricityRate
 annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
 ```
+
+> **Annual Savings tooltip:** Annual Savings = Daily Savings × Operating Days/Year (i.e., `dailySavings × operatingWeeksPerYear × operatingDaysPerWeek`). This connects Section 2's per-day output to the Dashboard's annual figure.
 
 #### Section 3 — Battery Storage Results
 
@@ -754,13 +937,17 @@ Development is organized into 5 milestones. Each milestone produces a reviewable
 ## Changelog
 
 ### v1.3.0 (2026-03-16)
+- **Added:** Section 5 "Section-by-Section Explanation" — detailed walkthrough of all 4 input sections with user stories, formulas, and examples
+- **Added:** `annualConsumptionKWh` computed field — daily kWh × operating days/year (consumption chain)
+- **Added:** `dailySavings` computed field — daily generation × electricity rate (savings chain in Section 2)
+- **Added:** PV System → CAPEX linkage: Total CAPEX = PV System (Section 2) + Battery Storage (Section 3)
+- **Added:** Annual Savings tooltip explanation: dailySavings × operatingDaysPerYear
+- **Added:** Simple ROI and Payback clarity: ROI = Annual Savings ÷ CAPEX; Payback = inverse of ROI
+- **Added:** Monthly Savings note: Annual Savings ÷ 12
+- **Added:** Electricity rate benchmarks table (Residential ₱11–13, Commercial ₱9–11, Industrial ₱7–9)
 - **Expanded:** Section 6 PSH Calculator into comprehensive reference (formulas, theory, data sources)
 - **Added:** `sunhours.html` standalone reference page with PSH explanation, latitude formulas, tilt angle guidance, regional data, and external data source links
-- **Added:** Extraterrestrial radiation formula (H₀), Hargreaves-Samani practical model
-- **Added:** Panel tilt angle formula (Tilt ≈ Latitude) and Philippine city examples
-- **Added:** Latitude data to regional PSH table
-- **Updated:** PSH tooltip spec with "Calculate PSH" and "Learn More" links
-- **Updated:** File structure to include `sunhours.html`
+- **Updated:** PRD version to 1.3.0
 
 ### v1.2.0 (2026-03-16)
 - **Renamed:** "Solar System" → "PhotoVoltaic System" throughout all documents

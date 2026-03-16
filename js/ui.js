@@ -111,13 +111,15 @@ export function updateSection1Results(results) {
   const monthlyCostEl = document.getElementById('section1-monthlyCost');
   const operatingDaysEl = document.getElementById('section1-operatingDays');
   const dailyKWhEl = document.getElementById('section1-dailyKWh');
+  const annualConsumptionEl = document.getElementById('section1-annualConsumption');
   
   if (annualCostEl) annualCostEl.textContent = formatPeso(results.effectiveAnnualCost);
   if (monthlyCostEl) monthlyCostEl.textContent = formatPeso(results.projectedMonthlyCost);
-  if (operatingDaysEl) operatingDaysEl.textContent = results.operatingDaysPerYear;
-  if (dailyKWhEl) {
-    const dailyConsumption = results.annualGenerationKWh / (results.operatingDaysPerYear || 1);
-    dailyKWhEl.textContent = Math.round(dailyConsumption) + ' kWh';
+  if (operatingDaysEl) operatingDaysEl.textContent = results.operatingDaysPerYear + ' days';
+  if (dailyKWhEl) dailyKWhEl.textContent = Math.round(results.dailyEnergyConsumptionKWh || 0) + ' kWh';
+  if (annualConsumptionEl) {
+    const annualConsumption = Math.round(results.annualConsumptionKWh || 0).toLocaleString();
+    annualConsumptionEl.textContent = annualConsumption + ' kWh';
   }
 }
 
@@ -129,11 +131,13 @@ export function updateSection2Results(results) {
   const pvCostEl = document.getElementById('section2-pvSystemCost');
   const totalPVCapexEl = document.getElementById('section2-totalPVCapex');
   const dailyGenEl = document.getElementById('section2-dailyGeneration');
+  const dailySavingsEl = document.getElementById('section2-dailySavings');
   const annualGenEl = document.getElementById('section2-annualGeneration');
   
   if (pvCostEl) pvCostEl.textContent = formatPeso(results.pvSystemCost);
   if (totalPVCapexEl) totalPVCapexEl.textContent = formatPeso(results.totalPVCapex);
   if (dailyGenEl) dailyGenEl.textContent = Math.round(results.dailyGenerationKWh) + ' kWh';
+  if (dailySavingsEl) dailySavingsEl.textContent = formatPeso(results.dailySavings);
   if (annualGenEl) annualGenEl.textContent = Math.round(results.annualGenerationKWh).toLocaleString() + ' kWh';
 }
 
@@ -146,11 +150,26 @@ export function updateSection3Results(results) {
   const batteryCostEl = document.getElementById('section3-batteryCost');
   const extraSolarEl = document.getElementById('section3-extraSolar');
   const totalSolarEl = document.getElementById('section3-totalSolar');
+  const extraSolarCostEl = document.getElementById('section3-extraSolarCost');
+  const noBatteryMsg = document.getElementById('section3-noBattery');
+  
+  // Calculate extra PV cost
+  const extraSolarCost = results.extraSolarForBatteryKW * (results.solarPricePerKW || 0);
   
   if (batteryKWhEl) batteryKWhEl.textContent = results.requiredBatteryKWh.toFixed(1) + ' kWh';
   if (batteryCostEl) batteryCostEl.textContent = formatPeso(results.batteryCost);
   if (extraSolarEl) extraSolarEl.textContent = results.extraSolarForBatteryKW.toFixed(1) + ' kW';
   if (totalSolarEl) totalSolarEl.textContent = results.totalSolarKW.toFixed(1) + ' kW';
+  if (extraSolarCostEl) extraSolarCostEl.textContent = formatPeso(extraSolarCost);
+  
+  // Show/hide "No battery needed" message
+  if (noBatteryMsg) {
+    if (results.requiredBatteryKWh === 0) {
+      noBatteryMsg.classList.remove('hidden');
+    } else {
+      noBatteryMsg.classList.add('hidden');
+    }
+  }
 }
 
 /**
@@ -196,10 +215,11 @@ export function updateAllKPIs(results) {
   updateKPIDisplay('totalCapex', formatPeso(results.totalCapex));
   updateKPIDisplay('projectedAnnualCost', formatPeso(results.effectiveAnnualCost), 'red');
   updateKPIDisplay('projectedMonthlyCost', formatPeso(results.projectedMonthlyCost), 'red');
+  updateKPIDisplay('annualGenerationKWh', Math.round(results.annualGenerationKWh).toLocaleString() + ' kWh', 'blue');
   updateKPIDisplay('annualSavings', formatPeso(results.annualSavings), 'green');
+  updateKPIDisplay('monthlySavings', formatPeso(results.monthlySavings));
   updateKPIDisplay('simpleROI', formatPercent(results.simpleROI), results.roiColor);
   updateKPIDisplay('paybackYears', formatYears(results.paybackYears), results.paybackColor);
-  updateKPIDisplay('monthlySavings', formatPeso(results.monthlySavings));
   
   // Financing KPIs (conditional)
   if (results.hasFinancing) {

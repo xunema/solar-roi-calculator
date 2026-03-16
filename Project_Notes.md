@@ -169,14 +169,31 @@ These fields are needed by the per-section inline results panels (PRD Section 5.
 
 ---
 
-#### Test Results Summary (2026-03-16) — FINAL
+#### Problem 11: Missing `annualConsumptionKWh` and `dailySavings` Fields
+**Issue:** PRD Section 5.1 described a consumption chain (daily kWh → annual kWh → annual ₱) but the intermediate `annualConsumptionKWh` field was not in the computed fields table or code. Similarly, Section 2 lacked a `dailySavings` field to show per-day savings from PV generation.
+
+**Resolution:** Added both fields to:
+- PRD computed fields table (Section 5.2)
+- `calc.js` → `calculateAll()` return object
+- `state.js` → `defaultResults`
+- `tests/calc.test.js` — 4 new tests
+
+Also added PRD clarifications:
+- PV System CAPEX links to Dashboard Total CAPEX (Section 2 + Section 3)
+- Annual Savings tooltip: dailySavings × operatingDaysPerYear
+- Simple ROI = Annual Savings ÷ CAPEX (% recovered per year); Payback = inverse
+- Monthly Savings = Annual Savings ÷ 12 (note)
+
+---
+
+#### Test Results Summary (2026-03-16) — UPDATED
 
 ```
 ═══════════════════════════════════════════════════════
  MILESTONE 1 TEST SUMMARY
 ═══════════════════════════════════════════════════════
-  Total:   148
-  ✅ Pass:  148
+  Total:   152
+  ✅ Pass:  152
   ❌ Fail:  0
   ⏭️  TODO:  0
 ═══════════════════════════════════════════════════════
@@ -189,7 +206,7 @@ These fields are needed by the per-section inline results panels (PRD Section 5.
 |--------|-------|--------|
 | `calc.js` — individual functions | 87 | ✅ All pass |
 | `calc.js` — `calculateAll()` integration | 22 | ✅ All pass |
-| `calc.js` — PRD v1.2 section fields | 7 | ✅ All pass |
+| `calc.js` — PRD v1.3 section fields | 11 | ✅ All pass |
 | `format.js` — formatting & parsing | 22 | ✅ All pass |
 | `state.js` — reactive state & app manager | 10 | ✅ All pass |
 

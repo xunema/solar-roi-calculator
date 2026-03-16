@@ -280,16 +280,20 @@ export function calculateAll(inputs) {
   const totalLoanCost = calculateTotalLoanCost(monthlyAmortization, loanTermMonths);
   const totalInterestPaid = calculateTotalInterestPaid(totalLoanCost, loanPrincipal);
 
-  // Step 9: Per-section result fields (PRD v1.2)
+  // Step 9: Per-section result fields (PRD v1.3)
+  const annualConsumptionKWh = (dailyEnergyConsumptionKWh || 0) * operatingDaysPerYear;
   const projectedMonthlyCost = projectedAnnualCost / 12;
   const pvSystemCost = (solarCapacityKW || 0) * (solarPricePerKW || 0);
   const totalPVCapex = pvSystemCost + (miscInfraCosts || 0);
   const dailyGenerationKWh = (solarCapacityKW || 0) * (peakSunHoursPerDay || 0);
+  const dailySavings = dailyGenerationKWh * (electricityRate || 0);
   const batteryCost = (requiredBatteryKWh || 0) * (batteryPricePerKWh || 0);
 
   return {
     // Section 1: Status Quo results
     operatingDaysPerYear,
+    annualConsumptionKWh,
+    dailyEnergyConsumptionKWh,
     projectedAnnualCost,
     projectedMonthlyCost,
     effectiveAnnualCost,
@@ -298,6 +302,7 @@ export function calculateAll(inputs) {
     pvSystemCost,
     totalPVCapex,
     dailyGenerationKWh,
+    dailySavings,
     annualGenerationKWh,
     totalSolarKW,
 
@@ -305,6 +310,7 @@ export function calculateAll(inputs) {
     requiredBatteryKWh,
     batteryCost,
     extraSolarForBatteryKW,
+    solarPricePerKW,  // Needed for extra PV cost calculation
 
     // Section 4: Financing results
     monthlyAmortization,

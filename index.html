@@ -252,23 +252,27 @@
           
           <!-- Section 1 Results Panel -->
           <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-200">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 1 Results</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div class="bg-red-50 p-3 rounded-lg border border-red-100">
-                <div class="text-xs text-red-600 mb-1">Annual Cost</div>
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 1 Results — Your Current Electricity Costs</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <div class="text-xs text-blue-600 mb-1">Operating Days/Year</div>
+                <div id="section1-operatingDays" class="text-lg font-bold text-blue-700">0</div>
+              </div>
+              <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                <div class="text-xs text-indigo-600 mb-1">Annual Consumption</div>
+                <div id="section1-annualConsumption" class="text-lg font-bold text-indigo-700">0 kWh</div>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-600 mb-1">Daily Consumption</div>
+                <div id="section1-dailyKWh" class="text-lg font-bold text-gray-700">0 kWh</div>
+              </div>
+              <div class="bg-red-50 p-3 rounded-lg border border-red-100 md:col-span-2">
+                <div class="text-xs text-red-600 mb-1">Projected Annual Cost</div>
                 <div id="section1-annualCost" class="text-lg font-bold text-red-700">₱0</div>
               </div>
               <div class="bg-red-50 p-3 rounded-lg border border-red-100">
-                <div class="text-xs text-red-600 mb-1">Monthly Cost</div>
+                <div class="text-xs text-red-600 mb-1">Projected Monthly Cost</div>
                 <div id="section1-monthlyCost" class="text-lg font-bold text-red-700">₱0</div>
-              </div>
-              <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                <div class="text-xs text-blue-600 mb-1">Operating Days</div>
-                <div id="section1-operatingDays" class="text-lg font-bold text-blue-700">0</div>
-              </div>
-              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <div class="text-xs text-gray-600 mb-1">Daily kWh</div>
-                <div id="section1-dailyKWh" class="text-lg font-bold text-gray-700">0</div>
               </div>
             </div>
           </div>
@@ -361,19 +365,23 @@
           
           <!-- Section 2 Results Panel -->
           <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-200">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 2 Results</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 2 Results — PV System Output</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                <div class="text-xs text-yellow-700 mb-1">PV System Cost</div>
+                <div class="text-xs text-yellow-700 mb-1">PV Equipment Cost</div>
                 <div id="section2-pvSystemCost" class="text-lg font-bold text-yellow-800">₱0</div>
               </div>
-              <div class="bg-orange-50 p-3 rounded-lg border border-orange-100">
+              <div class="bg-orange-50 p-3 rounded-lg border border-orange-100 md:col-span-2">
                 <div class="text-xs text-orange-700 mb-1">Total PV CAPEX</div>
                 <div id="section2-totalPVCapex" class="text-lg font-bold text-orange-800">₱0</div>
               </div>
               <div class="bg-green-50 p-3 rounded-lg border border-green-100">
                 <div class="text-xs text-green-700 mb-1">Daily Generation</div>
                 <div id="section2-dailyGeneration" class="text-lg font-bold text-green-800">0 kWh</div>
+              </div>
+              <div class="bg-lime-50 p-3 rounded-lg border border-lime-100">
+                <div class="text-xs text-lime-700 mb-1">Daily Savings</div>
+                <div id="section2-dailySavings" class="text-lg font-bold text-lime-800">₱0</div>
               </div>
               <div class="bg-teal-50 p-3 rounded-lg border border-teal-100">
                 <div class="text-xs text-teal-700 mb-1">Annual Generation</div>
@@ -449,10 +457,10 @@
           
           <!-- Section 3 Results Panel -->
           <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-200">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 3 Results</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 3 Results — Battery Requirements</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                <div class="text-xs text-purple-700 mb-1">Battery Capacity</div>
+                <div class="text-xs text-purple-700 mb-1">Required Battery</div>
                 <div id="section3-batteryKWh" class="text-lg font-bold text-purple-800">0 kWh</div>
               </div>
               <div class="bg-pink-50 p-3 rounded-lg border border-pink-100">
@@ -460,13 +468,20 @@
                 <div id="section3-batteryCost" class="text-lg font-bold text-pink-800">₱0</div>
               </div>
               <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                <div class="text-xs text-indigo-700 mb-1">Extra PV for Batt</div>
+                <div class="text-xs text-indigo-700 mb-1">Extra PV for Charging</div>
                 <div id="section3-extraSolar" class="text-lg font-bold text-indigo-800">0 kW</div>
               </div>
               <div class="bg-cyan-50 p-3 rounded-lg border border-cyan-100">
-                <div class="text-xs text-cyan-700 mb-1">Total Solar</div>
+                <div class="text-xs text-cyan-700 mb-1">Total Solar Capacity</div>
                 <div id="section3-totalSolar" class="text-lg font-bold text-cyan-800">0 kW</div>
               </div>
+              <div class="bg-violet-50 p-3 rounded-lg border border-violet-100 md:col-span-2">
+                <div class="text-xs text-violet-700 mb-1">Extra PV Cost</div>
+                <div id="section3-extraSolarCost" class="text-lg font-bold text-violet-800">₱0</div>
+              </div>
+            </div>
+            <div id="section3-noBattery" class="hidden mt-3 p-3 bg-gray-100 rounded-lg text-center text-gray-600">
+              No battery needed — nighttime load is zero
             </div>
           </div>
         </div>
@@ -560,6 +575,15 @@
                 <span class="text-xs text-gray-400">⚡ Sec 2,3</span>
               </div>
               <div id="totalCapex" class="kpi-value text-gray-900">₱0</div>
+            </div>
+            
+            <!-- Annual Generation -->
+            <div class="kpi-card bg-blue-50 p-4 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 transition" data-section="2" title="Click to view in Section 2">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-blue-600 mb-1">Annual Generation</div>
+                <span class="text-xs text-blue-400">☀️ Sec 2</span>
+              </div>
+              <div id="annualGenerationKWh" class="kpi-value text-blue-700">0 kWh</div>
             </div>
             
             <!-- Projected Annual Cost -->
