@@ -4,6 +4,7 @@
  */
 
 import { formatPeso, formatPercent, formatYears, formatWithUnit, formatForInput } from './format.js';
+import { generateNarrative, updateNarrativeUI, copyToClipboard, exportAsTxt } from './narrative.js';
 
 /**
  * Color classes for Tailwind CSS
@@ -663,6 +664,37 @@ export function initializeUI(state, actions) {
   }
 }
 
+/**
+ * Update narrative section with generated story
+ * @param {Object} inputs - Current input values
+ * @param {Object} results - Calculation results
+ */
+export function updateNarrativeFromResults(inputs, results) {
+  const narrative = generateNarrative(inputs, results);
+  updateNarrativeUI(narrative);
+}
+
+/**
+ * Copy current narrative to clipboard
+ * @returns {Promise<boolean>} Success status
+ */
+export async function copyNarrativeToClipboard() {
+  if (window.currentNarrative?.fullText) {
+    const success = await copyToClipboard(window.currentNarrative.fullText);
+    return success;
+  }
+  return false;
+}
+
+/**
+ * Export current narrative as .txt file
+ */
+export function exportNarrativeAsTxt() {
+  if (window.currentNarrative?.fullText) {
+    exportAsTxt(window.currentNarrative.fullText);
+  }
+}
+
 // Default export
 export default {
   getColorClass,
@@ -690,5 +722,8 @@ export default {
   toggleOnboardingModal,
   toggleSunHoursModal,
   updateOnboardingSlide,
-  initializeUI
+  initializeUI,
+  updateNarrativeFromResults,
+  copyNarrativeToClipboard,
+  exportNarrativeAsTxt
 };

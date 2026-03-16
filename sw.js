@@ -17,6 +17,7 @@ const APP_ASSETS = [
   '/solar-roi-calculator/js/calc.js',
   '/solar-roi-calculator/js/ui.js',
   '/solar-roi-calculator/js/format.js',
+  '/solar-roi-calculator/js/narrative.js',
 ];
 
 /* ── Install: pre-cache all local app assets ── */

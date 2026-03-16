@@ -638,6 +638,67 @@
           </div>
         </div>
       </section>
+
+      <!-- Section 5: Narrative Summary (M6 - Story Mode) -->
+      <section id="narrativeSection" class="card bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="section-header bg-gradient-to-r from-teal-700 to-teal-600 text-white px-4 py-3 border-b border-teal-800">
+          <h2 class="font-semibold flex items-center gap-2">
+            <span>📖</span> Narrative Summary
+            <span class="ml-auto text-xs font-normal opacity-80">Your Solar Story</span>
+          </h2>
+        </div>
+        <div class="p-4">
+          <!-- Initial State: Generate Button -->
+          <div id="narrative-initial" class="text-center py-8">
+            <div class="mb-4 text-5xl">📊</div>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Ready to See Your Solar Story?</h3>
+            <p class="text-sm text-gray-600 mb-4 max-w-sm mx-auto">
+              Generate a plain-language analysis of your solar investment: costs, savings, payback, and our recommendation.
+            </p>
+            <button id="generateNarrativeBtn" class="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition shadow-lg hover:shadow-xl min-h-[48px]">
+              <span>✨</span>
+              <span>Generate Narrative Summary</span>
+            </button>
+          </div>
+
+          <!-- Narrative Content (hidden initially) -->
+          <div id="narrative-content" class="hidden">
+            <!-- Verdict Badge -->
+            <div class="text-center mb-4">
+              <span id="narrative-verdict-badge" class="inline-block px-4 py-2 rounded-full text-sm font-semibold border bg-gray-100 text-gray-800 border-gray-200">
+                Analyzing...
+              </span>
+            </div>
+
+            <!-- Narrative Parts -->
+            <div class="space-y-4">
+              <div id="narrative-part1" class="hidden p-3 bg-red-50 rounded-lg border border-red-100 whitespace-pre-wrap text-sm text-gray-800"></div>
+              <div id="narrative-part2" class="hidden p-3 bg-amber-50 rounded-lg border border-amber-100 whitespace-pre-wrap text-sm text-gray-800"></div>
+              <div id="narrative-part3" class="hidden p-3 bg-blue-50 rounded-lg border border-blue-100 whitespace-pre-wrap text-sm text-gray-800"></div>
+              <div id="narrative-part4" class="hidden p-3 bg-gray-50 rounded-lg border border-gray-200 whitespace-pre-wrap text-sm text-gray-800"></div>
+              <div id="narrative-part5" class="hidden p-3 bg-green-50 rounded-lg border border-green-100 whitespace-pre-wrap text-sm text-gray-800"></div>
+              <div id="narrative-part6" class="hidden p-3 bg-orange-50 rounded-lg border border-orange-100 whitespace-pre-wrap text-sm text-gray-800"></div>
+              <div id="narrative-part7" class="hidden p-3 bg-teal-50 rounded-lg border border-teal-100 whitespace-pre-wrap text-sm font-medium text-gray-800"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <button id="copyNarrativeBtn" class="flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition min-h-[44px]">
+                <span>📋</span>
+                <span class="text-sm font-medium">Copy to Clipboard</span>
+              </button>
+              <button id="exportNarrativeBtn" class="flex items-center justify-center gap-2 px-4 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition min-h-[44px]">
+                <span>💾</span>
+                <span class="text-sm font-medium">Export as .txt</span>
+              </button>
+            </div>
+            
+            <div id="copyFeedback" class="hidden mt-2 text-center text-sm text-green-600">
+              ✓ Copied to clipboard!
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- KPI Dashboard (Sticky Sidebar) -->

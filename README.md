@@ -247,21 +247,27 @@ All formulas implemented and verified. No UI required.
 
 ---
 
-### ⬜ Milestone 6: Narrative Summary (Story Mode)
-> **Status: NOT STARTED**
+### ✅ Milestone 6: Narrative Summary (Story Mode)
+> **Status: COMPLETE** — 161/161 tests pass
 
 All data woven into a plain-language story: Problem → Hypothesis → Evidence → Verdict.
 
-- [ ] Narrative generator — 7 structured paragraphs from all computed fields
-- [ ] Part 1 — The Problem: electricity rate, annual cost
-- [ ] Part 2 — The Hypothesis: PV capacity, daily generation, daily savings, PV cost
-- [ ] Part 3 — Battery Storage (hidden if batteryCapacityKWh = 0)
-- [ ] Part 4 — Total CAPEX
-- [ ] Part 5 — The Return: annual savings, ROI %, payback
-- [ ] Part 6 — Financing (hidden if cash purchase)
-- [ ] Part 7 — The Verdict: green/yellow/red conclusion
-- [ ] "Copy to Clipboard" — full narrative as plain text
-- [ ] "Export as .txt" — downloads `solarcalc-report-YYYY-MM-DD.txt`
+- [x] Narrative generator — 7 structured paragraphs from all computed fields
+- [x] Part 1 — The Problem: electricity rate, annual cost
+- [x] Part 2 — The Hypothesis: PV capacity, daily generation, daily savings, PV cost
+- [x] Part 3 — Battery Storage (hidden if batteryCapacityKWh = 0)
+- [x] Part 4 — Total CAPEX
+- [x] Part 5 — The Return: annual savings, ROI %, payback
+- [x] Part 6 — Financing (hidden if cash purchase)
+- [x] Part 7 — The Verdict: green/yellow/red conclusion with actionable advice
+- [x] "✨ Generate Narrative Summary" button — user-initiated generation with clear CTA
+- [x] "Copy to Clipboard" — full narrative as plain text
+- [x] "Export as .txt" — downloads `solarcalc-report-YYYY-MM-DD.txt`
+
+**Verdict thresholds:**
+- 🟢 **Green** (Recommended): ROI ≥ 15% AND payback ≤ 5 years
+- 🟡 **Yellow** (Caution): ROI 8–15% AND payback ≤ 8 years  
+- 🔴 **Red** (Not Recommended): ROI < 8% OR payback > 8 years
 
 ---
 

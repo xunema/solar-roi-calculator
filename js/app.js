@@ -15,7 +15,10 @@ import {
   initializeUI,
   hideAllTooltips,
   updateAllSectionResults,
-  toggleTooltip
+  toggleTooltip,
+  copyNarrativeToClipboard,
+  exportNarrativeAsTxt,
+  updateNarrativeFromResults
 } from './ui.js';
 
 // Onboarding slides content
@@ -45,6 +48,7 @@ class SolarCalcApp {
   constructor() {
     this.state = createAppState();
     this.currentSlide = 0;
+    this.narrativeGenerated = false;
     this.init();
   }
 
@@ -74,6 +78,10 @@ class SolarCalcApp {
       if (type === 'results') {
         // Update KPIs when results change
         updateAllKPIs(this.state.results);
+        // Update narrative if already generated (M6)
+        if (this.narrativeGenerated) {
+          updateNarrativeFromResults(this.state.inputs, this.state.results);
+        }
       } else if (type === 'ui') {
         // Handle UI state changes
         this.handleUIChange(property, value);
@@ -183,6 +191,9 @@ class SolarCalcApp {
 
     // Bind tooltip buttons
     this.bindTooltipButtons();
+
+    // Bind narrative buttons (M6)
+    this.bindNarrativeButtons();
     
     // Save state on page unload
     window.addEventListener('beforeunload', () => {
@@ -372,6 +383,65 @@ class SolarCalcApp {
     document.querySelectorAll('.close-modal').forEach(btn => {
       btn.addEventListener('click', () => this.closeModals());
     });
+  }
+
+  /**
+   * Bind narrative action buttons (M6)
+   */
+  bindNarrativeButtons() {
+    // Generate narrative button (initial state)
+    const generateBtn = document.getElementById('generateNarrativeBtn');
+    if (generateBtn) {
+      generateBtn.addEventListener('click', () => {
+        this.generateNarrative();
+      });
+    }
+
+    // Copy to clipboard button
+    const copyBtn = document.getElementById('copyNarrativeBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        const success = await copyNarrativeToClipboard();
+        const feedback = document.getElementById('copyFeedback');
+        if (feedback) {
+          feedback.classList.toggle('hidden', !success);
+          if (success) {
+            setTimeout(() => {
+              feedback.classList.add('hidden');
+            }, 3000);
+          }
+        }
+      });
+    }
+
+    // Export as .txt button
+    const exportBtn = document.getElementById('exportNarrativeBtn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        exportNarrativeAsTxt();
+      });
+    }
+  }
+
+  /**
+   * Generate and reveal the narrative summary
+   */
+  generateNarrative() {
+    // Hide initial state, show content
+    const initialDiv = document.getElementById('narrative-initial');
+    const contentDiv = document.getElementById('narrative-content');
+    
+    if (initialDiv) initialDiv.classList.add('hidden');
+    if (contentDiv) contentDiv.classList.remove('hidden');
+    
+    // Generate narrative immediately
+    updateNarrativeFromResults(this.state.inputs, this.state.results);
+    
+    // Mark as generated so future updates happen automatically
+    this.narrativeGenerated = true;
+    
+    // Scroll to the narrative section
+    document.getElementById('narrativeSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /**

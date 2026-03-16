@@ -458,6 +458,65 @@ Fixed a latent bug in `updateKPIDisplay()` in `ui.js`: the original regex `repla
 
 ---
 
+### 2026-03-17 — Milestone 6 Completion
+
+#### M6: Narrative Summary (Story Mode)
+
+**Phase 6.1 — Narrative Generator (`js/narrative.js`):**
+Created new module with `generateNarrative(inputs, results)` function that produces a 7-part plain-language story from all computed fields:
+
+| Part | Title | Content | Conditional |
+|------|-------|---------|-------------|
+| 1 | The Problem | Current electricity rate, annual/monthly costs | Always shown |
+| 2 | The Hypothesis | PV capacity, daily generation, daily savings, equipment costs | Always shown |
+| 3 | Battery Storage | Battery capacity, charge %, nighttime coverage | Hidden if battery = 0 |
+| 4 | Total CAPEX | Investment breakdown with itemized costs | Always shown |
+| 5 | The Return | Annual savings, ROI %, payback, lifetime savings | Always shown |
+| 6 | Financing | Loan analysis, cash flow, interest impact | Hidden if no financing |
+| 7 | The Verdict | Green/yellow/red recommendation with actionable advice | Always shown |
+
+**Verdict thresholds:**
+- 🟢 **Green (Recommended):** ROI ≥ 15% AND payback ≤ 5 years
+- 🟡 **Yellow (Caution):** ROI 8–15% AND payback ≤ 8 years
+- 🔴 **Red (Not Recommended):** ROI < 8% OR payback > 8 years
+
+**Phase 6.2 — UI Integration:**
+- New Section 5 card in `index.html` with color-coded narrative parts
+- **Generate Button UX**: Initial state shows prominent "✨ Generate Narrative Summary" button with explanation text
+- When clicked: hides initial state, reveals narrative content, scrolls to section
+- After generation: narrative updates automatically when any input changes (reactive)
+- Copy/Export buttons only appear after narrative is generated (inside revealed content)
+- Verdict badge updates dynamically based on calculation results
+- `updateNarrativeFromResults()` in `ui.js` bridges calc → narrative → DOM
+
+**Bug Fix — Console Error on Load:**
+Removed `updateNarrativeFromResults(inputs, results)` call from `updateAllKPIs()` — the function doesn't have `inputs` in scope. Narrative updates are properly handled in `app.js` state change listener instead.
+
+**Phase 6.3 — Export Functions:**
+- `copyToClipboard()` — copies full narrative with header/timestamp
+- `exportAsTxt()` — downloads `solarcalc-report-YYYY-MM-DD.txt`
+- Both include report header, generation timestamp, and full 7-part story
+- Copy feedback shows "✓ Copied to clipboard!" for 3 seconds
+
+**Phase 6.4 — Service Worker Update:**
+- Added `js/narrative.js` to `APP_ASSETS` cache list
+- Bumped cache version if needed for offline functionality
+
+**M6 Checklist — All items verified:**
+- [x] `js/narrative.js` created with pure narrative generation functions
+- [x] 7-part story structure implemented with proper conditional sections
+- [x] Color-coded verdict system (green/yellow/red) with actionable advice
+- [x] Copy to Clipboard button working with visual feedback
+- [x] Export as .txt working with proper filename format
+- [x] Battery section hidden when batteryCapacityKWh = 0
+- [x] Financing section hidden when no loan
+- [x] 161/161 tests passing
+- [x] No new console errors introduced
+
+**M6 Status: COMPLETE ✅**
+
+---
+
 ## Patterns & Conventions
 
 ### Naming
