@@ -517,6 +517,86 @@ Removed `updateNarrativeFromResults(inputs, results)` call from `updateAllKPIs()
 
 ---
 
+### 2026-03-17 — Milestone 7 Completion
+
+#### M7: Save Specifications
+
+**Phase 7.0 — Spec Selector UI:**
+- Dark bar at very top of page (above header) with:
+  - Dropdown showing current spec (or "— Unsaved —")
+  - 💾 Save button (disabled when no active spec)
+  - "Save As…" button
+  - ⚙️ Manage button
+
+**Phase 7.1 — Save As…:**
+- Prompts for name with validation
+- Checks for duplicate names
+- Checks 20-spec limit
+- Creates new spec with generated ID and timestamp
+- Becomes active spec automatically
+
+**Phase 7.2 — Save (Overwrite):**
+- Silent overwrite of current active spec
+- Updates `savedAt` timestamp
+- Alert confirmation to user
+
+**Phase 7.3 — Load via Dropdown:**
+- Selecting spec from dropdown loads all 18 inputs
+- Calls `updateAllInputs()` and triggers recalculation
+- Scrolls to top of page
+- Sets as active spec
+
+**Phase 7.4 — Manage Panel:**
+- Modal with list of all specs
+- Each spec card shows: name, summary (system size), date, Active badge
+- Actions per spec: ✏️ Rename, 🗑️ Delete
+- Delete requires confirmation
+
+**Phase 7.5 — Rename:**
+- Inline prompt with current name
+- Duplicate name validation
+- Updates both localStorage and UI
+
+**Phase 7.6 — Export as JSON:**
+- Downloads `solarcalc-specs-YYYY-MM-DD.json`
+- Contains export metadata (date, version) and specs array
+- Accessible from Manage panel
+
+**Phase 7.7 — Import from JSON:**
+- File input accepts `.json` files
+- Skips duplicates by name
+- Respects 20-spec limit
+- Shows results: imported count, skipped count
+
+**Data Structure:**
+```javascript
+{
+  id: "spec_timestamp_random",
+  name: "Home 5kW With Battery",
+  savedAt: "2026-03-17T01:30:00.000Z",
+  inputs: { /* all 18 input values */ }
+}
+```
+
+**Storage:** `localStorage` key `solarCalcSpecs` (array of spec objects)
+
+**M7 Checklist — All items verified:**
+- [x] Spec Selector visible at top of page
+- [x] Save As… creates new named spec
+- [x] Save overwrites active spec
+- [x] Dropdown loads spec and updates all inputs
+- [x] Manage panel lists all specs with actions
+- [x] Delete with confirmation works
+- [x] Rename updates spec name
+- [x] Export downloads valid JSON
+- [x] Import merges specs (skips duplicates)
+- [x] 20-spec limit enforced
+- [x] 161/161 tests passing
+
+**M7 Status: COMPLETE ✅**
+
+---
+
 ## Patterns & Conventions
 
 ### Naming

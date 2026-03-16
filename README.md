@@ -271,17 +271,19 @@ All data woven into a plain-language story: Problem → Hypothesis → Evidence 
 
 ---
 
-### ⬜ Milestone 7: Save Specifications
-> **Status: NOT STARTED**
+### ✅ Milestone 7: Save Specifications
+> **Status: COMPLETE** — 161/161 tests pass
 
 Named scenario save/load with a dropdown selector at the top of the page.
 
-- [ ] **Spec Selector** — dropdown + Save + Save As… always visible at top of page
-- [ ] **Save As…** — name prompt → saves to `localStorage` → becomes active spec
-- [ ] **Save** — silently overwrites current active spec
-- [ ] **Load** — select from dropdown → restores all 18 inputs and recalculates
-- [ ] **Manage panel** — delete (with confirmation), rename, export as JSON, import from JSON
-- [ ] Max 20 specs per device
+- [x] **Spec Selector** — dropdown + Save + Save As… always visible at top of page
+- [x] **Save As…** — name prompt → saves to `localStorage` → becomes active spec
+- [x] **Save** — silently overwrites current active spec
+- [x] **Load** — select from dropdown → restores all 18 inputs and recalculates
+- [x] **Manage panel** — delete (with confirmation), rename, export as JSON, import from JSON
+- [x] Max 20 specs per device
+
+**Spec data stored:** All 18 input values, name, saved timestamp. Export format: `solarcalc-specs-YYYY-MM-DD.json`
 
 ---
 

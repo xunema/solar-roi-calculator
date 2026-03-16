@@ -18,8 +18,27 @@ import {
   toggleTooltip,
   copyNarrativeToClipboard,
   exportNarrativeAsTxt,
-  updateNarrativeFromResults
+  updateNarrativeFromResults,
+  updateSpecSelector,
+  updateSaveButtonState,
+  toggleManageSpecsModal,
+  renderSpecsList,
+  toggleSpecLimitWarning
 } from './ui.js';
+
+import {
+  getAllSpecs,
+  createSpec,
+  updateSpec,
+  deleteSpec,
+  renameSpec,
+  getSpecById,
+  specNameExists,
+  isSpecLimitReached,
+  exportSpecs,
+  importSpecs,
+  getFormattedSpecs
+} from './specs.js';
 
 // Onboarding slides content
 const onboardingSlides = [
@@ -49,6 +68,7 @@ class SolarCalcApp {
     this.state = createAppState();
     this.currentSlide = 0;
     this.narrativeGenerated = false;
+    this.activeSpecId = null;
     this.init();
   }
 
@@ -194,6 +214,12 @@ class SolarCalcApp {
 
     // Bind narrative buttons (M6)
     this.bindNarrativeButtons();
+
+    // Bind spec buttons (M7)
+    this.bindSpecButtons();
+
+    // Initialize specs UI (M7)
+    this.initSpecsUI();
     
     // Save state on page unload
     window.addEventListener('beforeunload', () => {
@@ -482,6 +508,249 @@ class SolarCalcApp {
         this.closeModals();
       }
     });
+  }
+
+  /**
+   * Initialize specs UI (M7)
+   */
+  initSpecsUI() {
+    const specs = getFormattedSpecs();
+    updateSpecSelector(specs, this.activeSpecId);
+    updateSaveButtonState(!!this.activeSpecId);
+  }
+
+  /**
+   * Bind spec-related buttons (M7)
+   */
+  bindSpecButtons() {
+    // Spec selector dropdown - Load spec
+    const selector = document.getElementById('specSelector');
+    if (selector) {
+      selector.addEventListener('change', (e) => {
+        const specId = e.target.value;
+        if (specId) {
+          this.loadSpec(specId);
+        } else {
+          this.activeSpecId = null;
+          updateSaveButtonState(false);
+        }
+      });
+    }
+
+    // Save button - Overwrite current spec
+    const saveBtn = document.getElementById('specSaveBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        if (this.activeSpecId) {
+          this.saveCurrentSpec();
+        }
+      });
+    }
+
+    // Save As button - Create new spec
+    const saveAsBtn = document.getElementById('specSaveAsBtn');
+    if (saveAsBtn) {
+      saveAsBtn.addEventListener('click', () => {
+        this.saveSpecAs();
+      });
+    }
+
+    // Manage specs button - Open manage modal
+    const manageBtn = document.getElementById('specManageBtn');
+    if (manageBtn) {
+      manageBtn.addEventListener('click', () => {
+        this.openManageSpecs();
+      });
+    }
+
+    // Close manage modal buttons
+    const closeManageBtn = document.getElementById('closeManageSpecs');
+    const closeManageBtn2 = document.getElementById('closeManageSpecsBtn');
+    if (closeManageBtn) {
+      closeManageBtn.addEventListener('click', () => toggleManageSpecsModal(false));
+    }
+    if (closeManageBtn2) {
+      closeManageBtn2.addEventListener('click', () => toggleManageSpecsModal(false));
+    }
+
+    // Close modal on backdrop click
+    const manageModal = document.getElementById('manageSpecsModal');
+    if (manageModal) {
+      manageModal.addEventListener('click', (e) => {
+        if (e.target === manageModal) {
+          toggleManageSpecsModal(false);
+        }
+      });
+    }
+
+    // Export specs button
+    const exportSpecsBtn = document.getElementById('exportSpecsBtn');
+    if (exportSpecsBtn) {
+      exportSpecsBtn.addEventListener('click', () => {
+        exportSpecs();
+      });
+    }
+
+    // Import specs button
+    const importSpecsBtn = document.getElementById('importSpecsBtn');
+    if (importSpecsBtn) {
+      importSpecsBtn.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          await this.handleImportSpecs(file);
+          e.target.value = ''; // Reset input
+        }
+      });
+    }
+
+    // Spec list action buttons (delete, rename) - event delegation
+    const specsList = document.getElementById('specsList');
+    if (specsList) {
+      specsList.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('[data-spec-delete]');
+        const renameBtn = e.target.closest('[data-spec-rename]');
+        
+        if (deleteBtn) {
+          const specId = deleteBtn.getAttribute('data-spec-delete');
+          this.handleDeleteSpec(specId);
+        } else if (renameBtn) {
+          const specId = renameBtn.getAttribute('data-spec-rename');
+          this.handleRenameSpec(specId);
+        }
+      });
+    }
+  }
+
+  /**
+   * Save current inputs to active spec
+   */
+  saveCurrentSpec() {
+    if (!this.activeSpecId) return;
+    
+    const updated = updateSpec(this.activeSpecId, this.state.inputs);
+    if (updated) {
+      this.initSpecsUI();
+      alert('Specification saved!');
+    }
+  }
+
+  /**
+   * Save current inputs as a new spec
+   */
+  saveSpecAs() {
+    if (isSpecLimitReached()) {
+      alert('Maximum 20 specifications reached. Please delete some to save more.');
+      return;
+    }
+
+    const name = prompt('Enter a name for this specification:');
+    if (!name || !name.trim()) return;
+
+    if (specNameExists(name)) {
+      alert('A specification with this name already exists. Please choose a different name.');
+      return;
+    }
+
+    const spec = createSpec(name, this.state.inputs);
+    if (spec) {
+      this.activeSpecId = spec.id;
+      this.initSpecsUI();
+      alert(`Specification "${spec.name}" saved!`);
+    }
+  }
+
+  /**
+   * Load a spec by ID
+   * @param {string} specId - Spec ID to load
+   */
+  loadSpec(specId) {
+    const spec = getSpecById(specId);
+    if (!spec) return;
+
+    // Load inputs from spec
+    Object.keys(spec.inputs).forEach(key => {
+      if (key in this.state.inputs) {
+        this.state.inputs[key] = spec.inputs[key];
+      }
+    });
+
+    this.activeSpecId = specId;
+    updateAllInputs(this.state.inputs);
+    updateSaveButtonState(true);
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /**
+   * Open the manage specs modal
+   */
+  openManageSpecs() {
+    const specs = getFormattedSpecs();
+    renderSpecsList(specs, this.activeSpecId);
+    toggleSpecLimitWarning(isSpecLimitReached());
+    toggleManageSpecsModal(true);
+  }
+
+  /**
+   * Handle delete spec action
+   * @param {string} specId - Spec ID to delete
+   */
+  handleDeleteSpec(specId) {
+    if (!confirm('Are you sure you want to delete this specification?')) return;
+
+    if (deleteSpec(specId)) {
+      if (this.activeSpecId === specId) {
+        this.activeSpecId = null;
+        updateSaveButtonState(false);
+      }
+      this.openManageSpecs(); // Refresh the list
+      this.initSpecsUI(); // Refresh the dropdown
+    }
+  }
+
+  /**
+   * Handle rename spec action
+   * @param {string} specId - Spec ID to rename
+   */
+  handleRenameSpec(specId) {
+    const spec = getSpecById(specId);
+    if (!spec) return;
+
+    const newName = prompt('Enter new name:', spec.name);
+    if (!newName || !newName.trim()) return;
+
+    if (newName.trim() === spec.name) return; // No change
+
+    if (specNameExists(newName)) {
+      alert('A specification with this name already exists.');
+      return;
+    }
+
+    if (renameSpec(specId, newName)) {
+      this.openManageSpecs(); // Refresh the list
+      this.initSpecsUI(); // Refresh the dropdown
+    }
+  }
+
+  /**
+   * Handle import specs from file
+   * @param {File} file - JSON file to import
+   */
+  async handleImportSpecs(file) {
+    const result = await importSpecs(file);
+    
+    if (result.success) {
+      let message = `Imported ${result.imported} specification${result.imported !== 1 ? 's' : ''}.`;
+      if (result.skipped > 0) {
+        message += ` Skipped ${result.skipped} (duplicates or limit reached).`;
+      }
+      alert(message);
+      this.initSpecsUI();
+      this.openManageSpecs();
+    } else {
+      alert('Import failed: ' + (result.error || 'Unknown error'));
+    }
   }
 }
 

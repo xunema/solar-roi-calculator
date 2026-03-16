@@ -695,6 +695,124 @@ export function exportNarrativeAsTxt() {
   }
 }
 
+/**
+ * Update the spec selector dropdown
+ * @param {Array} specs - Array of formatted specs
+ * @param {string|null} activeSpecId - Currently active spec ID
+ */
+export function updateSpecSelector(specs, activeSpecId = null) {
+  const selector = document.getElementById('specSelector');
+  if (!selector) return;
+  
+  // Clear current options except the first (Unsaved)
+  while (selector.options.length > 1) {
+    selector.remove(1);
+  }
+  
+  // Add specs to dropdown
+  specs.forEach(spec => {
+    const option = document.createElement('option');
+    option.value = spec.id;
+    option.textContent = spec.name;
+    if (spec.id === activeSpecId) {
+      option.selected = true;
+    }
+    selector.appendChild(option);
+  });
+  
+  // If no active spec, select "Unsaved"
+  if (!activeSpecId) {
+    selector.value = '';
+  }
+}
+
+/**
+ * Update the Save button state
+ * @param {boolean} hasActiveSpec - Whether there's an active spec
+ */
+export function updateSaveButtonState(hasActiveSpec) {
+  const saveBtn = document.getElementById('specSaveBtn');
+  if (saveBtn) {
+    saveBtn.disabled = !hasActiveSpec;
+  }
+}
+
+/**
+ * Toggle the Manage Specs modal
+ * @param {boolean} show - Whether to show the modal
+ */
+export function toggleManageSpecsModal(show) {
+  const modal = document.getElementById('manageSpecsModal');
+  if (modal) {
+    if (show) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    } else {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+}
+
+/**
+ * Render the specs list in the manage modal
+ * @param {Array} specs - Array of formatted specs
+ * @param {string|null} activeSpecId - Currently active spec ID
+ */
+export function renderSpecsList(specs, activeSpecId = null) {
+  const container = document.getElementById('specsList');
+  if (!container) return;
+  
+  if (specs.length === 0) {
+    container.innerHTML = `
+      <div class="text-center text-gray-500 py-8">
+        No saved specifications yet.
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = specs.map(spec => `
+    <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border ${spec.id === activeSpecId ? 'border-teal-500 bg-teal-50' : 'border-gray-200'}">
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-gray-900 truncate">${escapeHtml(spec.name)}</div>
+        <div class="text-xs text-gray-500">
+          ${spec.summary} • ${spec.displayDate}
+          ${spec.id === activeSpecId ? ' • <span class="text-teal-600 font-medium">Active</span>' : ''}
+        </div>
+      </div>
+      <button data-spec-rename="${spec.id}" class="p-2 text-gray-400 hover:text-blue-600 transition" title="Rename">
+        ✏️
+      </button>
+      <button data-spec-delete="${spec.id}" class="p-2 text-gray-400 hover:text-red-600 transition" title="Delete">
+        🗑️
+      </button>
+    </div>
+  `).join('');
+}
+
+/**
+ * Show/hide the spec limit warning
+ * @param {boolean} show - Whether to show the warning
+ */
+export function toggleSpecLimitWarning(show) {
+  const warning = document.getElementById('specLimitWarning');
+  if (warning) {
+    warning.classList.toggle('hidden', !show);
+  }
+}
+
+/**
+ * Escape HTML special characters
+ * @param {string} text - Text to escape
+ * @returns {string}
+ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // Default export
 export default {
   getColorClass,
@@ -725,5 +843,10 @@ export default {
   initializeUI,
   updateNarrativeFromResults,
   copyNarrativeToClipboard,
-  exportNarrativeAsTxt
+  exportNarrativeAsTxt,
+  updateSpecSelector,
+  updateSaveButtonState,
+  toggleManageSpecsModal,
+  renderSpecsList,
+  toggleSpecLimitWarning
 };
