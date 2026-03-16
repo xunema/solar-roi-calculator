@@ -238,6 +238,7 @@
               <strong>Your blended rate</strong> = Total Bill ÷ Total kWh consumed.<br>
               Typical: Residential ₱20/kWh, Commercial ₱15/kWh.<br><br>
               🔗 <a href="https://www.meralco.com.ph" target="_blank" class="text-blue-600 underline">Meralco Rates</a>
+            </div>
           </div>
           
           <!-- Operating Weeks -->
@@ -364,12 +365,15 @@
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">hrs</span>
             </div>
             <div id="sunhours-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              Equivalent hours of full sun per day. Philippine average: 4-5 hrs.
-              <br><br>
-              <strong>External Resources:</strong><br>
-              🔗 <a href="https://www.google.com/get/sunroof" target="_blank" class="text-blue-600 underline">Google Project Sunroof</a><br>
-              🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Maps</a><br>
-              🔗 <a href="https://pvwatts.nrel.gov/" target="_blank" class="text-blue-600 underline">PVWatts Calculator</a>
+              <strong>Peak Sun Hours (PSH)</strong> = equivalent hours of full sun (1,000 W/m²) per day.<br><br>
+              🇵🇭 Philippine average: <strong>4.0–4.5 hrs/day</strong> (conservative baseline).<br>
+              Raw geographic potential: 4.5–5.5 hrs/day.<br><br>
+              Using 4.0 hrs accounts for clouds, monsoon rain, panel losses, and degradation.<br><br>
+              Use the <strong>Calculate</strong> button above to estimate PSH by region, orientation, and tilt.<br><br>
+              <strong>External data sources:</strong><br>
+              🔗 <a href="https://globalsolaratlas.info" target="_blank" class="text-blue-600 underline">Global Solar Atlas</a> (World Bank)<br>
+              🔗 <a href="https://pvwatts.nrel.gov/" target="_blank" class="text-blue-600 underline">NREL PVWatts Calculator</a><br>
+              🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Resource Maps</a>
             </div>
           </div>
           
@@ -891,19 +895,20 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Roof Orientation</label>
           <select id="roofOrientation" class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg">
-            <option value="0">South (Optimal)</option>
-            <option value="-0.2">Southeast/Southwest</option>
-            <option value="-0.4">East</option>
-            <option value="-0.4">West</option>
+            <option value="0">South — Optimal (+0.0 hrs)</option>
+            <option value="-0.2">Southeast / Southwest (-0.2 hrs)</option>
+            <option value="-0.4">East / West (-0.4 hrs)</option>
+            <option value="-0.6">North — Avoid if possible (-0.6 hrs)</option>
           </select>
         </div>
-        
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Roof Angle</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Roof Tilt Angle</label>
           <select id="roofAngle" class="input-field w-full px-3 py-2 border border-gray-300 rounded-lg">
-            <option value="0">15-30° (Standard/Optimal)</option>
-            <option value="-0.1">0-15° (Flat)</option>
-            <option value="-0.1">30-45° (Steep)</option>
+            <option value="0">Standard 10–20° (+0.0 hrs)</option>
+            <option value="-0.1">Flat 0–10° (-0.1 hrs)</option>
+            <option value="0.1">Latitude-matched ≈ 15° (+0.1 hrs) — Optimal</option>
+            <option value="-0.2">Steep 30–45° (-0.2 hrs)</option>
           </select>
         </div>
         
@@ -915,14 +920,15 @@
         </div>
         
         <button id="applySunHours" class="w-full py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition">
-          Apply to Calculator
+          ✓ Use This Value
         </button>
       </div>
       
       <div class="mt-4 text-xs text-gray-500">
-        <strong>External References:</strong><br>
-        🔗 <a href="https://www.google.com/get/sunroof" target="_blank" class="text-blue-600 underline">Google Project Sunroof</a><br>
-        🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Maps</a>
+        <strong>External data sources for your location:</strong><br>
+        🔗 <a href="https://globalsolaratlas.info" target="_blank" class="text-blue-600 underline">Global Solar Atlas</a> — search your address, read GHI (kWh/m²/day) = PSH<br>
+        🔗 <a href="https://pvwatts.nrel.gov/" target="_blank" class="text-blue-600 underline">NREL PVWatts</a> — enter address, read "Solar Radiation (kWh/m²/day)"<br>
+        🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Resource Maps</a>
       </div>
     </div>
   </div>

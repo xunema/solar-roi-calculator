@@ -351,6 +351,36 @@ The button (`id="resetDefaults"`) was already in `index.html` at the bottom of t
 
 ---
 
+### 2026-03-17 — Milestone 3 Completion
+
+#### M3: Tooltips, Onboarding & Sun Hours
+
+**Phase 3.1 — Tooltip system:**
+All 17 input fields have `❓` buttons with tooltip divs. `bindTooltipButtons()` in `app.js` handles show/hide via `toggleTooltip()` / `hideAllTooltips()` in `ui.js`. One tooltip open at a time. Fixed HTML bug: `rate-tip` tooltip div was unclosed, causing the field container to close prematurely. Added `</div>` to properly close the tooltip before the field container.
+
+**Phase 3.2 — Onboarding modal:**
+Updated all 4 slide contents to be more informative:
+1. Welcome — what the app does
+2. Finding Your Electricity Rate — blended rate = Total Bill ÷ Total kWh (not just Generation Charge)
+3. Four Sections, One Answer — brief overview of each section
+4. Getting Help — tooltips, Calculate button, Quick Presets, Help button
+
+Changed `checkFirstVisit()` from checking `state.ui.onboardingComplete` (localStorage-backed) to `sessionStorage.getItem('onboardingShown')`. This shows the guide once per browser session. Users can re-open via Help button anytime.
+
+**Phase 3.3 — Sun hours calculator:**
+Updated modal to match PRD spec:
+- Added North orientation option (-0.6 hrs adjustment)
+- Replaced tilt options with PRD-spec values: Standard 10–20° (0), Flat 0–10° (-0.1), Latitude-matched +0.1 (optimal), Steep 30–45° (-0.2)
+- Renamed "Apply to Calculator" → "Use This Value"
+- Updated external reference links: Global Solar Atlas, PVWatts, NREL Maps with usage instructions
+
+**Phase 3.4 — External reference links:**
+`sunhours-tip` tooltip updated to match PRD spec: PSH definition, Philippine average (4.0–4.5 hrs conservative), links to Global Solar Atlas, PVWatts, NREL Maps.
+
+**M3 Status: COMPLETE ✅**
+
+---
+
 ## Patterns & Conventions
 
 ### Naming

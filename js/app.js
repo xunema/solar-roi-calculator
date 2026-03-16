@@ -22,19 +22,19 @@ import {
 const onboardingSlides = [
   {
     title: "Welcome to SolarCalc PH",
-    content: "Calculate your solar ROI in real-time. This app helps you understand the financial benefits of installing solar panels and battery storage for your home or business."
+    content: "Calculate your solar ROI in real-time. Enter your electricity costs, system specs, and financing details — and see your payback period, annual savings, and net cash flow instantly.<br><br>All calculations happen on your device. No signup, no internet required after first load."
   },
   {
-    title: "Find Your Electricity Rate",
-    content: "Look at your Meralco or utility bill. Divide your <strong>Total Bill Amount</strong> by <strong>Total kWh Consumed</strong> to get your blended rate per kWh. Typical range: ₱9-12/kWh."
+    title: "Finding Your Electricity Rate",
+    content: "Your <strong>blended rate</strong> = Total Bill ÷ Total kWh consumed.<br><br>Check your Meralco bill for both figures. <strong>Do not use just the Generation Charge</strong> — use the full bill total divided by total kWh.<br><br>Typical rates: Residential ₱20/kWh, Commercial ₱15/kWh."
   },
   {
-    title: "PhotoVoltaic System Sizing",
-    content: "Enter your desired PV capacity in kW. For reference: A typical Philippine home uses 3-10 kW systems. Use our Sun Hours Calculator to find your location's peak sun hours."
+    title: "Four Sections, One Answer",
+    content: "<strong>1 — Status Quo:</strong> Your current electricity cost baseline<br><strong>2 — PhotoVoltaic System:</strong> Solar panel sizing and equipment cost<br><strong>3 — Battery Storage:</strong> Optional nighttime backup<br><strong>4 — Financing:</strong> Loan terms and monthly cash flow<br><br>Each section shows its own results panel. The Dashboard aggregates all KPIs. Tap any KPI to jump to its source section."
   },
   {
-    title: "You're Ready!",
-    content: "Adjust any value and see results update instantly. Try the Quick Presets to explore different scenarios. All calculations happen on your device—no data is sent anywhere."
+    title: "Getting Help",
+    content: "Click the <strong>❓</strong> next to any field for context, benchmarks, and external resources.<br><br>Use the <strong>Calculate</strong> button on Peak Sun Hours to estimate PSH by region, orientation, and roof tilt.<br><br>Try <strong>Quick Presets</strong> to instantly load Residential, Commercial, or Spreadsheet scenarios.<br><br>Click <strong>❓ Help</strong> in the header to re-open this guide anytime."
   }
 ];
 
@@ -173,10 +173,13 @@ class SolarCalcApp {
   }
 
   /**
-   * Check if this is first visit and show onboarding
+   * Check if this is first visit this session and show onboarding
+   * Uses sessionStorage so it shows once per browser session, not once ever.
+   * The Help button lets users re-open it anytime.
    */
   checkFirstVisit() {
-    if (!this.state.ui.onboardingComplete) {
+    if (!sessionStorage.getItem('onboardingShown')) {
+      sessionStorage.setItem('onboardingShown', '1');
       setTimeout(() => {
         this.showOnboarding();
       }, 500);

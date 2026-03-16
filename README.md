@@ -211,13 +211,18 @@ All formulas implemented and verified. No UI required.
 
 ---
 
-### ⬜ Milestone 3: Tooltips, Onboarding & Sun Hours
-> **Status: NOT STARTED**
+### ✅ Milestone 3: Tooltips, Onboarding & Sun Hours
+> **Status: COMPLETE** — All 4 phases implemented; 155/155 tests pass
 
-- [ ] Tooltip on every field (❓ icon, one open at a time)
-- [ ] Onboarding modal — 4-slide guide (blended rate, annual usage, defaults)
-- [ ] Sun hours calculator — region/city dropdown → peak sun hours estimate
-- [ ] External reference links (NREL, PVWatts) in tooltips
+- [x] Phase 3.1 — Tooltip on every field (❓ icon, one open at a time; click away closes)
+- [x] Phase 3.2 — Onboarding modal — 4-slide guide; shows once per browser session (sessionStorage); re-opens via Help button
+- [x] Phase 3.3 — Sun hours calculator — region + orientation + tilt → estimated PSH; "Use This Value" populates Section 2
+- [x] Phase 3.4 — External reference links in `peakSunHoursPerDay` tooltip: Global Solar Atlas, NREL PVWatts, NREL Solar Maps
+
+**Key decisions:**
+- Onboarding uses `sessionStorage` (not localStorage) so it shows on every new browser session, not just once ever
+- `rate-tip` HTML bug fixed (unclosed tooltip div)
+- Sun hours modal options updated to match PRD: North orientation (-0.6 hrs), Latitude-matched tilt (+0.1 hrs)
 
 ---
 
