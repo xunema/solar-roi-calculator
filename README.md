@@ -16,7 +16,16 @@ SolarCalc PH takes your electricity rate, photovoltaic system specs, optional ba
 - **Payback Period** — years until the system pays for itself
 - **Monthly Cash Flow** — net savings after loan payments (if financed)
 
-All calculations happen in real time as you type. No server, no signup, no internet required after first load.
+**Key Features:**
+- ⚡ **Real-time calculations** — See results instantly as you type
+- 📊 **Per-section results** — Each section shows its own computed outputs
+- 🎯 **11 KPI Dashboard** — All metrics with click-to-navigate
+- ☀️ **Sun Hours Calculator** — Philippine regional data built-in
+- 🏠 **Quick Presets** — Residential, Commercial, Battery Only, Spreadsheet
+- 🌙 **Night/Day themes** — Comfortable viewing any time
+- 📱 **PWA** — Works offline, installable on mobile
+
+No server, no signup, no internet required after first load.
 
 ---
 
@@ -34,7 +43,7 @@ All calculations happen in real time as you type. No server, no signup, no inter
 ## Quick Start
 
 ### Option 1: Visit the Live App
-> *GitHub Pages URL will go here after deployment*
+🔗 **https://xunema.github.io/solar-roi-calculator/**
 
 ### Option 2: Run Locally
 ```bash
@@ -103,17 +112,26 @@ solarcalc-ph/
 
 ---
 
-## Philippine Defaults
+## Philippine Market Defaults
 
-The app ships with sensible defaults for the Philippine market:
+The app ships with current market rates for the Philippines:
 
-| Parameter | Default | Notes |
-|-----------|---------|-------|
-| Electricity Rate | ₱10.00/kWh | Blended rate (Total Bill ÷ Total kWh) |
-| Peak Sun Hours | 4.0 hrs/day | Philippine average effective output |
-| Solar Price | ₱30,000/kW | Commercial benchmark; residential ₱30k–₱50k |
-| Battery Price | ₱12,000/kWh | LFP batteries, 10+ year lifespan |
-| Loan Term | 60 months | 5-year standard financing |
+| Parameter | Residential | Commercial | Notes |
+|-----------|-------------|------------|-------|
+| **Electricity Rate** | ₱20/kWh | ₱15/kWh | Meralco blended rate |
+| **Solar Price** | ₱20,000/kW | ₱15,000/kW | Installed cost per kW |
+| **Battery Price** | ₱12,000/kWh | ₱10,000/kWh | LFP lithium batteries |
+| **Peak Sun Hours** | 4.0 hrs/day | 4.0 hrs/day | Philippine average |
+| **Loan Term** | 60 months | 60 months | 5-year financing |
+
+### Quick Presets
+
+| Preset | System Size | Solar Price | Typical Night Load |
+|--------|-------------|-------------|-------------------|
+| 🏠 **Residential** | 5 kW | ₱20,000/kW | 1.5 kW (AC, fridge, fans) |
+| 🏢 **Commercial** | 100 kW | ₱15,000/kW | 15 kW (lights, servers, security) |
+| 🔋 **Battery Only** | — | — | 5 kW (existing solar + storage) |
+| 📋 **Spreadsheet** | 300 kW | ₱40,000/kW | Reference data from Excel model |
 
 ---
 
