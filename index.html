@@ -404,7 +404,22 @@
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">kW</span>
             </div>
             <div id="load-tip" class="tooltip mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-              Average power consumption during nighttime hours (when solar isn't producing)
+              <strong>Average power consumption during nighttime hours</strong> (when solar isn't producing)
+              <br><br>
+              <strong>🏠 Typical Residential:</strong><br>
+              • Air Conditioner (1-2 HP): 0.75-1.5 kW<br>
+              • Refrigerator (inverter): 0.05-0.1 kW<br>
+              • Electric Fan: 0.05-0.08 kW<br>
+              • Router/WiFi, Chargers: 0.02-0.05 kW<br>
+              • <em>Typical total: 0.5-2 kW</em>
+              <br><br>
+              <strong>🏢 Typical Commercial:</strong><br>
+              • Security Lights: 0.2-0.5 kW<br>
+              • Server/Network Equipment: 0.3-1 kW<br>
+              • Refrigeration (24/7): 0.5-2 kW<br>
+              • CCTV/Security Systems: 0.05-0.2 kW<br>
+              • Emergency/Exit Lighting: 0.1-0.3 kW<br>
+              • <em>Typical total: 2-20 kW (varies by business type)</em>
             </div>
           </div>
           
@@ -637,18 +652,22 @@
         <!-- Quick Presets -->
         <div class="mt-4 card bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <h3 class="text-sm font-semibold text-gray-700 mb-3">Quick Presets</h3>
-          <div class="grid grid-cols-2 gap-2">
-            <button id="preset-residential" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-              🏠 Residential
+          <div class="grid grid-cols-1 gap-2">
+            <button id="preset-residential" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition text-left">
+              🏠 <strong>Residential</strong> — 5kW @ ₱20,000/kW<br>
+              <span class="text-xs text-gray-500">Night load: AC, fridge, fans (1.5kW typical)</span>
             </button>
-            <button id="preset-commercial" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-              🏢 Commercial
+            <button id="preset-commercial" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition text-left">
+              🏢 <strong>Commercial</strong> — 100kW @ ₱15,000/kW<br>
+              <span class="text-xs text-gray-500">Night load: Lights, servers, security (15kW typical)</span>
             </button>
-            <button id="preset-batteryOnly" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-              🔋 Battery Only
+            <button id="preset-batteryOnly" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition text-left">
+              🔋 <strong>Battery Only</strong> — No solar, battery backup<br>
+              <span class="text-xs text-gray-500">For existing grid-tie systems adding storage</span>
             </button>
-            <button id="preset-spreadsheet" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-              📋 Spreadsheet
+            <button id="preset-spreadsheet" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition text-left">
+              📋 <strong>Spreadsheet</strong> — 300kW commercial reference<br>
+              <span class="text-xs text-gray-500">Matches original Excel calculations</span>
             </button>
           </div>
         </div>

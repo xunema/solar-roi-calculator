@@ -205,12 +205,12 @@ export function createAppState() {
           dailyEnergyConsumptionKWh: 30,
           solarCapacityKW: 5,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 35000,
-          miscInfraCosts: 50000,
-          batteryPricePerKWh: 15000,
-          nighttimeLoadKW: 1.5,
-          nighttimeDurationHours: 8,
-          loanPrincipal: 200000,
+          solarPricePerKW: 20000,      // ₱20,000/kW for residential
+          miscInfraCosts: 25000,        // Lower misc costs for small residential
+          batteryPricePerKWh: 12000,    // ₱12,000/kWh LFP battery
+          nighttimeLoadKW: 1.5,         // Aircon + fridge + 24/7 appliances
+          nighttimeDurationHours: 8,    // 10pm - 6am typical
+          loanPrincipal: 125000,        // 50% financing of ~₱125k system
           annualInterestRate: 8,
           loanTermMonths: 60
         },
@@ -221,12 +221,12 @@ export function createAppState() {
           dailyEnergyConsumptionKWh: 500,
           solarCapacityKW: 100,
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 30000,
-          miscInfraCosts: 500000,
-          batteryPricePerKWh: 12000,
-          nighttimeLoadKW: 20,
-          nighttimeDurationHours: 10,
-          loanPrincipal: 3500000,
+          solarPricePerKW: 15000,       // ₱15,000/kW for commercial (economies of scale)
+          miscInfraCosts: 300000,       // Higher misc for commercial installation
+          batteryPricePerKWh: 10000,    // ₱10,000/kWh bulk battery pricing
+          nighttimeLoadKW: 15,          // Security lights, servers, refrigeration
+          nighttimeDurationHours: 12,   // 6pm - 6am typical for commercial
+          loanPrincipal: 1800000,       // 60% financing of ~₱1.8M system
           annualInterestRate: 10,
           loanTermMonths: 60
         },

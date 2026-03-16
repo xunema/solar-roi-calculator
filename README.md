@@ -76,6 +76,7 @@ python3 -m http.server 8000
 ```
 solarcalc-ph/
 ├── index.html              # Single-page app shell
+├── sunhours.html           # Peak Sun Hours reference & calculator
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # Service worker (cache-first)
 ├── css/

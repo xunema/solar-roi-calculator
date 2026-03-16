@@ -234,68 +234,193 @@ Loan example from spreadsheet: ₱14,000,000 principal @ 12% annual over 60 mont
 
 ---
 
-## 6. Sun Hours Per Day Calculator
+## 6. Peak Sun Hours (PSH) Calculator & Reference
 
 ### 6.1 Purpose
-Help users determine their location's peak sun hours without external research.
+Help users determine their location's peak sun hours without external research. Accessible as a dedicated reference page (`sunhours.html`) linked from the Peak Sun Hours input field in Section 2.
 
-### 6.2 Input Fields
+### 6.2 What is a Peak Sun Hour?
+
+A Peak Sun Hour (PSH) is **not** a literal count of daylight hours. It is a measurement of solar *energy intensity*:
+
+> **1 PSH = 1 hour of sunlight at 1,000 W/m² (Standard Test Condition)**
+
+Example: 500 W/m² for 2 hours in the morning = 1 PSH.
+
+The raw geographic average for the Philippines is **4.5–5.5 hours** depending on region, but **4.0 hours** is the standard conservative baseline used by Philippine solar installers to account for:
+- Cloud cover and rainy seasons (Habagat monsoon)
+- Panel degradation over time
+- Wiring and inverter losses
+- Temperature derating
+
+### 6.3 PSH Formula
+
+**Basic formula:**
+```
+PSH = Total Daily Solar Insolation (Wh/m²) / 1,000 W/m²
+```
+
+Since 1,000 Wh = 1 kWh, if a database gives insolation in kWh/m²/day, **PSH equals that number directly**.
+
+**Rigorous definition (integral form):**
+```
+PSH = ∫(sunrise to sunset) G(t) / G_STC dt
+
+Where:
+  G(t)   = actual solar irradiance at time t (W/m²)
+  G_STC  = standard reference irradiance (1,000 W/m²)
+```
+
+### 6.4 In-App Calculator
+
+The app includes a modal calculator accessible from the Peak Sun Hours field via a "Calculate PSH" button.
+
+#### Input Fields
 
 | Field | Type | Default | Options |
 |-------|------|---------|---------|
 | `region` | select | "Metro Manila" | Philippine regions: NCR, CAR, Region I-XII, NIR, BARMM |
 | `cityMunicipality` | select | dynamic | Populated based on region selection |
-| `roofOrientation` | select | "South" | South, Southeast, Southwest, East, West |
-| `roofAngle` | select | "15-30°" | Flat (0-15°), Standard (15-30°), Steep (30-45°) |
+| `roofOrientation` | select | "South" | South, Southeast, Southwest, East, West, North |
+| `roofTiltAngle` | select | "Latitude" | Flat (0-10°), Standard (10-20°), Latitude-matched, Steep (30-45°) |
+| `latitude` | number | auto | Auto-populated from city; user can override |
 
-### 6.3 Calculation Logic
+#### Base PSH by Region (annual average)
 
-Base peak sun hours by region (annual average):
+| Region | Base PSH | Approx. Latitude | Cities Reference |
+|--------|----------|------------------|------------------|
+| Metro Manila (NCR) | 4.0 | 14.6° N | Manila, Quezon City, Makati |
+| Region I (Ilocos) | 4.5 | 17.6° N | Laoag, Vigan, Dagupan |
+| Region II (Cagayan Valley) | 4.3 | 17.5° N | Tuguegarao, Santiago |
+| Region III (Central Luzon) | 4.4 | 15.5° N | Angeles, Olongapo, Cabanatuan |
+| Region IV-A (Calabarzon) | 4.0 | 14.1° N | Calamba, Batangas City, Lipa |
+| Region IV-B (Mimaropa) | 4.2 | 12.0° N | Puerto Princesa, Calapan |
+| Region V (Bicol) | 3.9 | 13.4° N | Legazpi, Naga, Iriga |
+| Region VI (Western Visayas) | 4.1 | 10.7° N | Iloilo City, Bacolod |
+| Region VII (Central Visayas) | 4.2 | 10.3° N | Cebu City, Dumaguete |
+| Region VIII (Eastern Visayas) | 4.0 | 11.0° N | Tacloban, Ormoc |
+| Region IX (Zamboanga Peninsula) | 4.3 | 7.8° N | Zamboanga City, Dipolog |
+| Region X (Northern Mindanao) | 4.1 | 8.5° N | Cagayan de Oro, Iligan |
+| Region XI (Davao) | 4.2 | 7.1° N | Davao City, Tagum |
+| Region XII (Soccsksargen) | 4.3 | 6.5° N | General Santos, Koronadal |
+| Region XIII (Caraga) | 3.9 | 8.9° N | Butuan, Surigao |
+| Cordillera (CAR) | 4.0 | 16.4° N | Baguio, Benguet |
+| Negros Island Region | 4.1 | 9.6° N | Dumaguete, Bacolod |
+| BARMM | 4.4 | 7.0° N | Cotabato City, Marawi |
 
-| Region | Base Sun Hours | Cities Reference |
-|--------|---------------|------------------|
-| Metro Manila | 4.0 | Manila, Quezon City, Makati |
-| Region I (Ilocos) | 4.5 | Laoag, Vigan, Dagupan |
-| Region II (Cagayan Valley) | 4.3 | Tuguegarao, Santiago |
-| Region III (Central Luzon) | 4.4 | Angeles, Olongapo, Cabanatuan |
-| Region IV-A (Calabarzon) | 4.0 | Calamba, Batangas City, Lipa |
-| Region IV-B (Mimaropa) | 4.2 | Puerto Princesa, Calapan |
-| Region V (Bicol) | 3.9 | Legazpi, Naga, Iriga |
-| Region VI (Western Visayas) | 4.1 | Iloilo City, Bacolod |
-| Region VII (Central Visayas) | 4.2 | Cebu City, Dumaguete |
-| Region VIII (Eastern Visayas) | 4.0 | Tacloban, Ormoc |
-| Region IX (Zamboanga Peninsula) | 4.3 | Zamboanga City, Dipolog |
-| Region X (Northern Mindanao) | 4.1 | Cagayan de Oro, Iligan |
-| Region XI (Davao) | 4.2 | Davao City, Tagum |
-| Region XII (Soccsksargen) | 4.3 | General Santos, Koronadal |
-| Region XIII (Caraga) | 3.9 | Butuan, Surigao |
-| Cordillera (CAR) | 4.0 | Baguio, Benguet |
-| Negros Island Region | 4.1 | Dumaguete, Bacolod |
-| BARMM | 4.4 | Cotabato City, Marawi |
+#### Orientation Adjustment
 
-**Orientation Adjustment:**
-- South: +0.0 hrs (optimal)
-- Southeast/Southwest: -0.2 hrs
-- East: -0.4 hrs
-- West: -0.4 hrs
+Because the Philippines is north of the equator (4°–21° N), panels should face **South** for maximum yield.
 
-**Angle Adjustment:**
-- Standard (15-30°): +0.0 hrs (optimal)
-- Flat (0-15°): -0.1 hrs
-- Steep (30-45°): -0.1 hrs
+| Orientation | Adjustment | Notes |
+|-------------|-----------|-------|
+| South | +0.0 hrs | Optimal for Northern Hemisphere |
+| Southeast | -0.2 hrs | Slight morning bias |
+| Southwest | -0.2 hrs | Slight afternoon bias |
+| East | -0.4 hrs | Morning sun only |
+| West | -0.4 hrs | Afternoon sun only |
+| North | -0.6 hrs | Worst case; avoid if possible |
 
-### 6.4 External Reference Links
+#### Tilt Angle
 
-Tooltip on Peak Sun Hours field should include:
+**Rule of thumb:** Optimal tilt angle ≈ your latitude for year-round production.
 
 ```
-Peak sun hours = equivalent hours of full sun (1000 W/m²) per day.
-Philippine average: 4-5 hours/day.
+Optimal Tilt = Latitude ± 5°
 
-External resources:
-🔗 Google Project Sunroof (global map): https://www.google.com/get/sunroof
-🔗 NREL Solar Resource Data (Philippines): https://www.nrel.gov/solar/solar-resource-maps.html
-🔗 PVWatts Calculator: https://pvwatts.nrel.gov/
+For Metro Manila (14.6° N):
+  Year-round optimal: 15°
+  Dry season (Nov-Apr): Latitude - 15° = ~0° (flatter)
+  Wet season (May-Oct): Latitude + 15° = ~30° (steeper, sheds rain)
+```
+
+| Tilt Category | Angle Range | PSH Adjustment | Best For |
+|---------------|------------|----------------|----------|
+| Flat | 0–10° | -0.1 hrs | Flat roofs, easier install |
+| Standard | 10–20° | +0.0 hrs | Most Philippine roofs |
+| Latitude-matched | Latitude ± 5° | +0.1 hrs | Optimal year-round |
+| Steep | 30–45° | -0.2 hrs | Rain shedding, typhoon areas |
+
+#### Calculated Output
+
+```
+Estimated PSH = Base PSH (from region)
+              + Orientation Adjustment
+              + Tilt Adjustment
+
+Example: Cebu City, South-facing, Latitude-matched tilt
+  = 4.2 + 0.0 + 0.1
+  = 4.3 PSH
+```
+
+Modal shows a "Use this value" button that populates the Section 2 `peakSunHoursPerDay` field.
+
+### 6.5 Dedicated Reference Page (`sunhours.html`)
+
+A separate static page linked from the PSH tooltip and modal, containing:
+
+1. **What is PSH** — full explanation with the bell-curve concept
+2. **Basic & rigorous formulas** — simplified and integral forms
+3. **Extraterrestrial Radiation formula** (latitude-based theoretical maximum):
+   ```
+   H₀ = (24 × 60 / π) × G_sc × d_r × (ω_s × sin(φ) × sin(δ) + cos(φ) × cos(δ) × sin(ω_s))
+
+   Where:
+     φ      = Latitude (radians)
+     G_sc   = Solar constant (1,367 W/m²)
+     d_r    = Inverse relative Earth-Sun distance (varies by day of year)
+     δ      = Solar declination (Earth's tilt, varies by day)
+     ω_s    = Sunset hour angle = arccos(-tan(φ) × tan(δ))
+   ```
+   Note: For Philippines (~13–15° N), this gives 9–10 theoretical PSH — actual ground-level is 4–5 PSH due to atmosphere and weather.
+
+4. **Hargreaves-Samani practical model** (latitude + temperature):
+   ```
+   R_s = k_Rs × √(T_max - T_min) × H₀
+
+   Where:
+     R_s    = Actual solar radiation (ground-level PSH)
+     H₀     = Extraterrestrial radiation (from latitude formula)
+     T_max  = Daily maximum temperature
+     T_min  = Daily minimum temperature
+     k_Rs   = 0.16 (inland) or 0.19 (coastal Philippines)
+   ```
+
+5. **Why satellite data beats formulas** — Habagat/Amihan seasonal variation, 20-year satellite averages
+
+6. **Optimal tilt angle formula:**
+   ```
+   Year-round: Tilt ≈ Latitude
+   Summer optimization: Tilt = Latitude - 15°
+   Winter optimization: Tilt = Latitude + 15°
+   ```
+   All panels in the Philippines should face **South** (toward the equator from the Northern Hemisphere).
+
+7. **External PSH data sources** (with instructions):
+
+| Source | URL | How to Use |
+|--------|-----|-----------|
+| **Global Solar Atlas** (World Bank) | globalsolaratlas.info | Search location → read GHI (kWh/m²/day) = PSH |
+| **NREL PVWatts Calculator** | pvwatts.nrel.gov | Enter address → "Solar Radiation (kWh/m²/day)" month-by-month |
+| **Solargis Philippines** | solargis.com/maps-and-gis-data/download/philippines | High-res solar radiation maps |
+
+### 6.6 Peak Sun Hours Tooltip (in Section 2)
+
+The tooltip on the `peakSunHoursPerDay` field displays:
+
+```
+Peak Sun Hours (PSH) = equivalent hours of full sun (1,000 W/m²) per day.
+Philippine average: 4.0–4.5 hours/day (conservative baseline).
+Raw geographic potential: 4.5–5.5 hours/day.
+
+Using 4.0 hrs accounts for clouds, rain, panel losses, and degradation.
+
+[Calculate PSH] → opens in-app calculator modal
+[Learn More]    → opens sunhours.html reference page
+
+Data sources:
+  Global Solar Atlas: globalsolaratlas.info
+  NREL PVWatts: pvwatts.nrel.gov
 ```
 
 ---
@@ -321,6 +446,7 @@ External resources:
 ```
 solarcalc-ph/
 ├── index.html              # Single page app shell
+├── sunhours.html           # Peak Sun Hours reference page (standalone)
 ├── manifest.json           # PWA manifest
 ├── sw.js                   # Service worker (cache-first)
 ├── css/
