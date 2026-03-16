@@ -78,26 +78,65 @@
       position: sticky;
     }
     
-    /* Dark Mode Styles */
+    /* Dark Mode Styles - High Contrast */
     .dark body {
       background-color: #0f172a;
-      color: #f1f5f9;
+      color: #f8fafc;
     }
     
     .dark .card {
       background-color: #1e293b;
-      border-color: #334155;
+      border-color: #475569;
     }
     
     .dark .input-field {
       background-color: #0f172a;
-      border-color: #334155;
-      color: #f1f5f9;
+      border-color: #475569;
+      color: #f8fafc;
     }
     
     .dark .section-header {
       background-color: #1e293b;
-      border-color: #334155;
+      border-color: #475569;
+    }
+    
+    /* Dark Mode - Labels and Text (High Contrast) */
+    .dark label {
+      color: #e2e8f0;
+    }
+    
+    .dark .text-gray-700 {
+      color: #e2e8f0;
+    }
+    
+    .dark .text-gray-600 {
+      color: #cbd5e1;
+    }
+    
+    .dark .text-gray-500 {
+      color: #94a3b8;
+    }
+    
+    .dark .text-gray-400 {
+      color: #94a3b8;
+    }
+    
+    /* Dark Mode - Section Result Labels */
+    .dark .section-results h3,
+    .dark [class*="text-xs"][class*="font-semibold"] {
+      color: #94a3b8;
+    }
+    
+    /* Dark Mode - Tooltips */
+    .dark .tooltip {
+      background-color: #1e293b;
+      border-color: #475569;
+      color: #e2e8f0;
+    }
+    
+    /* Dark Mode - Placeholder text */
+    .dark input::placeholder {
+      color: #64748b;
     }
     
     /* Smooth transitions */

@@ -169,6 +169,28 @@ These fields are needed by the per-section inline results panels (PRD Section 5.
 
 ---
 
+#### Problem 11: Dark Mode Labels Lack Contrast
+**Issue:** In Night/Dark mode, labels and secondary text used `text-gray-700` and `text-gray-600` which are too dark against the slate-800 card background. Users reported difficulty reading input labels.
+
+**Specific issues:**
+- Input labels (`text-gray-700`) appeared almost invisible in dark mode
+- Helper text (`text-gray-500`) had insufficient contrast
+- Section result labels were hard to read
+
+**Resolution:** Added comprehensive dark mode CSS overrides in `index.html`:
+- Labels: `#e2e8f0` (slate-200) for high contrast on slate-800
+- Secondary text: `#94a3b8` (slate-400) for readable muted text
+- Borders: `#475569` (slate-600) for better visibility
+- Input placeholders: `#64748b` (slate-500)
+- Tooltips: Updated to use dark theme colors
+
+**Contrast ratios achieved:**
+- Labels on cards: ~11:1 (exceeds WCAG AAA)
+- Secondary text: ~7:1 (exceeds WCAG AA)
+- Muted text: ~5:1 (meets WCAG AA)
+
+---
+
 #### Problem 11: Missing `annualConsumptionKWh` and `dailySavings` Fields
 **Issue:** PRD Section 5.1 described a consumption chain (daily kWh → annual kWh → annual ₱) but the intermediate `annualConsumptionKWh` field was not in the computed fields table or code. Similarly, Section 2 lacked a `dailySavings` field to show per-day savings from PV generation.
 

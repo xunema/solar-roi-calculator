@@ -937,13 +937,16 @@ The Results Dashboard is the main summary view. Each KPI references back to the 
 - **Text secondary:** `#6b7280` (gray-500)
 - **Border:** `#e5e7eb` (gray-200)
 
-#### Dark Theme (Night Mode)
+#### Dark Theme (Night Mode) — High Contrast
 - **Primary color:** `#14b8a6` (teal-500)
 - **Background:** `#0f172a` (slate-900)
 - **Card background:** `#1e293b` (slate-800)
-- **Text primary:** `#f1f5f9` (slate-100)
-- **Text secondary:** `#94a3b8` (slate-400)
-- **Border:** `#334155` (slate-700)
+- **Text primary:** `#f8fafc` (slate-50) — brightest for headings
+- **Text secondary/labels:** `#e2e8f0` (slate-200) — high contrast for labels
+- **Text muted:** `#94a3b8` (slate-400) — for less important text
+- **Border:** `#475569` (slate-600) — visible but not harsh
+
+**Accessibility Requirement:** All text in dark mode must meet WCAG AA contrast ratio (4.5:1 minimum). Labels and input text use `#e2e8f0` on `#1e293b` background (contrast ratio ~11:1).
 
 #### Common
 - **Font:** Inter via Google Fonts, fallback system-ui
