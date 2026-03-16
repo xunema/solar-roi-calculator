@@ -103,6 +103,91 @@ export function updateFinancingVisibility(hasFinancing) {
 }
 
 /**
+ * Update Section 1 (Status Quo) results panel
+ * @param {Object} results - Calculation results
+ */
+export function updateSection1Results(results) {
+  const annualCostEl = document.getElementById('section1-annualCost');
+  const monthlyCostEl = document.getElementById('section1-monthlyCost');
+  const operatingDaysEl = document.getElementById('section1-operatingDays');
+  const dailyKWhEl = document.getElementById('section1-dailyKWh');
+  
+  if (annualCostEl) annualCostEl.textContent = formatPeso(results.effectiveAnnualCost);
+  if (monthlyCostEl) monthlyCostEl.textContent = formatPeso(results.projectedMonthlyCost);
+  if (operatingDaysEl) operatingDaysEl.textContent = results.operatingDaysPerYear;
+  if (dailyKWhEl) {
+    const dailyConsumption = results.annualGenerationKWh / (results.operatingDaysPerYear || 1);
+    dailyKWhEl.textContent = Math.round(dailyConsumption) + ' kWh';
+  }
+}
+
+/**
+ * Update Section 2 (PhotoVoltaic System) results panel
+ * @param {Object} results - Calculation results
+ */
+export function updateSection2Results(results) {
+  const pvCostEl = document.getElementById('section2-pvSystemCost');
+  const totalPVCapexEl = document.getElementById('section2-totalPVCapex');
+  const dailyGenEl = document.getElementById('section2-dailyGeneration');
+  const annualGenEl = document.getElementById('section2-annualGeneration');
+  
+  if (pvCostEl) pvCostEl.textContent = formatPeso(results.pvSystemCost);
+  if (totalPVCapexEl) totalPVCapexEl.textContent = formatPeso(results.totalPVCapex);
+  if (dailyGenEl) dailyGenEl.textContent = Math.round(results.dailyGenerationKWh) + ' kWh';
+  if (annualGenEl) annualGenEl.textContent = Math.round(results.annualGenerationKWh).toLocaleString() + ' kWh';
+}
+
+/**
+ * Update Section 3 (Battery Storage) results panel
+ * @param {Object} results - Calculation results
+ */
+export function updateSection3Results(results) {
+  const batteryKWhEl = document.getElementById('section3-batteryKWh');
+  const batteryCostEl = document.getElementById('section3-batteryCost');
+  const extraSolarEl = document.getElementById('section3-extraSolar');
+  const totalSolarEl = document.getElementById('section3-totalSolar');
+  
+  if (batteryKWhEl) batteryKWhEl.textContent = results.requiredBatteryKWh.toFixed(1) + ' kWh';
+  if (batteryCostEl) batteryCostEl.textContent = formatPeso(results.batteryCost);
+  if (extraSolarEl) extraSolarEl.textContent = results.extraSolarForBatteryKW.toFixed(1) + ' kW';
+  if (totalSolarEl) totalSolarEl.textContent = results.totalSolarKW.toFixed(1) + ' kW';
+}
+
+/**
+ * Update Section 4 (Financing) results panel
+ * @param {Object} results - Calculation results
+ */
+export function updateSection4Results(results) {
+  const monthlyPaymentEl = document.getElementById('section4-monthlyPayment');
+  const totalLoanCostEl = document.getElementById('section4-totalLoanCost');
+  const totalInterestEl = document.getElementById('section4-totalInterest');
+  const cashPurchaseEl = document.getElementById('section4-cashPurchase');
+  
+  if (results.hasFinancing) {
+    if (monthlyPaymentEl) monthlyPaymentEl.textContent = formatPeso(results.monthlyAmortization);
+    if (totalLoanCostEl) totalLoanCostEl.textContent = formatPeso(results.totalLoanCost);
+    if (totalInterestEl) totalInterestEl.textContent = formatPeso(results.totalInterestPaid);
+    if (cashPurchaseEl) cashPurchaseEl.classList.add('hidden');
+  } else {
+    if (monthlyPaymentEl) monthlyPaymentEl.textContent = '—';
+    if (totalLoanCostEl) totalLoanCostEl.textContent = '—';
+    if (totalInterestEl) totalInterestEl.textContent = '—';
+    if (cashPurchaseEl) cashPurchaseEl.classList.remove('hidden');
+  }
+}
+
+/**
+ * Update all section results panels
+ * @param {Object} results - Calculation results from calc.js
+ */
+export function updateAllSectionResults(results) {
+  updateSection1Results(results);
+  updateSection2Results(results);
+  updateSection3Results(results);
+  updateSection4Results(results);
+}
+
+/**
  * Update all KPI displays based on calculation results
  * @param {Object} results - Calculation results from calc.js
  */
@@ -110,6 +195,7 @@ export function updateAllKPIs(results) {
   // Main KPIs
   updateKPIDisplay('totalCapex', formatPeso(results.totalCapex));
   updateKPIDisplay('projectedAnnualCost', formatPeso(results.effectiveAnnualCost), 'red');
+  updateKPIDisplay('projectedMonthlyCost', formatPeso(results.projectedMonthlyCost), 'red');
   updateKPIDisplay('annualSavings', formatPeso(results.annualSavings), 'green');
   updateKPIDisplay('simpleROI', formatPercent(results.simpleROI), results.roiColor);
   updateKPIDisplay('paybackYears', formatYears(results.paybackYears), results.paybackColor);
@@ -127,6 +213,9 @@ export function updateAllKPIs(results) {
   
   // Financing visibility
   updateFinancingVisibility(results.hasFinancing);
+  
+  // Update all section results panels (M2)
+  updateAllSectionResults(results);
 }
 
 /**
@@ -373,6 +462,41 @@ export function updateOnboardingSlide(slideIndex, slides) {
 }
 
 /**
+ * Scroll to a section smoothly
+ * @param {number} sectionNumber - Section number (1-4)
+ */
+export function scrollToSection(sectionNumber) {
+  const sections = document.querySelectorAll('section');
+  const targetSection = sections[sectionNumber - 1];
+  
+  if (targetSection) {
+    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Add a brief highlight effect
+    targetSection.style.transition = 'box-shadow 0.3s';
+    targetSection.style.boxShadow = '0 0 0 4px rgba(20, 184, 166, 0.5)';
+    
+    setTimeout(() => {
+      targetSection.style.boxShadow = '';
+    }, 1500);
+  }
+}
+
+/**
+ * Bind KPI card click handlers for section navigation
+ */
+export function bindKPICardHandlers() {
+  document.querySelectorAll('.kpi-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const sectionNumber = parseInt(card.getAttribute('data-section'));
+      if (sectionNumber && sectionNumber >= 1 && sectionNumber <= 4) {
+        scrollToSection(sectionNumber);
+      }
+    });
+  });
+}
+
+/**
  * Initialize the UI - set up all event listeners
  * @param {Object} state - App state manager
  * @param {Object} actions - Action handlers
@@ -390,6 +514,9 @@ export function initializeUI(state, actions) {
     'helpBtn': actions.showOnboarding,
     'sunHoursBtn': actions.showSunHoursModal
   });
+  
+  // Bind KPI card click handlers (M2)
+  bindKPICardHandlers();
   
   // Close modals on backdrop click
   document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
@@ -426,12 +553,19 @@ export default {
   updateKPIDisplay,
   updateBatteryDisplay,
   updateFinancingVisibility,
+  updateSection1Results,
+  updateSection2Results,
+  updateSection3Results,
+  updateSection4Results,
+  updateAllSectionResults,
   updateAllKPIs,
   updateAllInputs,
   toggleTooltip,
   hideAllTooltips,
   applyTheme,
   applyLayout,
+  scrollToSection,
+  bindKPICardHandlers,
   getInputValues,
   bindInputHandlers,
   bindButtonHandlers,

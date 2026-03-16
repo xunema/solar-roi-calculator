@@ -13,7 +13,8 @@ import {
   toggleSunHoursModal,
   updateOnboardingSlide,
   initializeUI,
-  hideAllTooltips
+  hideAllTooltips,
+  updateAllSectionResults
 } from './ui.js';
 
 // Onboarding slides content

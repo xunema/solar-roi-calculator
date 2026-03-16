@@ -104,6 +104,37 @@
     .card, .input-field {
       transition: background-color 0.3s, border-color 0.3s, color 0.3s;
     }
+    
+    /* KPI Card Styles */
+    .kpi-card {
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    }
+    
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Section Results Panel Styles */
+    .section-results {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+    
+    .section-results h3 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      margin-bottom: 0.75rem;
+    }
+    
+    /* Section scroll target */
+    section {
+      scroll-margin-top: 1rem;
+    }
   </style>
   
   <!-- PWA Manifest -->
@@ -218,6 +249,29 @@
               Enter your actual annual bill to override the projected cost calculation.
             </div>
           </div>
+          
+          <!-- Section 1 Results Panel -->
+          <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 1 Results</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="bg-red-50 p-3 rounded-lg border border-red-100">
+                <div class="text-xs text-red-600 mb-1">Annual Cost</div>
+                <div id="section1-annualCost" class="text-lg font-bold text-red-700">₱0</div>
+              </div>
+              <div class="bg-red-50 p-3 rounded-lg border border-red-100">
+                <div class="text-xs text-red-600 mb-1">Monthly Cost</div>
+                <div id="section1-monthlyCost" class="text-lg font-bold text-red-700">₱0</div>
+              </div>
+              <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <div class="text-xs text-blue-600 mb-1">Operating Days</div>
+                <div id="section1-operatingDays" class="text-lg font-bold text-blue-700">0</div>
+              </div>
+              <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-600 mb-1">Daily kWh</div>
+                <div id="section1-dailyKWh" class="text-lg font-bold text-gray-700">0</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -304,6 +358,29 @@
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">/kWh</span>
             </div>
           </div>
+          
+          <!-- Section 2 Results Panel -->
+          <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 2 Results</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                <div class="text-xs text-yellow-700 mb-1">PV System Cost</div>
+                <div id="section2-pvSystemCost" class="text-lg font-bold text-yellow-800">₱0</div>
+              </div>
+              <div class="bg-orange-50 p-3 rounded-lg border border-orange-100">
+                <div class="text-xs text-orange-700 mb-1">Total PV CAPEX</div>
+                <div id="section2-totalPVCapex" class="text-lg font-bold text-orange-800">₱0</div>
+              </div>
+              <div class="bg-green-50 p-3 rounded-lg border border-green-100">
+                <div class="text-xs text-green-700 mb-1">Daily Generation</div>
+                <div id="section2-dailyGeneration" class="text-lg font-bold text-green-800">0 kWh</div>
+              </div>
+              <div class="bg-teal-50 p-3 rounded-lg border border-teal-100">
+                <div class="text-xs text-teal-700 mb-1">Annual Generation</div>
+                <div id="section2-annualGeneration" class="text-lg font-bold text-teal-800">0 kWh</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -354,6 +431,29 @@
               <span id="extraSolarKW" class="font-semibold text-teal-700">0 kW</span>
             </div>
           </div>
+          
+          <!-- Section 3 Results Panel -->
+          <div class="md:col-span-2 mt-2 pt-4 border-t border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 3 Results</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                <div class="text-xs text-purple-700 mb-1">Battery Capacity</div>
+                <div id="section3-batteryKWh" class="text-lg font-bold text-purple-800">0 kWh</div>
+              </div>
+              <div class="bg-pink-50 p-3 rounded-lg border border-pink-100">
+                <div class="text-xs text-pink-700 mb-1">Battery Cost</div>
+                <div id="section3-batteryCost" class="text-lg font-bold text-pink-800">₱0</div>
+              </div>
+              <div class="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                <div class="text-xs text-indigo-700 mb-1">Extra PV for Batt</div>
+                <div id="section3-extraSolar" class="text-lg font-bold text-indigo-800">0 kW</div>
+              </div>
+              <div class="bg-cyan-50 p-3 rounded-lg border border-cyan-100">
+                <div class="text-xs text-cyan-700 mb-1">Total Solar</div>
+                <div id="section3-totalSolar" class="text-lg font-bold text-cyan-800">0 kW</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -400,6 +500,29 @@
               <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">months</span>
             </div>
           </div>
+          
+          <!-- Section 4 Results Panel -->
+          <div class="md:col-span-3 mt-2 pt-4 border-t border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Section 4 Results</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="bg-rose-50 p-3 rounded-lg border border-rose-100">
+                <div class="text-xs text-rose-700 mb-1">Monthly Payment</div>
+                <div id="section4-monthlyPayment" class="text-lg font-bold text-rose-800">₱0</div>
+              </div>
+              <div class="bg-amber-50 p-3 rounded-lg border border-amber-100">
+                <div class="text-xs text-amber-700 mb-1">Total Loan Cost</div>
+                <div id="section4-totalLoanCost" class="text-lg font-bold text-amber-800">₱0</div>
+              </div>
+              <div class="bg-red-50 p-3 rounded-lg border border-red-100">
+                <div class="text-xs text-red-700 mb-1">Total Interest</div>
+                <div id="section4-totalInterest" class="text-lg font-bold text-red-800">₱0</div>
+              </div>
+              <div id="section4-cashPurchase" class="bg-green-50 p-3 rounded-lg border border-green-100 hidden">
+                <div class="text-xs text-green-700 mb-1">Financing</div>
+                <div class="text-lg font-bold text-green-800">Cash Purchase</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -416,58 +539,95 @@
           
           <div class="p-4 space-y-4">
             <!-- Total CAPEX -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="text-sm text-gray-600 mb-1">Total CAPEX</div>
+            <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-gray-600 mb-1">Total CAPEX</div>
+                <span class="text-xs text-gray-400">⚡ Sec 2,3</span>
+              </div>
               <div id="totalCapex" class="kpi-value text-gray-900">₱0</div>
             </div>
             
             <!-- Projected Annual Cost -->
-            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-              <div class="text-sm text-red-600 mb-1">Projected Annual Cost</div>
+            <div class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="1" title="Click to view in Section 1">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-red-600 mb-1">Projected Annual Cost</div>
+                <span class="text-xs text-red-400">📊 Sec 1</span>
+              </div>
               <div id="projectedAnnualCost" class="kpi-value text-red-600">₱0</div>
               <div class="text-xs text-red-400">/year (without solar)</div>
             </div>
             
+            <!-- Projected Monthly Cost -->
+            <div class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="1" title="Click to view in Section 1">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-red-600 mb-1">Projected Monthly Cost</div>
+                <span class="text-xs text-red-400">📊 Sec 1</span>
+              </div>
+              <div id="projectedMonthlyCost" class="kpi-value text-red-600">₱0</div>
+              <div class="text-xs text-red-400">/month (without solar)</div>
+            </div>
+            
             <!-- Annual Savings -->
-            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-              <div class="text-sm text-green-600 mb-1">Annual Savings</div>
+            <div class="kpi-card bg-green-50 p-4 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition" data-section="2" title="Click to view in Section 2">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-green-600 mb-1">Annual Savings</div>
+                <span class="text-xs text-green-500">☀️ Sec 2</span>
+              </div>
               <div id="annualSavings" class="kpi-value text-green-600">₱0</div>
               <div class="text-xs text-green-500">/year</div>
             </div>
             
+            <!-- Monthly Savings -->
+            <div class="kpi-card bg-teal-50 p-4 rounded-lg border border-teal-100 cursor-pointer hover:bg-teal-100 transition" data-section="2" title="Click to view in Section 2">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-teal-600 mb-1">Monthly Savings</div>
+                <span class="text-xs text-teal-500">☀️ Sec 2</span>
+              </div>
+              <div id="monthlySavings" class="kpi-value text-teal-700">₱0</div>
+            </div>
+            
             <!-- Simple ROI -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="text-sm text-gray-600 mb-1">Simple ROI</div>
+            <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-gray-600 mb-1">Simple ROI</div>
+                <span class="text-xs text-gray-400">📈 Overall</span>
+              </div>
               <div id="simpleROI" class="kpi-value text-gray-400">0%</div>
               <div class="text-xs text-gray-500">/year</div>
             </div>
             
             <!-- Payback Period -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="text-sm text-gray-600 mb-1">Payback Period</div>
+            <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
+              <div class="flex justify-between items-start">
+                <div class="text-sm text-gray-600 mb-1">Payback Period</div>
+                <span class="text-xs text-gray-400">📈 Overall</span>
+              </div>
               <div id="paybackYears" class="kpi-value text-gray-400">—</div>
-            </div>
-            
-            <!-- Monthly Savings -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="text-sm text-gray-600 mb-1">Monthly Savings</div>
-              <div id="monthlySavings" class="kpi-value text-teal-600">₱0</div>
             </div>
             
             <!-- Financing Section (Conditional) -->
             <div id="financingSection" class="hidden space-y-4 pt-4 border-t border-gray-200">
-              <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                <div class="text-sm text-orange-600 mb-1">Monthly Amortization</div>
+              <div class="kpi-card bg-orange-50 p-4 rounded-lg border border-orange-100 cursor-pointer hover:bg-orange-100 transition" data-section="4" title="Click to view in Section 4">
+                <div class="flex justify-between items-start">
+                  <div class="text-sm text-orange-600 mb-1">Monthly Amortization</div>
+                  <span class="text-xs text-orange-500">🏦 Sec 4</span>
+                </div>
                 <div id="monthlyAmortization" class="kpi-value text-orange-600">₱0</div>
               </div>
               
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="text-sm text-gray-600 mb-1">Net Monthly Cash Flow</div>
+              <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="4" title="Click to view in Section 4">
+                <div class="flex justify-between items-start">
+                  <div class="text-sm text-gray-600 mb-1">Net Monthly Cash Flow</div>
+                  <span class="text-xs text-gray-400">🏦 Sec 4</span>
+                </div>
                 <div id="netMonthlyCashFlow" class="kpi-value text-gray-400">₱0</div>
               </div>
               
-              <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-                <div class="text-sm text-red-600 mb-1">Total Interest Paid</div>
+              <div class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="4" title="Click to view in Section 4">
+                <div class="flex justify-between items-start">
+                  <div class="text-sm text-red-600 mb-1">Total Interest Paid</div>
+                  <span class="text-xs text-red-400">🏦 Sec 4</span>
+                </div>
                 <div id="totalInterestPaid" class="kpi-value text-red-600">₱0</div>
               </div>
             </div>
