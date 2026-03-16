@@ -1259,6 +1259,53 @@ test('batteryChargePercent = 0 when no battery needed', () => {
 });
 
 // ============================================
+// M5 EDGE CASE WARNING FLAGS
+// ============================================
+
+test('warnRateTooLow: false when rate is normal (≥ 1)', () => {
+  const r = calculateAll({ ...defaultInputs, electricityRate: 12 });
+  assertEqual(r.warnRateTooLow, false);
+});
+
+test('warnRateTooLow: true when rate > 0 and < 1 (e.g., 0.12)', () => {
+  const r = calculateAll({ ...defaultInputs, electricityRate: 0.12 });
+  assertEqual(r.warnRateTooLow, true);
+});
+
+test('warnRateTooLow: false when rate is 0 (no warning for blank field)', () => {
+  const r = calculateAll({ ...defaultInputs, electricityRate: 0 });
+  assertEqual(r.warnRateTooLow, false);
+});
+
+test('warnLoanExceedsCapex: false when loan equals CAPEX', () => {
+  // Use spreadsheet preset: CAPEX ~₱14M, loan ₱14M → exactly equal → false
+  const r = calculateAll({
+    ...defaultInputs,
+    solarCapacityKW: 300, solarPricePerKW: 40000, miscInfraCosts: 2000000,
+    batteryCapacityKWh: 0, pvForBatteryKW: 0, batteryPricePerKWh: 5000,
+    loanPrincipal: 14000000
+  });
+  // totalCapex = 300×40000 + 2000000 = 14000000; loan = 14000000 → not strictly greater
+  assertEqual(r.warnLoanExceedsCapex, false);
+});
+
+test('warnLoanExceedsCapex: true when loan > CAPEX', () => {
+  const r = calculateAll({
+    ...defaultInputs,
+    solarCapacityKW: 1, solarPricePerKW: 60000, miscInfraCosts: 0,
+    batteryCapacityKWh: 0, pvForBatteryKW: 0, batteryPricePerKWh: 0,
+    loanPrincipal: 999999
+  });
+  // totalCapex = 1×60000 = 60000; loan = 999999 > 60000 → true
+  assertEqual(r.warnLoanExceedsCapex, true);
+});
+
+test('warnLoanExceedsCapex: false when no loan', () => {
+  const r = calculateAll({ ...defaultInputs, loanPrincipal: 0 });
+  assertEqual(r.warnLoanExceedsCapex, false);
+});
+
+// ============================================
 // TEST SUMMARY
 // ============================================
 console.log('\n' + '═'.repeat(55));

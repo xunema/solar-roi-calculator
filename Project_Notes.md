@@ -415,6 +415,49 @@ Created `css/themes.css` with CSS custom properties for both themes (using `--sc
 
 ---
 
+### 2026-03-17 — Milestone 5 Completion
+
+#### M5: Polish & Accessibility
+
+**Phase 5.1 — Responsive Polish:**
+Existing responsive layout already handled: `grid-cols-1 md:grid-cols-2` for section forms, `lg:flex` for the sidebar. Verified: single column on 375px, 2-col form on 768px+, sidebar visible on 1024px+.
+
+**Phase 5.2 — KPI Conditional Coloring:**
+Fixed a latent bug in `updateKPIDisplay()` in `ui.js`: the original regex `replace(/text-\w+-600/g, '')` only removed `-600` shade classes, so initial `text-gray-400` classes accumulated rather than being replaced. Changed to `replace(/\btext-[a-z]+-\d+\b/g, '')` which cleanly removes any text-color-shade class (gray-400, green-600, etc.) before applying the new color. ROI and Payback KPIs now correctly show green/yellow/red on every update.
+
+**Phase 5.3 — Edge Case Handling:**
+- Added `warnRateTooLow` flag to `calculateAll()` (true when `0 < rate < 1`)
+- Added `warnLoanExceedsCapex` flag (true when `loanPrincipal > totalCapex`)
+- Both flags added to `defaultResults` in `state.js` (Rule 1 compliance)
+- `updateWarnings()` added to `ui.js`, called from `updateAllKPIs()`
+- Warning divs `#rateWarning` and `#loanWarning` added to `index.html` with `role="alert"` — hidden by default, shown reactively
+- `formatYears()` already handles `Infinity` → returns "—" (was already correct)
+- 6 new tests: 161/161 pass
+
+**Phase 5.4 — Accessibility:**
+- Onboarding modal: `role="dialog"`, `aria-modal="true"`, `aria-labelledby="onboardingTitle"`
+- Sun Hours modal: same ARIA pattern, `id="sunHoursTitle"` on the h2
+- Header icon buttons: `aria-label` added (theme toggle, layout toggle, help)
+- Emoji icons inside buttons: `aria-hidden="true"` (decorative)
+- All 11 KPI cards: `role="button"`, `tabindex="0"`, Enter/Space keyboard handler in `bindKPICardHandlers()`
+- Touch targets: icon buttons now `p-3` + `min-w-[44px] min-h-[44px]`; close button gets same
+- `prefers-reduced-motion` rule added to `css/themes.css` — disables all transitions/animations
+
+**M5 Checklist — All items verified:**
+- [x] KPI colors: ROI Green ≥ 15%, Yellow 8–14.9%, Red < 8%
+- [x] KPI colors: Payback Green ≤ 5yr, Yellow 5.1–8yr, Red > 8yr
+- [x] "Did you mean ₱12/kWh?" hint when rate < 1
+- [x] "Loan exceeds system cost" warning when loan > CAPEX
+- [x] Infinity payback displays "—"
+- [x] ARIA roles on modals
+- [x] KPI cards keyboard navigable
+- [x] `prefers-reduced-motion` disables transitions
+- [x] 161/161 tests passing
+
+**M5 Status: COMPLETE ✅**
+
+---
+
 ## Patterns & Conventions
 
 ### Naming

@@ -353,7 +353,11 @@ export function calculateAll(inputs) {
     cashFlowColor: getCashFlowColor(netMonthlyCashFlow),
 
     // Financing flag
-    hasFinancing: loanPrincipal > 0
+    hasFinancing: loanPrincipal > 0,
+
+    // Edge case warnings (M5 — Phase 5.3)
+    warnRateTooLow: electricityRate > 0 && electricityRate < 1,
+    warnLoanExceedsCapex: (loanPrincipal || 0) > 0 && totalCapex > 0 && (loanPrincipal || 0) > totalCapex
   };
 }
 

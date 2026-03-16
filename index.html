@@ -139,15 +139,18 @@
       </div>
       <div class="flex items-center gap-2">
         <!-- Theme Toggle -->
-        <button id="themeToggle" class="p-2 rounded-lg bg-teal-600 hover:bg-teal-500 transition" title="Toggle Theme">
-          <span id="themeIcon">🌙</span>
+        <button id="themeToggle" aria-label="Toggle Night/Day theme"
+          class="p-3 rounded-lg bg-teal-600 hover:bg-teal-500 transition min-w-[44px] min-h-[44px]" title="Toggle Theme">
+          <span id="themeIcon" aria-hidden="true">🌙</span>
         </button>
         <!-- Layout Toggle -->
-        <button id="layoutToggle" class="p-2 rounded-lg bg-teal-600 hover:bg-teal-500 transition" title="Toggle Layout">
-          <span id="layoutIcon">📱</span>
+        <button id="layoutToggle" aria-label="Toggle layout: Auto / Phone / Desktop"
+          class="p-3 rounded-lg bg-teal-600 hover:bg-teal-500 transition min-w-[44px] min-h-[44px]" title="Toggle Layout">
+          <span id="layoutIcon" aria-hidden="true">📱</span>
         </button>
         <!-- Help Button -->
-        <button id="helpBtn" class="text-sm bg-teal-600 hover:bg-teal-500 px-3 py-2 rounded-lg transition">
+        <button id="helpBtn" aria-label="Open help guide"
+          class="text-sm bg-teal-600 hover:bg-teal-500 px-3 py-2 rounded-lg transition min-h-[44px]">
           ❓ Help
         </button>
       </div>
@@ -182,6 +185,9 @@
               <strong>Your blended rate</strong> = Total Bill ÷ Total kWh consumed.<br>
               Typical: Residential ₱20/kWh, Commercial ₱15/kWh.<br><br>
               🔗 <a href="https://www.meralco.com.ph" target="_blank" class="text-blue-600 underline">Meralco Rates</a>
+            </div>
+            <div id="rateWarning" role="alert" class="hidden mt-1 text-xs text-amber-800 bg-amber-50 p-2 rounded border border-amber-200">
+              ⚠️ <strong>Rate looks very low.</strong> Did you mean a whole number like <strong>12</strong> for ₱12/kWh? Enter the full rate, not a decimal fraction.
             </div>
           </div>
           
@@ -623,6 +629,13 @@
               <div class="text-base text-green-800">No loan costs. Your full monthly savings go straight to recovering your investment.</div>
             </div>
           </div>
+
+          <!-- Loan warning (shown when loan > total CAPEX) -->
+          <div id="loanWarning" role="alert" class="hidden md:col-span-3">
+            <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 text-sm text-amber-800">
+              ⚠️ <strong>Loan exceeds system cost.</strong> Your loan principal is larger than the total CAPEX. Consider reducing the loan amount to match the actual system cost.
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -639,7 +652,7 @@
           
           <div class="p-4 space-y-4">
             <!-- Total CAPEX -->
-            <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
+            <div role="button" tabindex="0" class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-gray-600 mb-1">Total CAPEX</div>
                 <span class="text-xs text-gray-400">⚡ Sec 2,3</span>
@@ -648,7 +661,7 @@
             </div>
             
             <!-- Annual Generation -->
-            <div class="kpi-card bg-blue-50 p-4 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 transition" data-section="2" title="Click to view in Section 2">
+            <div role="button" tabindex="0" class="kpi-card bg-blue-50 p-4 rounded-lg border border-blue-100 cursor-pointer hover:bg-blue-100 transition" data-section="2" title="Click to view in Section 2">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-blue-600 mb-1">Annual Generation</div>
                 <span class="text-xs text-blue-400">☀️ Sec 2</span>
@@ -657,7 +670,7 @@
             </div>
             
             <!-- Projected Annual Cost -->
-            <div class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="1" title="Click to view in Section 1">
+            <div role="button" tabindex="0" class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="1" title="Click to view in Section 1">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-red-600 mb-1">Projected Annual Cost</div>
                 <span class="text-xs text-red-400">📊 Sec 1</span>
@@ -667,7 +680,7 @@
             </div>
             
             <!-- Projected Monthly Cost -->
-            <div class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="1" title="Click to view in Section 1">
+            <div role="button" tabindex="0" class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="1" title="Click to view in Section 1">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-red-600 mb-1">Projected Monthly Cost</div>
                 <span class="text-xs text-red-400">📊 Sec 1</span>
@@ -677,7 +690,7 @@
             </div>
             
             <!-- Annual Savings -->
-            <div class="kpi-card bg-green-50 p-4 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition" data-section="2" title="Click to view in Section 2">
+            <div role="button" tabindex="0" class="kpi-card bg-green-50 p-4 rounded-lg border border-green-100 cursor-pointer hover:bg-green-100 transition" data-section="2" title="Click to view in Section 2">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-green-600 mb-1">Annual Savings</div>
                 <span class="text-xs text-green-500">☀️ Sec 2</span>
@@ -687,7 +700,7 @@
             </div>
             
             <!-- Monthly Savings -->
-            <div class="kpi-card bg-teal-50 p-4 rounded-lg border border-teal-100 cursor-pointer hover:bg-teal-100 transition" data-section="2" title="Click to view in Section 2">
+            <div role="button" tabindex="0" class="kpi-card bg-teal-50 p-4 rounded-lg border border-teal-100 cursor-pointer hover:bg-teal-100 transition" data-section="2" title="Click to view in Section 2">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-teal-600 mb-1">Monthly Savings</div>
                 <span class="text-xs text-teal-500">☀️ Sec 2</span>
@@ -696,7 +709,7 @@
             </div>
             
             <!-- Simple ROI -->
-            <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
+            <div role="button" tabindex="0" class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-gray-600 mb-1">Simple ROI</div>
                 <span class="text-xs text-gray-400">📈 Overall</span>
@@ -706,7 +719,7 @@
             </div>
             
             <!-- Payback Period -->
-            <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
+            <div role="button" tabindex="0" class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="2" title="Click to view in Section 2">
               <div class="flex justify-between items-start">
                 <div class="text-sm text-gray-600 mb-1">Payback Period</div>
                 <span class="text-xs text-gray-400">📈 Overall</span>
@@ -716,7 +729,7 @@
             
             <!-- Financing Section (Conditional) -->
             <div id="financingSection" class="hidden space-y-4 pt-4 border-t border-gray-200">
-              <div class="kpi-card bg-orange-50 p-4 rounded-lg border border-orange-100 cursor-pointer hover:bg-orange-100 transition" data-section="4" title="Click to view in Section 4">
+              <div role="button" tabindex="0" class="kpi-card bg-orange-50 p-4 rounded-lg border border-orange-100 cursor-pointer hover:bg-orange-100 transition" data-section="4" title="Click to view in Section 4">
                 <div class="flex justify-between items-start">
                   <div class="text-sm text-orange-600 mb-1">Monthly Amortization</div>
                   <span class="text-xs text-orange-500">🏦 Sec 4</span>
@@ -724,7 +737,7 @@
                 <div id="monthlyAmortization" class="kpi-value text-orange-600">₱0</div>
               </div>
               
-              <div class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="4" title="Click to view in Section 4">
+              <div role="button" tabindex="0" class="kpi-card bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition" data-section="4" title="Click to view in Section 4">
                 <div class="flex justify-between items-start">
                   <div class="text-sm text-gray-600 mb-1">Net Monthly Cash Flow</div>
                   <span class="text-xs text-gray-400">🏦 Sec 4</span>
@@ -732,7 +745,7 @@
                 <div id="netMonthlyCashFlow" class="kpi-value text-gray-400">₱0</div>
               </div>
               
-              <div class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="4" title="Click to view in Section 4">
+              <div role="button" tabindex="0" class="kpi-card bg-red-50 p-4 rounded-lg border border-red-100 cursor-pointer hover:bg-red-100 transition" data-section="4" title="Click to view in Section 4">
                 <div class="flex justify-between items-start">
                   <div class="text-sm text-red-600 mb-1">Total Interest Paid</div>
                   <span class="text-xs text-red-400">🏦 Sec 4</span>
@@ -775,12 +788,13 @@
   </div>
 
   <!-- Onboarding Modal -->
-  <div id="onboardingModal" class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div id="onboardingModal" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle"
+    class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
       <div id="onboardingContent">
         <div class="text-center mb-4">
-          <span class="text-4xl">☀️</span>
-          <h2 class="text-xl font-bold mt-2">Welcome to SolarCalc PH</h2>
+          <span class="text-4xl" aria-hidden="true">☀️</span>
+          <h2 id="onboardingTitle" class="text-xl font-bold mt-2">Welcome to SolarCalc PH</h2>
         </div>
         <div id="slideContent" class="text-gray-600 mb-6">
           Loading...
@@ -804,11 +818,13 @@
   </div>
 
   <!-- Sun Hours Calculator Modal -->
-  <div id="sunHoursModal" class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div id="sunHoursModal" role="dialog" aria-modal="true" aria-labelledby="sunHoursTitle"
+    class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
     <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">☀️ Sun Hours Calculator</h2>
-        <button class="close-modal text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        <h2 id="sunHoursTitle" class="text-xl font-bold">☀️ Sun Hours Calculator</h2>
+        <button class="close-modal text-gray-400 hover:text-gray-600 text-2xl min-w-[44px] min-h-[44px]"
+          aria-label="Close sun hours calculator">&times;</button>
       </div>
       
       <div class="space-y-4">

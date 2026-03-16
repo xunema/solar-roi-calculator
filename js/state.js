@@ -78,7 +78,10 @@ export const defaultResults = {
   roiColor: 'green',
   paybackColor: 'yellow',
   cashFlowColor: 'green',
-  hasFinancing: true
+  hasFinancing: true,
+  // Edge case warnings
+  warnRateTooLow: false,
+  warnLoanExceedsCapex: false
 };
 
 /**

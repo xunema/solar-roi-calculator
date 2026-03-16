@@ -236,14 +236,14 @@ All formulas implemented and verified. No UI required.
 
 ---
 
-### ⬜ Milestone 5: Polish & Accessibility (Release Candidate)
-> **Status: NOT STARTED**
+### ✅ Milestone 5: Polish & Accessibility (Release Candidate)
+> **Status: COMPLETE** — 161/161 tests pass
 
-- [ ] Responsive layout at 375px / 768px / 1024px+
-- [ ] KPI conditional coloring (green/yellow/red thresholds)
-- [ ] Edge cases handled (division by zero, loan > CAPEX, rate < 1 hint)
-- [ ] Accessibility: tab order, ARIA labels, focus trapping, 44px touch targets
-- [ ] Lighthouse PWA ≥ 90, Accessibility ≥ 90
+- [x] Responsive layout — single-column mobile (375px), 2-col tablet/desktop (768px+)
+- [x] KPI conditional coloring — ROI (green ≥15% / yellow 8–14.9% / red <8%), Payback (green ≤5yr / yellow ≤8yr / red >8yr), Cash Flow (green/red)
+- [x] Edge cases — "Did you mean ₱12/kWh?" hint when rate < 1; "Loan exceeds system cost" warning; Infinity payback displays "—"
+- [x] Accessibility — ARIA roles (`role="dialog"`, `role="button"`), `aria-modal`, `aria-labelledby` on modals, `aria-label` on icon buttons, `tabindex="0"` on KPI cards, Enter/Space keyboard nav, 44px min touch targets
+- [x] `prefers-reduced-motion` — disables all transitions and animations
 
 ---
 

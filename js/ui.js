@@ -63,9 +63,13 @@ export function updateKPIDisplay(id, value, color = 'gray') {
   const element = document.getElementById(id);
   if (element) {
     element.textContent = value;
-    
-    // Update color classes
-    element.className = element.className.replace(/text-\w+-600/g, '');
+
+    // Remove all Tailwind text-color-shade classes (e.g., text-gray-400, text-green-600)
+    // before applying the new color so classes don't accumulate.
+    element.className = element.className
+      .replace(/\btext-[a-z]+-\d+\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
     element.classList.add(getColorClass(color, 'text'));
   }
 }
@@ -81,6 +85,22 @@ export function updateBatteryDisplay(results) {
     requiredEl.textContent = results.requiredBatteryKWh === 0 
       ? '0 kWh' 
       : formatWithUnit(results.requiredBatteryKWh, 'kWh', 1);
+  }
+}
+
+/**
+ * Show or hide edge-case warning banners (M5 — Phase 5.3)
+ * @param {Object} results - Calculation results
+ */
+export function updateWarnings(results) {
+  const rateWarn = document.getElementById('rateWarning');
+  if (rateWarn) {
+    rateWarn.classList.toggle('hidden', !results.warnRateTooLow);
+  }
+
+  const loanWarn = document.getElementById('loanWarning');
+  if (loanWarn) {
+    loanWarn.classList.toggle('hidden', !results.warnLoanExceedsCapex);
   }
 }
 
@@ -272,7 +292,10 @@ export function updateAllKPIs(results) {
   
   // Financing visibility
   updateFinancingVisibility(results.hasFinancing);
-  
+
+  // Edge case warnings (M5)
+  updateWarnings(results);
+
   // Update all section results panels (M2)
   updateAllSectionResults(results);
 }
@@ -565,10 +588,20 @@ export function scrollToSection(sectionNumber) {
  */
 export function bindKPICardHandlers() {
   document.querySelectorAll('.kpi-card').forEach(card => {
-    card.addEventListener('click', () => {
+    const navigate = () => {
       const sectionNumber = parseInt(card.getAttribute('data-section'));
       if (sectionNumber && sectionNumber >= 1 && sectionNumber <= 4) {
         scrollToSection(sectionNumber);
+      }
+    };
+
+    card.addEventListener('click', navigate);
+
+    // Keyboard: Enter or Space activates the card (matches role="button" expectation)
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        navigate();
       }
     });
   });
@@ -636,6 +669,7 @@ export default {
   updateInputValue,
   updateKPIDisplay,
   updateBatteryDisplay,
+  updateWarnings,
   updateFinancingVisibility,
   updateSection1Results,
   updateSection2Results,
