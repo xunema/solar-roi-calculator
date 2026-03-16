@@ -234,6 +234,14 @@ class SolarCalcApp {
    */
   hideOnboarding() {
     toggleOnboardingModal(false);
+    // Focus first input after onboarding dismiss
+    setTimeout(() => {
+      const firstInput = document.getElementById('electricityRate');
+      if (firstInput) {
+        firstInput.focus();
+        firstInput.select();
+      }
+    }, 100);
   }
 
   /**
@@ -247,6 +255,11 @@ class SolarCalcApp {
    * Close all modals
    */
   closeModals() {
+    // If onboarding is open, mark as complete before closing
+    const onboardingModal = document.getElementById('onboardingModal');
+    if (onboardingModal && !onboardingModal.classList.contains('hidden')) {
+      this.state.completeOnboarding();
+    }
     this.hideOnboarding();
     this.state.setShowSunHoursModal(false);
   }
@@ -329,8 +342,35 @@ class SolarCalcApp {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const tooltipId = btn.getAttribute('data-tooltip');
-        this.state.toggleTooltip(tooltipId);
+        
+        // Hide all other tooltips first (only one open at a time)
+        hideAllTooltips();
+        
+        // Toggle the clicked tooltip
+        const isNowActive = toggleTooltip(tooltipId);
+        if (isNowActive) {
+          this.state.ui.activeTooltip = tooltipId;
+        } else {
+          this.state.ui.activeTooltip = null;
+        }
       });
+    });
+    
+    // Close tooltips when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.tooltip') && !e.target.closest('[data-tooltip]')) {
+        hideAllTooltips();
+        this.state.ui.activeTooltip = null;
+      }
+    });
+    
+    // ESC key to close tooltips and modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideAllTooltips();
+        this.state.ui.activeTooltip = null;
+        this.closeModals();
+      }
     });
   }
 }
