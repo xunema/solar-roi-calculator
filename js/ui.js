@@ -79,11 +79,17 @@ export function updateBatteryDisplay(results) {
   const extraEl = document.getElementById('extraSolarKW');
   
   if (requiredEl) {
-    requiredEl.textContent = formatWithUnit(results.requiredBatteryKWh, 'kWh', 1);
+    // Show "0 kWh" without decimal when zero
+    requiredEl.textContent = results.requiredBatteryKWh === 0 
+      ? '0 kWh' 
+      : formatWithUnit(results.requiredBatteryKWh, 'kWh', 1);
   }
   
   if (extraEl) {
-    extraEl.textContent = formatWithUnit(results.extraSolarForBatteryKW, 'kW', 1);
+    // Show "0 kW" without decimal when zero
+    extraEl.textContent = results.extraSolarForBatteryKW === 0 
+      ? '0 kW' 
+      : formatWithUnit(results.extraSolarForBatteryKW, 'kW', 1);
   }
 }
 
@@ -156,10 +162,27 @@ export function updateSection3Results(results) {
   // Calculate extra PV cost
   const extraSolarCost = results.extraSolarForBatteryKW * (results.solarPricePerKW || 0);
   
-  if (batteryKWhEl) batteryKWhEl.textContent = results.requiredBatteryKWh.toFixed(1) + ' kWh';
+  if (batteryKWhEl) {
+    // Show "0 kWh" without decimal when zero, otherwise show 1 decimal place
+    const batteryValue = results.requiredBatteryKWh === 0 
+      ? '0 kWh' 
+      : results.requiredBatteryKWh.toFixed(1) + ' kWh';
+    batteryKWhEl.textContent = batteryValue;
+  }
   if (batteryCostEl) batteryCostEl.textContent = formatPeso(results.batteryCost);
-  if (extraSolarEl) extraSolarEl.textContent = results.extraSolarForBatteryKW.toFixed(1) + ' kW';
-  if (totalSolarEl) totalSolarEl.textContent = results.totalSolarKW.toFixed(1) + ' kW';
+  
+  if (extraSolarEl) {
+    extraSolarEl.textContent = results.extraSolarForBatteryKW === 0 
+      ? '0 kW' 
+      : results.extraSolarForBatteryKW.toFixed(1) + ' kW';
+  }
+  
+  if (totalSolarEl) {
+    totalSolarEl.textContent = results.totalSolarKW === 0 
+      ? '0 kW' 
+      : results.totalSolarKW.toFixed(1) + ' kW';
+  }
+  
   if (extraSolarCostEl) extraSolarCostEl.textContent = formatPeso(extraSolarCost);
   
   // Show/hide "No battery needed" message
