@@ -120,7 +120,7 @@ The app ships with current market rates for the Philippines. **App default: ₱1
 |-----------|-------------|------------|-------|
 | **Electricity Rate** | ₱20/kWh | ₱15/kWh | Meralco blended rate |
 | **Solar Price** | ₱80,000/kW | ₱50,000/kW | Installed cost per kW |
-| **Battery Price** | ₱30,000/kWh | ₱15,000/kWh | LFP lithium batteries |
+| **Battery Price** | ₱6,000/kWh | ₱6,000/kWh | LFP lithium batteries |
 | **Peak Sun Hours** | 4.0 hrs/day | 4.0 hrs/day | Philippine average |
 | **Loan Term** | 60 months | 60 months | 5-year financing |
 

@@ -23,7 +23,7 @@ export const defaultInputs = {
   miscInfraCosts: 30000,         // Permits, installation overhead
   
   // Section 3: Battery Storage (Home defaults)
-  batteryPricePerKWh: 30000,     // ₱30,000/kWh residential
+  batteryPricePerKWh: 6000,      // ₱6,000/kWh default
   batteryCapacityKWh: 5,         // 5 kWh battery for nighttime backup
   pvForBatteryKW: 1,             // 1 kW dedicated to charging battery
   nighttimeLoadKW: 1,            // Reference: 1 kWh/hr nighttime consumption

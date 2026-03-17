@@ -561,7 +561,7 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 | `peakSunHoursPerDay` | number | 4.0 | hours | 0.5–8, step 0.1 | 2 | K7 (4) |
 | `solarPricePerKW` | number | 60,000 | ₱/kW | > 0 | 2 | K8 (40,000) |
 | `miscInfraCosts` | number | 30,000 | ₱ | ≥ 0 | 2 | K10 (2,000,000) |
-| `batteryPricePerKWh` | number | 30,000 | ₱/kWh | > 0 | 3 | K9 (5,000) |
+| `batteryPricePerKWh` | number | 6,000 | ₱/kWh | > 0 | 3 | K9 (5,000) |
 | `batteryCapacityKWh` | number | 5 | kWh | ≥ 0 | 3 | — |
 | `pvForBatteryKW` | number | 1 | kW | ≥ 0 | 3 | — |
 | `nighttimeLoadKW` | number | 1 | kW | ≥ 0 | 3 | — |
@@ -693,7 +693,7 @@ If batteryCapacityKWh is 0, show: **"No battery configured — battery capacity 
 INPUT FIELDS (Section 3):
 batteryCapacityKWh       = User input (default 0, can use requiredBatteryKWh as reference)
 pvForBatteryKW           = User input (default 0, can be calculated from battery capacity needs)
-batteryPricePerKWh       = User input (suggested: ₱30,000 residential, ₱12,000 commercial)
+batteryPricePerKWh       = User input (default: ₱6,000/kWh)
 
 COMPUTED VALUES:
 batteryCost              = batteryCapacityKWh × batteryPricePerKWh
@@ -1408,7 +1408,7 @@ The primary entry point for all spec operations is a **Spec Selector** at the ve
     "peakSunHoursPerDay": 4,
     "solarPricePerKW": 60000,
     "miscInfraCosts": 30000,
-    "batteryPricePerKWh": 30000,
+    "batteryPricePerKWh": 6000,
     "batteryCapacityKWh": 12,
     "pvForBatteryKW": 3,
     "nighttimeLoadKW": 1,
