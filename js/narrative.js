@@ -350,21 +350,33 @@ function getVerdict(results) {
   }
 
   // Check RED conditions first (most serious)
-  const redPayback = payback > 6 && payback !== Infinity;
+  // Note: Infinity > 6 is true in JS — no savings at all is the worst case
+  const redPayback = payback > 6;
   const redCashFlow = hasFinancing && netCashFlow < 0;
-  
+
   if (redPayback || redCashFlow) {
     let reason = '';
     let detail = '';
-    
+
     if (redPayback && redCashFlow) {
       reason = 'Long payback period AND negative monthly cash flow';
-      detail = `Your ${formatYears(payback)} payback exceeds 6 years, and your loan payment exceeds ` +
-               `your monthly savings by ${formatPeso(Math.abs(netCashFlow))}.`;
+      if (!isFinite(payback)) {
+        detail = `Your system generates no electricity savings, and your loan payment exceeds ` +
+                 `your monthly savings by ${formatPeso(Math.abs(netCashFlow))}.`;
+      } else {
+        detail = `Your ${formatYears(payback)} payback exceeds 6 years, and your loan payment exceeds ` +
+                 `your monthly savings by ${formatPeso(Math.abs(netCashFlow))}.`;
+      }
     } else if (redPayback) {
       reason = 'Payback period too long';
-      detail = `Your ${formatYears(payback)} payback exceeds 6 years. Solar systems typically last 25 years, ` +
-               `but a long payback increases risk.`;
+      if (!isFinite(payback)) {
+        detail = `Your system generates no electricity savings under current inputs. ` +
+                 `Check your electricity rate, system size, and peak sun hours — ` +
+                 `the payback period cannot be calculated.`;
+      } else {
+        detail = `Your ${formatYears(payback)} payback exceeds 6 years. Solar systems typically last 25 years, ` +
+                 `but a long payback increases risk.`;
+      }
     } else {
       reason = 'Negative monthly cash flow';
       detail = `Your loan payment of ${formatPeso(results.monthlyAmortization || 0)} exceeds ` +

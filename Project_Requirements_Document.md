@@ -362,7 +362,7 @@ A one-line summary with conditional tone based on payback period and net monthly
 - **Red — payback > 6 years:** The investment takes too long to recover; opportunity cost and system degradation risk outweigh returns.
 - **Red — negative cash flow:** When the monthly loan payment exceeds monthly savings, the system actively costs money each month during the loan period — a concrete financial loss.
 - **Yellow — payback 4–6 years:** The investment is sound but slow; the user should evaluate whether capital could work harder elsewhere.
-- **Yellow — cash flow buffer < 20%:** The loan payment consumes more than 80% of monthly savings, leaving a thin margin. A budget variance (rate change, consumption spike, maintenance cost) could easily push the user into negative cash flow.
+- **Yellow — cash flow buffer 0–19%:** The loan payment consumes more than 80% of monthly savings, but cash flow is still positive (amortization is between 80% and 100% of monthly savings — the buffer is thin but not yet in deficit). A budget variance (rate change, consumption spike, maintenance cost) could easily push the user into negative cash flow. Note: this condition is only reached after Red has been ruled out — so buffer < 0% (negative cash flow) is never mis-classified as Yellow.
 - **Green:** Payback within 4 years and cash flow retains at least 20% of monthly savings as buffer — the investment is both fast-returning and financially comfortable during the loan period.
 
 **Note on `hasFinancing`:** Cash flow conditions only apply when `loanPrincipal > 0`. For cash purchases, the cash flow buffer check is skipped (no loan payment to compare against).
