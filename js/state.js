@@ -36,53 +36,11 @@ export const defaultInputs = {
 };
 
 /**
- * Default calculated results (initial state)
+ * Default calculated results — computed from defaultInputs so they're always
+ * in sync. Never hardcode these: if a default input changes, this updates
+ * automatically and the initial page display stays correct.
  */
-export const defaultResults = {
-  // Section 1: Status Quo (Home defaults: 10kWh × 364 days × ₱20)
-  operatingDaysPerYear: 364,
-  annualConsumptionKWh: 3640,    // 10 × 364
-  dailyEnergyConsumptionKWh: 10,
-  projectedAnnualCost: 72800,    // 3640 × 20
-  projectedMonthlyCost: 6066.67, // 72800 / 12
-  effectiveAnnualCost: 72800,
-  // Section 2: PhotoVoltaic System (Home defaults)
-  pvTotalCapacityKW: 2,          // 1 kW solar + 1 kW pvForBattery
-  pvSystemCost: 120000,          // (1+1) × 60000 — ALL solar panels including pvForBattery
-  totalPVCapex: 150000,          // 120000 + 30000 misc
-  dailyGenerationKWh: 8,         // (1+1) × 4 = 8 kWh/day (all panels)
-  dailySavings: 160,             // 8 × 20
-  annualGenerationKWh: 2912,     // 2 × 4 × 364
-  totalSolarKW: 2,               // 1 + 1
-  // Section 3: Battery Storage (Home defaults)
-  requiredBatteryKWh: 10,        // 1 × 10 (reference)
-  batteryCapacityKWh: 5,
-  batteryCost: 150000,           // 5 × 30000
-  pvForBatteryKW: 1,
-  dailyChargeCapacityKWh: 4,     // 1 × 4
-  extraSolarCost: 60000,         // 1 × 60000
-  batteryChargePercent: 80,      // (4/5) × 100
-  solarPricePerKW: 60000,
-  // Section 4: Financing (Home defaults: ₱180,000 @ 14% / 60 months)
-  monthlyAmortization: 4188.29,  // 180000 @ 14% / 60mo
-  totalLoanCost: 251297.11,      // 4188.29 × 60
-  totalInterestPaid: 71297.11,   // 251297.11 - 180000
-  // Dashboard KPIs (Home defaults)
-  totalCapex: 300000,            // 150000 (totalPVCapex) + 150000 (batteryCost)
-  annualSavings: 58240,          // 2912 × 20
-  simpleROI: 19.41,              // (58240/300000) × 100
-  paybackYears: 5.15,            // 300000 / 58240
-  monthlySavings: 4853.33,       // 58240 / 12
-  netMonthlyCashFlow: 665.05,    // 4853.33 - 4188.29
-  // UI helpers
-  roiColor: 'green',
-  paybackColor: 'yellow',
-  cashFlowColor: 'green',
-  hasFinancing: true,
-  // Edge case warnings
-  warnRateTooLow: false,
-  warnLoanExceedsCapex: false
-};
+export const defaultResults = calculateAll(defaultInputs);
 
 /**
  * Default UI state

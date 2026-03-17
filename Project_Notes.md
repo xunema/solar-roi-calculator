@@ -612,6 +612,46 @@ Removed `updateNarrativeFromResults(inputs, results)` call from `updateAllKPIs()
 
 ---
 
+### 2026-03-17 — Post-M7 Bug Fixes
+
+#### Bug 1: Red verdict not triggered for Infinity payback period
+**Issue:** `getVerdict()` in `narrative.js` had `const redPayback = payback > 6 && payback !== Infinity`. The explicit `!== Infinity` exclusion meant a system with zero savings (infinite payback) fell through to Yellow instead of Red. In JavaScript, `Infinity > 6` is `true`, so the exclusion was the only blocker.
+
+**Symptom:** When solarCapacityKW = 0 with no financing, the verdict showed 🟡 Yellow (or 🟢 Green) instead of 🔴 Red despite there being no savings at all.
+
+**Fix:** Removed `&& payback !== Infinity` — `payback > 6` now correctly catches both finite long paybacks and Infinity. Added `!isFinite(payback)` branches in the Red detail text to show a meaningful message ("Your system generates no electricity savings...") instead of "Your — payback exceeds 6 years".
+
+---
+
+#### Bug 2: Yellow cash flow range not explicit in PRD
+**Issue:** PRD rationale for Yellow cash flow only said "loan payment consumes more than 80% of monthly savings" without stating the implicit upper bound (cash flow still positive). A reader could misinterpret the condition as including negative cash flow.
+
+**Fix:** Updated PRD rationale to: "buffer is 0–19% (amortization 80–100% of savings, still positive)" with a note that negative cash flow is never mis-classified as Yellow because Red is evaluated first.
+
+---
+
+#### Bug 3: `defaultResults` stale after `batteryPricePerKWh` default change
+**Issue:** `defaultResults` in `state.js` was a hardcoded object with values calculated against the old `batteryPricePerKWh: 30000`. After changing that default to `6000`, the hardcoded `defaultResults` was wrong:
+- `batteryCost: 150000` — should be `5 × 6000 = 30000`
+- `totalCapex: 300000` — should be `180000`
+- `simpleROI: 19.41%` — should be `32.36%`
+- `paybackYears: 5.15` — should be `3.09`
+- `paybackColor: 'yellow'` — should be `'green'`
+
+On a fresh page load with no saved state, `setupUI()` calls `updateAllKPIs(defaultResults)` before any user interaction, displaying these wrong values on the KPI dashboard and Section 3 results panel.
+
+**Symptom:** Battery cost showed ₱150,000 initially instead of ₱30,000. After the user changed any input, the stale values corrected themselves (because recalculation fired). So the display was wrong on first load but correct after first interaction.
+
+**Root cause:** `defaultResults` was a hand-maintained hardcoded object that drifted out of sync when a default input value changed.
+
+**Fix:** Replaced the entire hardcoded `defaultResults` object with a single line:
+```javascript
+export const defaultResults = calculateAll(defaultInputs);
+```
+This computes initial results from `defaultInputs` at module load time. Now `defaultResults` is always in sync with `defaultInputs` — if any default changes in the future, the initial display automatically reflects the correct value. The pattern for the future: **never hardcode `defaultResults`**.
+
+---
+
 ## Patterns & Conventions
 
 ### Naming
