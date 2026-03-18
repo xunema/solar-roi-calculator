@@ -198,7 +198,14 @@ export function updateSection3Results(results) {
   }
   
   if (extraSolarCostEl) extraSolarCostEl.textContent = formatPeso(results.extraSolarCost);
-  
+
+  const dailyBatterySavingsEl = document.getElementById('section3-dailyBatterySavings');
+  const annualBatterySavingsEl = document.getElementById('section3-annualBatterySavings');
+  const monthlyBatterySavingsEl = document.getElementById('section3-monthlyBatterySavings');
+  if (dailyBatterySavingsEl) dailyBatterySavingsEl.textContent = formatPeso(results.dailyBatterySavings ?? 0);
+  if (annualBatterySavingsEl) annualBatterySavingsEl.textContent = formatPeso(results.annualBatterySavings ?? 0);
+  if (monthlyBatterySavingsEl) monthlyBatterySavingsEl.textContent = formatPeso(results.monthlyBatterySavings ?? 0);
+
   if (chargePercentEl) {
     const percent = results.batteryChargePercent || 0;
     let colorClass = 'text-emerald-800';

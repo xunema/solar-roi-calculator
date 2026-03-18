@@ -264,6 +264,10 @@ export function calculateAll(inputs) {
   const effectiveBatteryCapacityKWh = batteryCapacityKWh || 0;
   // Daily charge capacity from allocated PV
   const dailyChargeCapacityKWh = (pvForBatteryKW || 0) * (peakSunHoursPerDay || 0);
+  // Battery savings: energy stored × electricity rate
+  const dailyBatterySavings = dailyChargeCapacityKWh * (electricityRate || 0);
+  const annualBatterySavings = dailyBatterySavings * operatingDaysPerYear;
+  const monthlyBatterySavings = annualBatterySavings / 12;
   // Battery charge percentage
   const batteryChargePercent = effectiveBatteryCapacityKWh > 0
     ? (dailyChargeCapacityKWh / effectiveBatteryCapacityKWh) * 100
@@ -328,6 +332,9 @@ export function calculateAll(inputs) {
     batteryCost,
     pvForBatteryKW,
     dailyChargeCapacityKWh,
+    dailyBatterySavings,
+    annualBatterySavings,
+    monthlyBatterySavings,
     extraSolarCost,
     batteryChargePercent,
     requiredBatteryKWh,      // Reference calculation for guidance

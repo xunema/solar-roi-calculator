@@ -1038,11 +1038,14 @@ dismissActiveBanner()        // → void
 | `requiredBatteryKWh` | `nighttimeLoadKW × nighttimeDurationHours` | kWh | 3 |
 | `batteryCost` | `batteryCapacityKWh × batteryPricePerKWh` | ₱ | 3 |
 | `dailyChargeCapacityKWh` | `pvForBatteryKW × peakSunHoursPerDay` | kWh | 3 |
+| `dailyBatterySavings` | `dailyChargeCapacityKWh × electricityRate` — grid cost avoided by using battery-stored energy | ₱/day | 3 |
+| `annualBatterySavings` | `dailyBatterySavings × operatingDaysPerYear` | ₱/yr | 3 |
+| `monthlyBatterySavings` | `annualBatterySavings / 12` | ₱/mo | 3 |
 | `batteryChargePercent` | `IF batteryCapacityKWh > 0 THEN (dailyChargeCapacityKWh / batteryCapacityKWh) × 100 ELSE 0` — shows what % of battery can be charged per day with allocated PV | % | 3 |
 | `extraSolarCost` | `pvForBatteryKW × solarPricePerKW` | ₱ | 3 |
 | `totalSolarKW` | `solarCapacityKW + pvForBatteryKW` | kW | — |
 | `totalCapex` | `totalPVCapex + batteryCost` — Total investment = Total PV CAPEX (Section 2, already includes all solar panels) + Battery Storage cost (Section 3) | ₱ | Dashboard |
-| `annualSavings` | `annualGenerationKWh × electricityRate` — tooltip: `dailySavings × operatingDaysPerYear` | ₱ | Dashboard |
+| `annualSavings` | `annualGenerationKWh × electricityRate` — includes both solar and battery savings since `annualGenerationKWh` uses `totalSolarKW = solarCapacityKW + pvForBatteryKW`. Battery savings are also shown explicitly in Section 3 as `annualBatterySavings`. | ₱ | Dashboard |
 | `simpleROI` | `IF totalCapex > 0 THEN (annualSavings / totalCapex) × 100 ELSE 0` — Annual Savings ÷ Total CAPEX. Measures what % of investment is recovered each year. Higher = faster recovery. | % | Dashboard |
 | `paybackYears` | `IF annualSavings > 0 THEN totalCapex / annualSavings ELSE Infinity` — the inverse of ROI: how many years until CAPEX is fully recovered. | years | Dashboard |
 | `monthlyAmortization` | Standard annuity formula (see Section 5.4 Financing) | ₱/month | 4 |
@@ -1126,6 +1129,9 @@ annualGenerationKWh = totalSolarKW × peakSunHoursPerDay × operatingDaysPerYear
 │  Extra PV Cost            ₱300,000.00       │  ← pvForBatteryKW × solarPricePerKW
 │  Daily Charge Capacity    40.0 kWh/day      │  ← pvForBatteryKW × peakSunHoursPerDay
 │  Battery Charge %         100.0% ✓          │  ← (dailyChargeCapacity / batteryCapacity) × 100
+│  Daily Battery Savings    ₱400.00 /day      │  ← dailyChargeCapacityKWh × electricityRate
+│  Annual Battery Savings   ₱120,000.00 /yr   │  ← dailyBatterySavings × operatingDaysPerYear
+│  Monthly Battery Savings  ₱10,000.00 /mo    │  ← annualBatterySavings / 12
 │                                             │
 │  ── Reference Calculation ──                │
 │  Required Battery (Ref)   40.0 kWh          │  ← nighttimeLoadKW × nighttimeDurationHours
@@ -1152,6 +1158,10 @@ extraSolarCost           = pvForBatteryKW × solarPricePerKW   ← INFORMATIONAL
                            (shows the battery-dedicated share of pvSystemCost — already included
                             in Section 2 PV Equipment Cost; not added again to totalCapex)
 dailyChargeCapacityKWh   = pvForBatteryKW × peakSunHoursPerDay
+dailyBatterySavings      = dailyChargeCapacityKWh × electricityRate
+annualBatterySavings     = dailyBatterySavings × operatingDaysPerYear
+                           (operatingDaysPerYear = operatingWeeksPerYear × operatingDaysPerWeek)
+monthlyBatterySavings    = annualBatterySavings / 12
 batteryChargePercent     = IF batteryCapacityKWh > 0 THEN (dailyChargeCapacityKWh / batteryCapacityKWh) × 100 ELSE 0
 
 REFERENCE CALCULATION (for guidance only):

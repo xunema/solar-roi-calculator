@@ -1032,7 +1032,7 @@ test('createAppState returns inputs, results, ui', () => {
 
 test('Default inputs match PRD spec (Home defaults)', () => {
   const app = createAppState();
-  assertEqual(app.inputs.electricityRate, 20, 'Default rate = ₱20 (home)');
+  assertEqual(app.inputs.electricityRate, 15, 'Default rate = ₱15 (home)');
   assertEqual(app.inputs.operatingWeeksPerYear, 52, 'Default weeks = 52');
   assertEqual(app.inputs.operatingDaysPerWeek, 7, 'Default days = 7');
   assertEqual(app.inputs.dailyEnergyConsumptionKWh, 10, 'Default consumption = 10 kWh (home)');
@@ -1041,7 +1041,7 @@ test('Default inputs match PRD spec (Home defaults)', () => {
   assertEqual(app.inputs.peakSunHoursPerDay, 4, 'Default PSH = 4');
   assertEqual(app.inputs.solarPricePerKW, 60000, 'Default price = ₱60,000 (home)');
   assertEqual(app.inputs.miscInfraCosts, 30000, 'Default misc = ₱30,000 (home)');
-  assertEqual(app.inputs.batteryPricePerKWh, 30000, 'Default battery price = ₱30,000');
+  assertEqual(app.inputs.batteryPricePerKWh, 6000, 'Default battery price = ₱6,000');
   assertEqual(app.inputs.batteryCapacityKWh, 5, 'Default battery capacity = 5 kWh (home)');
   assertEqual(app.inputs.pvForBatteryKW, 1, 'Default PV for battery = 1 kW (home)');
   assertEqual(app.inputs.nighttimeLoadKW, 1, 'Default night load = 1 kWh/hr (home)');
@@ -1085,7 +1085,7 @@ test('resetInputs restores PRD defaults', () => {
   app.inputs.electricityRate = 99;
   app.inputs.solarCapacityKW = 500;
   app.resetInputs();
-  assertEqual(app.inputs.electricityRate, 20);
+  assertEqual(app.inputs.electricityRate, 15);
   assertEqual(app.inputs.solarCapacityKW, 1);
 });
 

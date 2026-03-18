@@ -143,6 +143,27 @@
       <button id="specManageBtn" class="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition" title="Manage Specifications">
         ⚙️
       </button>
+      <button id="packagesBtn" class="px-3 py-2 bg-teal-600 hover:bg-teal-500 text-sm rounded-lg transition flex items-center gap-1" title="Solar Packages">
+        📦 Packages
+      </button>
+    </div>
+  </div>
+
+  <!-- Package Applied Banner -->
+  <div id="packageBanner" class="hidden bg-gradient-to-r from-teal-600 to-teal-500 text-white py-2 px-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-lg">📦</span>
+        <span id="packageBannerText">Package applied</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="viewPackageBtn" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition">
+          View Package
+        </button>
+        <button id="dismissPackageBanner" class="text-white/80 hover:text-white text-lg leading-none px-2">
+          ×
+        </button>
+      </div>
     </div>
   </div>
 
@@ -554,6 +575,18 @@
               <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
                 <div class="text-xs text-emerald-700 mb-1">Battery Charge %</div>
                 <div id="section3-chargePercent" class="text-lg font-bold text-emerald-800">0%</div>
+              </div>
+              <div class="bg-green-50 p-3 rounded-lg border border-green-100">
+                <div class="text-xs text-green-700 mb-1">Daily Battery Savings</div>
+                <div id="section3-dailyBatterySavings" class="text-lg font-bold text-green-800">₱0</div>
+              </div>
+              <div class="bg-teal-50 p-3 rounded-lg border border-teal-100">
+                <div class="text-xs text-teal-700 mb-1">Annual Battery Savings</div>
+                <div id="section3-annualBatterySavings" class="text-lg font-bold text-teal-800">₱0</div>
+              </div>
+              <div class="bg-cyan-50 p-3 rounded-lg border border-cyan-100">
+                <div class="text-xs text-cyan-700 mb-1">Monthly Battery Savings</div>
+                <div id="section3-monthlyBatterySavings" class="text-lg font-bold text-cyan-800">₱0</div>
               </div>
             </div>
             <div id="section3-noBattery" class="hidden mt-3 p-3 bg-gray-100 rounded-lg text-center text-gray-600">
@@ -1001,6 +1034,322 @@
         🔗 <a href="https://globalsolaratlas.info" target="_blank" class="text-blue-600 underline">Global Solar Atlas</a> — search your address, read GHI (kWh/m²/day) = PSH<br>
         🔗 <a href="https://pvwatts.nrel.gov/" target="_blank" class="text-blue-600 underline">NREL PVWatts</a> — enter address, read "Solar Radiation (kWh/m²/day)"<br>
         🔗 <a href="https://www.nrel.gov/solar/solar-resource-maps.html" target="_blank" class="text-blue-600 underline">NREL Solar Resource Maps</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Package Manager Modal (M8) -->
+  <div id="packageManagerModal" role="dialog" aria-modal="true" aria-labelledby="packageManagerTitle"
+    class="modal-backdrop fixed inset-0 bg-black/50 hidden items-center justify-end sm:items-center sm:justify-center z-50">
+    <!-- Mobile: Full screen, Desktop: Right drawer -->
+    <div class="bg-white dark:bg-slate-800 w-full h-full sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-2xl sm:rounded-xl shadow-2xl flex flex-col">
+      <!-- Header -->
+      <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 sm:rounded-t-xl">
+        <h2 id="packageManagerTitle" class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <span>📦</span> Solar Packages
+        </h2>
+        <div class="flex items-center gap-2">
+          <button id="addPackageBtn" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white text-sm rounded-lg transition flex items-center gap-1">
+            <span>+</span> Add
+          </button>
+          <button id="closePackageManager" class="text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 text-2xl min-w-[44px] min-h-[44px]"
+            aria-label="Close package manager">&times;</button>
+        </div>
+      </div>
+      
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+        <button id="tabList" class="flex-1 py-3 text-sm font-medium text-teal-600 border-b-2 border-teal-600 bg-teal-50 dark:bg-slate-800/50">
+          List
+        </button>
+        <button id="tabDetail" class="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border-b-2 border-transparent">
+          Detail
+        </button>
+        <button id="tabForm" class="flex-1 py-3 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border-b-2 border-transparent">
+          Add/Edit
+        </button>
+      </div>
+      
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-slate-900">
+        <!-- List View -->
+        <div id="viewList" class="space-y-4">
+          <!-- Search and Sort -->
+          <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+              <input type="text" id="packageSearch" placeholder="Search packages..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+            </div>
+            <select id="packageSort" class="px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+              <option value="date">Sort: Date Added</option>
+              <option value="priceTotal">Sort: Price (Low → High)</option>
+              <option value="pricePerWatt">Sort: ₱/W (Low → High)</option>
+              <option value="kwhPerYear">Sort: kWh/yr (High → Low)</option>
+              <option value="systemSize">Sort: Size (Large → Small)</option>
+            </select>
+          </div>
+          
+          <!-- Package List -->
+          <div id="packageList" class="space-y-2">
+            <!-- Packages will be rendered here -->
+          </div>
+          
+          <!-- Empty State -->
+          <div id="packageListEmpty" class="hidden text-center py-12">
+            <div class="text-4xl mb-2">📦</div>
+            <p class="text-gray-500 dark:text-gray-400">No packages yet.</p>
+            <p class="text-sm text-gray-400 dark:text-gray-500">Add your first solar quote with the + Add button.</p>
+          </div>
+          
+          <!-- No Search Results -->
+          <div id="packageNoResults" class="hidden text-center py-12">
+            <div class="text-4xl mb-2">🔍</div>
+            <p class="text-gray-500 dark:text-gray-400">No packages match your search.</p>
+          </div>
+          
+          <!-- Import/Export -->
+          <div class="pt-4 border-t border-gray-200 dark:border-slate-700 flex flex-wrap gap-2">
+            <button id="exportPackagesJson" class="flex-1 px-3 py-2 bg-teal-600 hover:bg-teal-500 text-white text-sm rounded-lg transition">
+              Export JSON
+            </button>
+            <button id="exportPackagesCsv" class="flex-1 px-3 py-2 bg-teal-600 hover:bg-teal-500 text-white text-sm rounded-lg transition">
+              Export CSV
+            </button>
+            <label class="flex-1 px-3 py-2 bg-gray-600 hover:bg-gray-500 text-white text-sm rounded-lg transition text-center cursor-pointer">
+              Import
+              <input type="file" id="importPackagesBtn" accept=".json,.csv" class="hidden">
+            </label>
+          </div>
+        </div>
+        
+        <!-- Detail View -->
+        <div id="viewDetail" class="hidden space-y-4">
+          <div id="detailContent" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4">
+            <!-- Detail content will be rendered here -->
+          </div>
+          
+          <!-- Detail Actions -->
+          <div class="flex flex-wrap gap-2">
+            <button id="applyPackageBtn" class="flex-1 px-4 py-3 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg transition">
+              ✅ Apply to Calculator
+            </button>
+            <button id="editPackageBtn" class="px-4 py-3 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg transition">
+              ✏️ Edit
+            </button>
+            <button id="exportSinglePackage" class="px-4 py-3 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg transition">
+              💾 Export
+            </button>
+            <button id="copyPackageJson" class="px-4 py-3 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg transition">
+              📋 Copy
+            </button>
+          </div>
+          
+          <div id="copyFeedbackPackage" class="hidden text-center text-sm text-green-600">
+            ✓ Copied to clipboard!
+          </div>
+        </div>
+        
+        <!-- Form View -->
+        <div id="viewForm" class="hidden space-y-4">
+          <form id="packageForm" class="space-y-4">
+            <input type="hidden" id="pkgId" value="">
+            
+            <!-- System Section -->
+            <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4">
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">System</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="sm:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Package Name *</label>
+                  <input type="text" id="pkgName" required maxlength="100"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgNameWarning" class="hidden mt-1 text-xs text-amber-600">A package with this name already exists.</div>
+                  <div id="pkgNameError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Panel Brand</label>
+                  <input type="text" id="pkgPanelBrand" maxlength="100"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Panel Model</label>
+                  <input type="text" id="pkgPanelModel" maxlength="100"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Watt-Peak (W)</label>
+                  <input type="number" id="pkgWattPeak" min="0" max="5000" step="1"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgWattPeakError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">System Size (kW) *</label>
+                  <input type="number" id="pkgSystemSizeKw" required min="0.1" max="100000" step="0.1"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgSystemSizeKwError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Total Price (₱) *</label>
+                  <input type="number" id="pkgPriceTotal" required min="1" step="1000"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgPriceTotalError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">₱/Watt (computed)</label>
+                  <input type="text" id="pkgPricePerWatt" readonly
+                    class="w-full px-3 py-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-100 dark:bg-slate-900 text-gray-500 dark:text-gray-400">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Est. Annual kWh</label>
+                  <input type="number" id="pkgEstimatedKwh" min="0" step="100"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div class="text-xs text-gray-400 mt-1">Supplier estimate (reference only)</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Supplier Section -->
+            <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4">
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Supplier</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name</label>
+                  <input type="text" id="pkgSupplier" maxlength="100"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact Name</label>
+                  <input type="text" id="pkgContactName" maxlength="100"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                  <input type="email" id="pkgContactEmail"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgContactEmailError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  <input type="text" id="pkgContactPhone" maxlength="30"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Financing Section -->
+            <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Financing Options</h3>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" id="pkgHasFinancing" class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500">
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Has Financing</span>
+                </label>
+              </div>
+              
+              <div id="pkgFinancingFields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 opacity-50 pointer-events-none transition-opacity">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Principal (₱)</label>
+                  <input type="number" id="pkgLoanPrincipal" min="0" step="10000"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div class="text-xs text-gray-400 mt-1">Amount being financed</div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Down Payment (₱)</label>
+                  <input type="number" id="pkgDownPayment" min="0" step="10000"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div class="text-xs text-gray-400 mt-1">Upfront payment (reference only)</div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interest Rate (%)</label>
+                  <input type="number" id="pkgInterestRate" min="0" max="100" step="0.1"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div class="text-xs text-gray-400 mt-1">Annual interest rate</div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Term (months)</label>
+                  <input type="number" id="pkgLoanTerm" min="1" max="360" step="12"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div class="text-xs text-gray-400 mt-1">e.g., 60 = 5 years</div>
+                </div>
+                
+                <!-- Computed Monthly Payment Display -->
+                <div class="sm:col-span-2 bg-teal-50 dark:bg-teal-900/30 p-3 rounded-lg">
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm text-teal-700 dark:text-teal-300">Est. Monthly Payment:</span>
+                    <span id="pkgMonthlyPayment" class="text-lg font-bold text-teal-800 dark:text-teal-200">₱0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terms Section -->
+            <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4">
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Terms</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Warranty (years)</label>
+                  <input type="number" id="pkgWarranty" min="0" max="50" step="1"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgWarrantyError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Source URL</label>
+                  <input type="url" id="pkgSourceUrl"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                  <div id="pkgSourceUrlError" class="hidden mt-1 text-xs text-red-600"></div>
+                </div>
+                
+                <div class="sm:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Notes
+                    <span id="pkgNotesCount" class="text-xs text-gray-400">(0/1000)</span>
+                  </label>
+                  <textarea id="pkgNotes" rows="3" maxlength="1000"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white resize-none"></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tags Section -->
+            <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 p-4">
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">Tags</h3>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Tags (comma-separated)
+                </label>
+                <input type="text" id="pkgTagsInput" placeholder="e.g., residential, cebu, tier-1"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                <div id="pkgTags" class="flex flex-wrap gap-2 mt-2">
+                  <!-- Tag pills will be rendered here -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex gap-2 pt-2">
+              <button type="submit" id="savePackageBtn" class="flex-1 px-4 py-3 bg-teal-600 hover:bg-teal-500 text-white font-medium rounded-lg transition">
+                Save Package
+              </button>
+              <button type="button" id="cancelPackageForm" class="px-4 py-3 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg transition">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
