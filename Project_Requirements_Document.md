@@ -400,11 +400,12 @@ A one-line summary with conditional tone based on payback period and net monthly
 
 Quick Presets allow users to load pre-configured scenarios with a single click. These presets serve as **benchmarks** — users can start from a realistic scenario and adjust to match their specific situation.
 
-#### 🏠 Residential Preset — 5kW @ ₱80,000/kW
+#### 🏠 Residential 30kWh/day — Work from Home
 
-**Target User:** Homeowner with typical Meralco residential service
+**Target User:** Household of ~5 members working from home (AC, fridge, fans, computers)
 
-**Subtext:** 30 kWh/day • ₱15/kWh • Night: AC, fridge, fans (1.5kW)
+**Button label:** `Residential 30kWh/day — Work from Home`
+**Subtext:** ₱13,650/mo • AC, fridge, fans • 5 household members • 7 days/wk
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
@@ -442,11 +443,12 @@ Residential buyers face a **70–100% price premium** compared to commercial buy
 
 ---
 
-#### 🏢 Commercial Preset — 100kW @ ₱50,000/kW
+#### 🏢 Commercial 230kWh/day — 100 Employees
 
-**Target User:** Business with 100 office employees
+**Target User:** Office with 100 employees, 5 days/week, 52 weeks/year
 
-**Subtext:** 230 kWh/day • ₱10/kWh • 100 employees • Night: 15kW
+**Button label:** `Commercial 230kWh/day — 100 Employees`
+**Subtext:** ₱50,000/mo • 5 days/wk • 52 weeks/yr • ₱10/kWh
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
@@ -484,53 +486,31 @@ At 100kW+, the system enters **"Sharp Pricing" territory** with significant adva
 
 ---
 
-#### 🔋 Battery Only Preset
+#### 🔋 Battery Only — Brownout Backup
 
-**Target User:** Existing solar owner adding battery storage
+**Target User:** Household suffering frequent brownouts; no existing solar — battery charged from the grid during stable power, used during outages.
 
-**Subtext:** Existing solar system — adding 50 kWh battery + 12.5 kW charging PV
+**Button label:** `Battery Only — Brownout Backup`
+**Subtext:** No solar panels • Grid-charged battery for power outages
+
+> **Design intent:** Both `solarCapacityKW` and `pvForBatteryKW` are set to **0**. There are no PV panels. The battery is charged by the grid during normal operation and discharges during brownouts. ROI reflects savings from avoiding generator fuel costs or spoiled goods — not from solar generation.
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| **Electricity Rate** | ₱15/kWh | Meralco blended rate (default) |
+| **Electricity Rate** | ₱15/kWh | Meralco residential blended rate |
 | **Operating Schedule** | 7 days/week, 52 weeks/year | Daily home use |
-| **Daily Consumption** | 40 kWh/day | Moderate home with existing solar partially offsetting grid draw |
-| **Solar System Size** | 0 kW | Existing system — adding only battery (and its charging PV) |
-| **Peak Sun Hours** | 4.0 hrs/day | Philippine average |
-| **Solar Price** | ₱50,000/kW | Mid-range pricing for the additional charging PV panels |
-| **Misc Costs** | ₱0 | No new structural or permitting costs (existing system) |
-| **Battery Price** | ₱25,000/kWh | Mid-range between residential and commercial LFP |
-| **Battery Capacity** | 50 kWh | 5 kW × 10 hours = 50 kWh backup capacity |
-| **PV for Battery** | 12.5 kW | 50 kWh ÷ 4 peak sun hours = 12.5 kW needed to fully charge daily |
-| **Nighttime kWh/Hr** | 5 kWh/hr | Moderate backup load (essential circuits only) — for reference |
-| **Nighttime Duration** | 10 hours | Evening + early morning backup — for reference |
-| **Loan Principal** | ₱400,000 | ~50% financing of battery system cost |
+| **Daily Consumption** | 30 kWh/day | Standard residential load |
+| **Solar System Size** | 0 kW | No solar panels — brownout backup only |
+| **Solar Price** | ₱0/kW | No solar |
+| **PV for Battery** | 0 kW | No PV — battery charged from grid |
+| **Misc Costs** | ₱0 | Battery-only installation (no rooftop permitting) |
+| **Battery Price** | ₱25,000/kWh | Consumer-grade LFP (wall-mounted units) |
+| **Battery Capacity** | 12 kWh | 1.5 kW × 8 hours = 12 kWh for nighttime/brownout backup |
+| **Nighttime kWh/Hr** | 1.5 kWh/hr | AC + fridge + fans — essential circuits |
+| **Nighttime Duration** | 8 hours | 10pm – 6am reference |
+| **Loan Principal** | ₱300,000 | Battery system financing |
 | **Interest Rate** | 0% | Interest-free instalment plan |
 | **Loan Term** | 60 months | 5-year repayment |
-
----
-
-#### 📋 Spreadsheet Preset
-
-**Target User:** User validating against original Excel model
-
-| Parameter | Value | Source |
-|-----------|-------|--------|
-| **Electricity Rate** | ₱11/kWh | Spreadsheet K4 |
-| **Operating Schedule** | 6 days/week, 50 weeks/year (= 300 days) | Spreadsheet K5-K6 |
-| **Daily Consumption** | 1,200 kWh/day | 300 kW × 4 PSH = 1,200 kWh/day generated (proxy for facility consumption) |
-| **Solar System Size** | 300 kW | Spreadsheet K13 (daytime use only) |
-| **Peak Sun Hours** | 4.0 hrs/day | Spreadsheet K7 |
-| **Solar Price** | ₱40,000/kW | Spreadsheet K8 |
-| **Misc Costs** | ₱2,000,000 | Spreadsheet K10 |
-| **Battery Price** | ₱5,000/kWh | Spreadsheet K9 (LFP bulk pricing) |
-| **Battery Capacity** | 0 kWh | Spreadsheet has no battery storage calculations |
-| **PV for Battery** | 0 kW | Spreadsheet has no battery storage calculations |
-| **Nighttime kWh/Hr** | 0 | No battery modelled |
-| **Nighttime Duration** | 0 hours | No battery modelled |
-| **Loan Principal** | ₱14,000,000 | Spreadsheet S6 |
-| **Interest Rate** | 12% | Spreadsheet V5 |
-| **Loan Term** | 60 months | Spreadsheet S5 |
 
 ---
 

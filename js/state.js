@@ -207,39 +207,21 @@ export function createAppState() {
           loanTermMonths: 60
         },
         batteryOnly: {
-          electricityRate: 15,          // Uses app default
+          electricityRate: 15,          // Uses residential default
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
-          dailyEnergyConsumptionKWh: 40,
-          solarCapacityKW: 0,           // Existing system — adding only battery
+          dailyEnergyConsumptionKWh: 30,
+          solarCapacityKW: 0,           // No solar panels — brownout backup only
           peakSunHoursPerDay: 4,
-          solarPricePerKW: 50000,       // Mid-range pricing
+          solarPricePerKW: 0,           // No solar
           miscInfraCosts: 0,
-          batteryPricePerKWh: 25000,    // Mid-range between residential and commercial
-          batteryCapacityKWh: 50,       // 5 kW × 10 hours
-          pvForBatteryKW: 12.5,         // 50 kWh ÷ 4 peak sun hours
-          nighttimeLoadKW: 5,           // Reference: Moderate backup load
-          nighttimeDurationHours: 10,   // Reference: Evening + early morning
-          loanPrincipal: 400000,
+          batteryPricePerKWh: 25000,    // ₱25,000/kWh consumer LFP
+          batteryCapacityKWh: 12,       // 1.5 kW × 8 hours night backup
+          pvForBatteryKW: 0,            // No PV — battery charged from grid
+          nighttimeLoadKW: 1.5,         // Reference: AC + fridge + fans
+          nighttimeDurationHours: 8,    // Reference: 10pm - 6am
+          loanPrincipal: 300000,
           annualInterestRate: 0,
-          loanTermMonths: 60
-        },
-        spreadsheet: {
-          electricityRate: 11,
-          operatingWeeksPerYear: 50,
-          operatingDaysPerWeek: 6,
-          dailyEnergyConsumptionKWh: 1200, // 300kW × 4 PSH = 1,200 kWh/day
-          solarCapacityKW: 300,
-          peakSunHoursPerDay: 4,
-          solarPricePerKW: 40000,
-          miscInfraCosts: 2000000,
-          batteryPricePerKWh: 5000,
-          batteryCapacityKWh: 0,          // Spreadsheet has no battery
-          pvForBatteryKW: 0,              // Spreadsheet has no battery
-          nighttimeLoadKW: 0,
-          nighttimeDurationHours: 0,
-          loanPrincipal: 14000000,
-          annualInterestRate: 12,
           loanTermMonths: 60
         }
       };

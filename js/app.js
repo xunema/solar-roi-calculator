@@ -445,7 +445,7 @@ class SolarCalcApp {
    * Bind preset button handlers
    */
   bindPresetButtons() {
-    const presets = ['residential', 'commercial', 'batteryOnly', 'spreadsheet'];
+    const presets = ['residential', 'commercial', 'batteryOnly'];
     
     presets.forEach(preset => {
       const btn = document.getElementById(`preset-${preset}`);

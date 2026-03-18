@@ -2,6 +2,28 @@
 
 All notable changes to SolarCalc PH will be documented in this file.
 
+## [Unreleased] - 2026-03-18
+
+### Changed
+
+#### Quick Preset Renames
+- **Residential** → `Residential 30kWh/day — Work from Home` — subtext now shows ₱13,650/mo, AC/fridge/fans, 5 household members, 7 days/wk
+- **Commercial** → `Commercial 230kWh/day — 100 Employees` — subtext now shows ₱50,000/mo, 5 days/wk, 52 weeks/yr, ₱10/kWh
+- **Battery Only** → `Battery Only — Brownout Backup` — redesigned for pure grid-charged backup; `solarCapacityKW` and `pvForBatteryKW` both set to 0 (no solar panels)
+
+#### Removed
+- **Spreadsheet preset** — Excel reference preset retired; no longer shown in Quick Presets
+
+### Added
+
+#### Battery Savings (Section 3)
+- `dailyBatterySavings` — daily charge capacity × electricity rate (₱/day)
+- `annualBatterySavings` — dailyBatterySavings × operating days/year (₱/yr)
+- `monthlyBatterySavings` — annualBatterySavings ÷ 12 (₱/mo)
+- Three new result cards displayed in Section 3 results panel
+
+---
+
 ## [Unreleased] - M2 Complete
 
 ### Changed

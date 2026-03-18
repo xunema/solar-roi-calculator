@@ -687,6 +687,44 @@ This computes initial results from `defaultInputs` at module load time. Now `def
 
 ---
 
+### 2026-03-18 — Quick Preset Rename & Battery Savings Feature
+
+#### Quick Preset Renames
+Three presets renamed and one removed to better reflect real-world use cases:
+
+| Old Name | New Name | Change |
+|----------|----------|--------|
+| `Residential` | **Residential 30kWh/day — Work from Home** | Subtext updated: ₱13,650/mo, AC/fridge/fans, 5 household members |
+| `Commercial` | **Commercial 230kWh/day — 100 Employees** | Subtext updated: ₱50,000/mo, 5 days/wk, 52 weeks/yr |
+| `Battery Only` | **Battery Only — Brownout Backup** | Redesigned: solarCapacityKW=0, pvForBatteryKW=0 (pure grid-charged backup) |
+| `Spreadsheet` | *(removed)* | No longer needed — original Excel reference preset retired |
+
+**Monthly cost derivations:**
+- Residential: 30 kWh/day × 7 days × 52 weeks ÷ 12 × ₱15/kWh = **₱13,650/mo**
+- Commercial: 230 kWh/day × 5 days × 52 weeks ÷ 12 × ₱10/kWh = **₱49,833/mo ≈ ₱50,000/mo**
+
+#### Battery Only Redesign — "Brownout Backup" Intent
+The original Battery Only preset had `pvForBatteryKW: 12.5` (solar panels to charge the battery). This contradicted the use case for households experiencing brownouts who don't have or want solar panels.
+
+**New design:** Both `solarCapacityKW` and `pvForBatteryKW` are **0**. The battery is sized for nighttime/brownout backup (12 kWh @ 1.5 kW × 8 hrs) and charged purely from the grid. `solarPricePerKW` is also set to 0 since no PV panels are purchased.
+
+This means:
+- `annualSavings = 0` (no solar generation offset)
+- Battery cost is the only CAPEX: `12 kWh × ₱25,000 = ₱300,000`
+- ROI must be explained through avoided generator costs / spoiled goods — the calculator shows this accurately as 0% solar savings
+
+#### Battery Savings Feature (Explicit Display)
+Three new fields added to Section 3 results panel:
+- `dailyBatterySavings = dailyChargeCapacityKWh × electricityRate`
+- `annualBatterySavings = dailyBatterySavings × operatingDaysPerYear`
+- `monthlyBatterySavings = annualBatterySavings / 12`
+
+**Note:** These savings were already embedded in `annualSavings` via `totalSolarKW = solarCapacityKW + pvForBatteryKW`. Adding these fields makes them transparent without double-counting the total.
+
+**For Battery Only preset:** With `pvForBatteryKW = 0`, `dailyChargeCapacityKWh = 0`, so all three fields display ₱0. This is correct — the battery charges from the grid, not solar PV.
+
+---
+
 ## Patterns & Conventions
 
 ### Naming
