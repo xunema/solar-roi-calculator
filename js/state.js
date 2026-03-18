@@ -10,7 +10,7 @@ import { calculateAll } from './calc.js';
  */
 export const defaultInputs = {
   // Section 1: Status Quo (Home defaults)
-  electricityRate: 20.00,        // ₱20/kWh for residential
+  electricityRate: 15.00,        // ₱15/kWh residential default
   operatingWeeksPerYear: 52,
   operatingDaysPerWeek: 7,
   dailyEnergyConsumptionKWh: 10, // 10 kWh/day typical small home
@@ -171,7 +171,7 @@ export function createAppState() {
     loadPreset(presetName) {
       const presets = {
         residential: {
-          electricityRate: 20,          // ₱20/kWh Meralco residential
+          electricityRate: 15,          // ₱15/kWh Meralco residential
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 7,
           dailyEnergyConsumptionKWh: 30, // 30 kWh/day typical home with AC
@@ -189,10 +189,10 @@ export function createAppState() {
           loanTermMonths: 60
         },
         commercial: {
-          electricityRate: 15,          // ₱15/kWh Meralco commercial
+          electricityRate: 10,          // ₱10/kWh Meralco commercial
           operatingWeeksPerYear: 52,
           operatingDaysPerWeek: 5,      // 5 days/week business operations
-          dailyEnergyConsumptionKWh: 100, // 100 employees × 1 kWh/person/day
+          dailyEnergyConsumptionKWh: 230, // 100 employees × 2.3 kWh/person/day
           solarCapacityKW: 100,         // 100kW — "Sharp Pricing" territory
           peakSunHoursPerDay: 4,
           solarPricePerKW: 50000,       // ₱50,000/kW — Volume Advantage

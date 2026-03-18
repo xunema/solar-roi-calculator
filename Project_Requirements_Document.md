@@ -119,7 +119,7 @@ A homeowner or business owner opens the app. They may know their electricity rat
 
 > **How to calculate your blended rate:** Total Bill Amount ÷ Total kWh Consumed. Do NOT use just the "Generation Charge" line — that's only one component. The blended rate includes transmission, distribution, metering, universal charges, and VAT.
 
-**Default:** ₱15/kWh (commercial baseline; residential rates typically ₱15–₱20/kWh).
+**Default:** ₱15/kWh (residential baseline). Commercial users should adjust to ₱10/kWh or their actual blended rate.
 
 #### Consumption Chain
 
@@ -404,13 +404,13 @@ Quick Presets allow users to load pre-configured scenarios with a single click. 
 
 **Target User:** Homeowner with typical Meralco residential service
 
-**Subtext:** 30 kWh/day • ₱20/kWh • Night: AC, fridge, fans (1.5kW)
+**Subtext:** 30 kWh/day • ₱15/kWh • Night: AC, fridge, fans (1.5kW)
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
 | **Daily Consumption** | 30 kWh/day | Typical home with AC, refrigerator, appliances |
 | **Operating Schedule** | 7 days/week, 52 weeks/year | Home occupied daily |
-| **Electricity Rate** | ₱20/kWh | Meralco residential blended rate |
+| **Electricity Rate** | ₱15/kWh | Meralco residential blended rate |
 | **Solar System Size** | 5 kW | Typical residential rooftop installation |
 | **Solar Price** | ₱80,000/kW | **The "Entry-Level" Reality** — includes residential overhead |
 | **Battery Price** | ₱30,000/kWh | Consumer-grade LFP (wall-mounted units) |
@@ -446,13 +446,13 @@ Residential buyers face a **70–100% price premium** compared to commercial buy
 
 **Target User:** Business with 100 office employees
 
-**Subtext:** 100 kWh/day • ₱15/kWh • 100 employees • Night: 15kW
+**Subtext:** 230 kWh/day • ₱10/kWh • 100 employees • Night: 15kW
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| **Daily Consumption** | 100 kWh/day | 100 employees × 1 kWh/person/day (computers, AC, lighting, equipment) |
+| **Daily Consumption** | 230 kWh/day | 100 employees × 2.3 kWh/person/day (computers, AC, lighting, equipment) |
 | **Operating Schedule** | 5 days/week, 52 weeks/year | Standard business operations |
-| **Electricity Rate** | ₱15/kWh | Meralco commercial blended rate (lower than residential) |
+| **Electricity Rate** | ₱10/kWh | Meralco commercial blended rate (lower than residential) |
 | **Solar System Size** | 100 kW | Medium commercial rooftop or ground-mount installation |
 | **Solar Price** | ₱50,000/kW | **The "Volume Advantage"** — sharp pricing territory |
 | **Battery Price** | ₱12,000/kWh | Industrial LFP racks (48V or high voltage) — cheaper per kWh than residential wall units |
@@ -1002,7 +1002,7 @@ dismissActiveBanner()        // → void
 
 | Field | Type | Default | Unit | Validation | Section | Spreadsheet Cell(s) |
 |-------|------|---------|------|------------|---------|---------------------|
-| `electricityRate` | number | 20.00 | ₱/kWh | > 0, max 100 | 1 | K4 (COST PER KW = 11) |
+| `electricityRate` | number | 15.00 | ₱/kWh | > 0, max 100 | 1 | K4 (COST PER KW = 11) |
 | `operatingWeeksPerYear` | number | 52 | weeks | 1–52, integer | 1 | K5 (50) |
 | `operatingDaysPerWeek` | number | 7 | days | 1–7, integer | 1 | K6 (6) |
 | `dailyEnergyConsumptionKWh` | number | 10 | kWh | ≥ 0 | 1 | — |
