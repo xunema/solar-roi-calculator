@@ -7,35 +7,67 @@ import { defaultInputs } from './state.js';
 
 const PACKAGES_STORAGE_KEY = 'solar_packages';
 const ACTIVE_PACKAGE_KEY = 'solar_active_package';
+const SEED_VERSION_KEY = 'solar_packages_seed_version';
+const CURRENT_SEED_VERSION = 2; // Bump when SEED_PACKAGES changes
 
-// Sample seed data for first-time users
+// Sample seed data for first-time users (real Philippine market quotes as of 2026-03-18)
 const SEED_PACKAGES = [
   {
-    id: 'pkg_seed_001',
-    name: 'Jinko 5kW Residential — Cash',
-    panelBrand: 'Jinko Solar',
-    panelModel: 'Tiger Neo N-Type 400W',
-    wattPeak: 400,
-    systemSizeKw: 5,
-    priceTotal: 400000,
-    pricePerWatt: 80,
-    estimatedKwhPerYear: 7300,
-    supplier: 'SunBright PH',
-    contactName: 'Maria Santos',
-    contactEmail: 'maria@sunbrightph.com',
-    contactPhone: '+63 912 345 6789',
-    warrantyYears: 25,
-    dateAdded: new Date().toISOString().split('T')[0],
-    sourceUrl: '',
-    notes: 'Cash purchase. Includes hybrid inverter and mounting. Negotiated 5% discount.',
-    tags: ['residential', 'cebu', 'mono-perc', 'tier-1', 'cash'],
-    // No financing - zeros out loan fields when applied
+    id: 'pkg_ecopower_10kw',
+    name: 'Eco Power 10KW Hybrid Solar Package',
+    panelBrand: 'Hanersun',
+    panelModel: 'HN18N-72HT Bifacial NTopcon',
+    wattPeak: 585,
+    systemSizeKw: 10.53,
+    priceTotal: 245995,
+    pricePerWatt: 23.36,
+    estimatedKwhPerYear: 15373.8,
+    supplier: 'Eco Power Enterprises',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '+63 917 876 3918',
+    warrantyYears: 12,
+    dateAdded: '2026-03-18',
+    sourceUrl: 'https://www.facebook.com/photo/?fbid=122166739106813867&set=pcb.122166739472813867',
+    notes: 'Bundle price of ₱245,995 covers solar panels + SOLAX 10kW Hybrid Inverter + SOLAX LD160 16kWh Lithium Battery + installation. Battery price is NOT broken out — treat priceTotal as the all-in bundled cost. WARNING: installation fees can vary widely per supplier and are often the hidden cost driver — always confirm what is and is not included before signing.',
+    tags: ['residential', 'metro-manila', 'battery', 'cash', 'complete'],
     hasFinancing: false,
     loanPrincipal: 0,
-    annualInterestRate: 0,
-    loanTermMonths: 60,
     downPayment: 0,
-    // No battery - zeros out battery fields when applied
+    annualInterestRate: 0,
+    loanTermMonths: 0,
+    monthlyPayment: 0,
+    batteryCapacityKWh: 16,
+    batteryPricePerKWh: 0,
+    pvForBatteryKW: 4,
+    nighttimeLoadKW: 0,
+    nighttimeDurationHours: 0
+  },
+  {
+    id: 'pkg_hhot_5kw',
+    name: 'HHOT Solar Huawei 5KW On-Grid Package',
+    panelBrand: 'Jinko',
+    panelModel: 'Bifacial 635W',
+    wattPeak: 635,
+    systemSizeKw: 5.08,
+    priceTotal: 210000,
+    pricePerWatt: 41.34,
+    estimatedKwhPerYear: 7416.8,
+    supplier: 'HHOT Solar',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    warrantyYears: 25,
+    dateAdded: '2026-03-18',
+    sourceUrl: 'https://www.facebook.com/photo/?fbid=1405809811559626&set=a.474637201343563',
+    notes: '8x 635W Jinko Bifacial panels, 5kW Huawei On-Grid Inverter, complete accessories, professional installation. On-Grid only — no battery backup, no island mode during brownouts.',
+    tags: ['residential', 'tier-1', 'cash', 'solar-only'],
+    hasFinancing: false,
+    loanPrincipal: 0,
+    downPayment: 0,
+    annualInterestRate: 0,
+    loanTermMonths: 0,
+    monthlyPayment: 0,
     batteryCapacityKWh: 0,
     batteryPricePerKWh: 0,
     pvForBatteryKW: 0,
@@ -43,31 +75,123 @@ const SEED_PACKAGES = [
     nighttimeDurationHours: 0
   },
   {
-    id: 'pkg_seed_002',
-    name: 'LONGi 100kW Commercial — With Financing',
-    panelBrand: 'LONGi Solar',
-    panelModel: 'Hi-MO 6 580W',
-    wattPeak: 580,
-    systemSizeKw: 100,
-    priceTotal: 5000000,
-    pricePerWatt: 50,
-    estimatedKwhPerYear: 146000,
-    supplier: 'SolarEdge Philippines',
-    contactName: 'Juan dela Cruz',
-    contactEmail: 'juan@solaredgeph.com',
-    contactPhone: '+63 917 000 1234',
+    id: 'pkg_suncore_8kw',
+    name: 'SunCore 8.82kWp Hybrid Solar Package (No Battery)',
+    panelBrand: 'AESolar',
+    panelModel: 'N-Type Topcon Bifacial 630W',
+    wattPeak: 630,
+    systemSizeKw: 8.82,
+    priceTotal: 303000,
+    pricePerWatt: 34.35,
+    estimatedKwhPerYear: 12877.2,
+    supplier: 'SUNCORE Solar Power Installation Services',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '09913434594',
+    warrantyYears: 15,
+    dateAdded: '2026-03-18',
+    sourceUrl: 'https://www.facebook.com/photo?fbid=122166212012957963&set=pcb.122166212426957963',
+    notes: '14x 630W N-Type Topcon Bifacial panels (AESolar/Nuuko/TCL). Deye 8kW Hybrid Inverter. Net metering not included. No battery. ₱303,000 ÷ 8.82kWp = ₱34,354/kW. Hybrid inverter means battery can be added later.',
+    tags: ['residential', 'cash', 'solar-only'],
+    hasFinancing: false,
+    loanPrincipal: 0,
+    downPayment: 0,
+    annualInterestRate: 0,
+    loanTermMonths: 0,
+    monthlyPayment: 0,
+    batteryCapacityKWh: 0,
+    batteryPricePerKWh: 0,
+    pvForBatteryKW: 0,
+    nighttimeLoadKW: 0,
+    nighttimeDurationHours: 0
+  },
+  {
+    id: 'pkg_solviva_5kw',
+    name: 'Solviva Energy 5kWp — Fixed Monthly',
+    panelBrand: 'Unknown',
+    panelModel: 'Unknown',
+    wattPeak: 0,
+    systemSizeKw: 5,
+    priceTotal: 425340,
+    pricePerWatt: 85.07,
+    estimatedKwhPerYear: 7300,
+    supplier: 'Solviva Energy',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
     warrantyYears: 25,
-    dateAdded: new Date().toISOString().split('T')[0],
-    sourceUrl: '',
-    notes: 'Commercial rooftop with net metering. 60% financing at 10% over 5 years.',
-    tags: ['commercial', 'metro-manila', 'mono-perc', 'volume', 'financing'],
-    // With financing - populates loan fields
+    dateAdded: '2026-03-18',
+    sourceUrl: 'https://www.facebook.com/photo/?fbid=817599511349000&set=a.138514792590812',
+    notes: '"Lower Prices, Same Savings" promo. Fixed monthly ₱7,089 × 60 months = ₱425,340 total (0% interest). Panel brand/model not disclosed in ad — confirm with supplier. WARNING: installation costs may be separate.',
+    tags: ['residential', 'financing', 'fixed-monthly', 'solar-only'],
     hasFinancing: true,
-    loanPrincipal: 3000000,
-    annualInterestRate: 10,
+    loanPrincipal: 425340,
+    downPayment: 0,
+    annualInterestRate: 0,
     loanTermMonths: 60,
-    downPayment: 2000000,
-    // No battery - zeros out battery fields when applied
+    monthlyPayment: 7089,
+    batteryCapacityKWh: 0,
+    batteryPricePerKWh: 0,
+    pvForBatteryKW: 0,
+    nighttimeLoadKW: 0,
+    nighttimeDurationHours: 0
+  },
+  {
+    id: 'pkg_solviva_10kw',
+    name: 'Solviva Energy 10kWp — Fixed Monthly',
+    panelBrand: 'Unknown',
+    panelModel: 'Unknown',
+    wattPeak: 0,
+    systemSizeKw: 10,
+    priceTotal: 763080,
+    pricePerWatt: 76.31,
+    estimatedKwhPerYear: 14600,
+    supplier: 'Solviva Energy',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    warrantyYears: 25,
+    dateAdded: '2026-03-18',
+    sourceUrl: 'https://www.facebook.com/photo/?fbid=817599511349000&set=a.138514792590812',
+    notes: '"Lower Prices, Same Savings" promo. Fixed monthly ₱12,718 × 60 months = ₱763,080 total (0% interest). Panel brand/model not disclosed in ad — confirm with supplier. WARNING: installation costs may be separate.',
+    tags: ['residential', 'financing', 'fixed-monthly', 'solar-only'],
+    hasFinancing: true,
+    loanPrincipal: 763080,
+    downPayment: 0,
+    annualInterestRate: 0,
+    loanTermMonths: 60,
+    monthlyPayment: 12718,
+    batteryCapacityKWh: 0,
+    batteryPricePerKWh: 0,
+    pvForBatteryKW: 0,
+    nighttimeLoadKW: 0,
+    nighttimeDurationHours: 0
+  },
+  {
+    id: 'pkg_solviva_20kw',
+    name: 'Solviva Energy 20kWp — Fixed Monthly',
+    panelBrand: 'Unknown',
+    panelModel: 'Unknown',
+    wattPeak: 0,
+    systemSizeKw: 20,
+    priceTotal: 1396560,
+    pricePerWatt: 69.83,
+    estimatedKwhPerYear: 29200,
+    supplier: 'Solviva Energy',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    warrantyYears: 25,
+    dateAdded: '2026-03-18',
+    sourceUrl: 'https://www.facebook.com/photo/?fbid=817599511349000&set=a.138514792590812',
+    notes: '"Lower Prices, Same Savings" promo. Fixed monthly ₱23,276 × 60 months = ₱1,396,560 total (0% interest). Panel brand/model not disclosed in ad — confirm with supplier. WARNING: installation costs may be separate.',
+    tags: ['residential', 'commercial', 'financing', 'fixed-monthly', 'solar-only'],
+    hasFinancing: true,
+    loanPrincipal: 1396560,
+    downPayment: 0,
+    annualInterestRate: 0,
+    loanTermMonths: 60,
+    monthlyPayment: 23276,
     batteryCapacityKWh: 0,
     batteryPricePerKWh: 0,
     pvForBatteryKW: 0,
@@ -84,10 +208,17 @@ let activePackageId = null;
  */
 export function initPackages() {
   const existing = localStorage.getItem(PACKAGES_STORAGE_KEY);
-  if (!existing || existing === '[]') {
-    // First time - seed with sample packages
+  const seededVersion = parseInt(localStorage.getItem(SEED_VERSION_KEY) || '0', 10);
+  const needsReseed = !existing || existing === '[]' || seededVersion < CURRENT_SEED_VERSION;
+
+  if (needsReseed) {
     try {
-      localStorage.setItem(PACKAGES_STORAGE_KEY, JSON.stringify(SEED_PACKAGES));
+      // Preserve any user-added packages (ids not starting with 'pkg_seed_' or known seed ids)
+      const seedIds = new Set(SEED_PACKAGES.map(p => p.id));
+      const userPackages = existing ? JSON.parse(existing).filter(p => !seedIds.has(p.id)) : [];
+      const merged = [...SEED_PACKAGES, ...userPackages];
+      localStorage.setItem(PACKAGES_STORAGE_KEY, JSON.stringify(merged));
+      localStorage.setItem(SEED_VERSION_KEY, String(CURRENT_SEED_VERSION));
     } catch (e) {
       console.warn('Failed to seed packages:', e);
     }
@@ -317,7 +448,8 @@ export function savePackage(pkg) {
     loanPrincipal: parseFloat(pkg.loanPrincipal) || 0,
     annualInterestRate: parseFloat(pkg.annualInterestRate) || 0,
     loanTermMonths: parseInt(pkg.loanTermMonths) || 60,
-    downPayment: parseFloat(pkg.downPayment) || 0
+    downPayment: parseFloat(pkg.downPayment) || 0,
+    monthlyPayment: parseFloat(pkg.monthlyPayment) || 0 // Fixed monthly override
   };
   
   if (isNew) {
@@ -416,20 +548,25 @@ export const PACKAGE_PRESETS = {
   // Solar only - zeros out battery and financing
   solarOnly: {
     batteryCapacityKWh: 0,
+    batteryPricePerKWh: 6000,
     pvForBatteryKW: 0,
     nighttimeLoadKW: 0,
     nighttimeDurationHours: 0,
     loanPrincipal: 0,
-    annualInterestRate: 0
+    annualInterestRate: 0,
+    loanTermMonths: 60,
+    monthlyPayment: 0
   },
   // Solar + Battery - zeros out financing
   solarWithBattery: {
     loanPrincipal: 0,
-    annualInterestRate: 0
+    annualInterestRate: 0,
+    monthlyPayment: 0
   },
   // Solar + Financing - zeros out battery
   solarWithFinancing: {
     batteryCapacityKWh: 0,
+    batteryPricePerKWh: 6000,
     pvForBatteryKW: 0,
     nighttimeLoadKW: 0,
     nighttimeDurationHours: 0
@@ -437,6 +574,58 @@ export const PACKAGE_PRESETS = {
   // Complete system - all fields populated
   complete: {}
 };
+
+/**
+ * Calculate monthly amortization payment
+ * @param {number} principal - Loan principal
+ * @param {number} annualRate - Annual interest rate (%)
+ * @param {number} months - Loan term in months
+ * @returns {number} Monthly payment
+ */
+export function calculateMonthlyPayment(principal, annualRate, months) {
+  if (!principal || !months) return 0;
+  
+  const monthlyRate = (annualRate || 0) / 100 / 12;
+  
+  if (monthlyRate === 0) {
+    return principal / months;
+  }
+  
+  const payment = principal * 
+    (monthlyRate * Math.pow(1 + monthlyRate, months)) / 
+    (Math.pow(1 + monthlyRate, months) - 1);
+  
+  return Math.round(payment * 100) / 100;
+}
+
+/**
+ * Calculate financing results from package data
+ * @param {Object} pkg - Package object
+ * @returns {Object} Financing results with monthlyPayment, totalLoanCost, totalInterest
+ */
+export function calculateFinancingResults(pkg) {
+  if (!pkg.hasFinancing || pkg.loanPrincipal <= 0) {
+    return {
+      monthlyPayment: 0,
+      totalLoanCost: 0,
+      totalInterest: 0
+    };
+  }
+  
+  // Use fixed monthly payment if provided, otherwise calculate
+  const monthlyPayment = pkg.monthlyPayment > 0 
+    ? pkg.monthlyPayment 
+    : calculateMonthlyPayment(pkg.loanPrincipal, pkg.annualInterestRate, pkg.loanTermMonths);
+  
+  const totalLoanCost = monthlyPayment * pkg.loanTermMonths;
+  const totalInterest = totalLoanCost - pkg.loanPrincipal;
+  
+  return {
+    monthlyPayment,
+    totalLoanCost,
+    totalInterest
+  };
+}
 
 export function applyPackageToCalculator(id, applyPreset) {
   const pkg = getPackageById(id);
@@ -461,13 +650,16 @@ export function applyPackageToCalculator(id, applyPreset) {
     basePreset = PACKAGE_PRESETS.solarWithFinancing;
   }
   
+  // Calculate financing results
+  const financing = calculateFinancingResults(pkg);
+  
   // Build complete preset values starting from base
   const presetValues = {
     ...basePreset,
     solarCapacityKW,
     solarPricePerKW,
     miscInfraCosts: 0,  // Package priceTotal is all-in
-    // Battery fields if present in package
+    // Battery fields from package
     batteryCapacityKWh: pkg.batteryCapacityKWh || 0,
     batteryPricePerKWh: pkg.batteryPricePerKWh || 6000,
     pvForBatteryKW: pkg.pvForBatteryKW || 0,
@@ -480,6 +672,7 @@ export function applyPackageToCalculator(id, applyPreset) {
     presetValues.loanPrincipal = pkg.loanPrincipal;
     presetValues.annualInterestRate = pkg.annualInterestRate || 0;
     presetValues.loanTermMonths = pkg.loanTermMonths || 60;
+    // Note: monthlyPayment is calculated by the calculator, not stored in inputs
   }
   
   // Apply to calculator using the same function as Quick Presets
@@ -493,9 +686,14 @@ export function applyPackageToCalculator(id, applyPreset) {
     name: pkg.name,
     estimatedKwhPerYear: pkg.estimatedKwhPerYear,
     hasFinancing: pkg.hasFinancing,
+    hasBattery: hasBattery,
     loanPrincipal: pkg.loanPrincipal,
     annualInterestRate: pkg.annualInterestRate,
-    loanTermMonths: pkg.loanTermMonths
+    loanTermMonths: pkg.loanTermMonths,
+    monthlyPayment: financing.monthlyPayment,
+    totalLoanCost: financing.totalLoanCost,
+    totalInterest: financing.totalInterest,
+    batteryCapacityKWh: pkg.batteryCapacityKWh
   };
 }
 
@@ -587,7 +785,7 @@ export function exportPackagesAsCsv() {
     'contactName', 'contactEmail', 'contactPhone', 'warrantyYears',
     'dateAdded', 'sourceUrl', 'notes', 'tags',
     'batteryCapacityKWh', 'batteryPricePerKWh', 'pvForBatteryKW', 'nighttimeLoadKW', 'nighttimeDurationHours',
-    'hasFinancing', 'loanPrincipal', 'annualInterestRate', 'loanTermMonths', 'downPayment'
+    'hasFinancing', 'loanPrincipal', 'annualInterestRate', 'loanTermMonths', 'downPayment', 'monthlyPayment'
   ];
   
   const escapeCsv = (value) => {
@@ -627,7 +825,8 @@ export function exportPackagesAsCsv() {
     pkg.loanPrincipal,
     pkg.annualInterestRate,
     pkg.loanTermMonths,
-    pkg.downPayment
+    pkg.downPayment,
+    pkg.monthlyPayment
   ].map(escapeCsv).join(','));
   
   // UTF-8 BOM for Excel compatibility
@@ -679,7 +878,9 @@ export function importPackagesFromCsv(csvString) {
     'id', 'name', 'panelBrand', 'panelModel', 'wattPeak', 'systemSizeKw', 
     'priceTotal', 'pricePerWatt', 'estimatedKwhPerYear', 'supplier', 
     'contactName', 'contactEmail', 'contactPhone', 'warrantyYears',
-    'dateAdded', 'sourceUrl', 'notes', 'tags'
+    'dateAdded', 'sourceUrl', 'notes', 'tags',
+    'batteryCapacityKWh', 'batteryPricePerKWh', 'pvForBatteryKW', 'nighttimeLoadKW', 'nighttimeDurationHours',
+    'hasFinancing', 'loanPrincipal', 'annualInterestRate', 'loanTermMonths', 'downPayment', 'monthlyPayment'
   ];
   
   // Basic header validation
@@ -721,6 +922,7 @@ export function importPackagesFromCsv(csvString) {
         case 'loanPrincipal':
         case 'annualInterestRate':
         case 'downPayment':
+        case 'monthlyPayment':
         case 'batteryCapacityKWh':
         case 'batteryPricePerKWh':
         case 'pvForBatteryKW':
@@ -912,5 +1114,8 @@ export default {
   importPackagesFromCsv,
   formatPackageDate,
   getPackageSummary,
-  normalizeTags
+  normalizeTags,
+  calculateMonthlyPayment,
+  calculateFinancingResults,
+  PACKAGE_PRESETS
 };
