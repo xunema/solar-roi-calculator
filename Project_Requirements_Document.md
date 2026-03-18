@@ -51,7 +51,7 @@ The existing Excel spreadsheet (`250915 SOLAR ROI .xlsx`) provides a powerful RO
 
 ### 4.1 In Scope (V1.1)
 
-- **Section 1 — Status Quo:** 
+- **Section 1 — Status Quo:**
   - Electricity rate (₱/kWh)
   - Operating schedule (weeks/year, days/week)
   - Daily energy consumption (kWh) for cost projection
@@ -68,6 +68,7 @@ The existing Excel spreadsheet (`250915 SOLAR ROI .xlsx`) provides a powerful RO
 - **Responsive Design:** Mobile (< 768px), Tablet (768–1023px), Desktop (≥ 1024px)
 - **Theme Toggle:** Night/Day mode with system preference detection
 - **Layout Toggle:** Phone (vertical/single-column) vs Desktop (sidebar) layout override
+- **Solar Package Database** (Section 16) — `SolarPackageManager` component for creating, saving, editing, deleting, and sharing real-world solar deal records. Packages act as presets that populate the main calculator fields. Supports JSON and CSV bulk export/import for community deal-sharing.
 
 ### 4.2 Out of Scope (V1.1)
 
@@ -948,6 +949,7 @@ Data sources:
 | State | Single reactive `state` object with `Proxy`-based change detection | Real-time recalc on every input |
 | Icons | Inline SVG or emoji fallback | No icon font dependency |
 | Theming | CSS custom properties + class-based dark mode | Toggle between light/dark themes |
+| Data Persistence | `localStorage` | Stores calculator state (`solarCalcInputs`), specs (`solarCalcSpecs`), theme/layout preferences, and solar packages (`solar_packages`). All data is device-local; no backend required. |
 
 **Not using:** React, Vue, npm, any backend/API.
 
@@ -973,7 +975,8 @@ solarcalc-ph/
 │   ├── themes.js           # Theme toggle (night/day)
 │   ├── layout.js           # Phone/Desktop layout toggle
 │   ├── sunhours.js         # Sun hours calculator logic
-│   └── format.js           # Currency/number formatting helpers
+│   ├── format.js           # Currency/number formatting helpers
+│   └── packages.js         # SolarPackageManager: CRUD, import/export, preset apply
 ├── data/
 │   └── philippine-sun-hours.json  # Region/city sun hours data
 ├── icons/
@@ -1596,3 +1599,494 @@ Specs are stored in `localStorage` under key `solarCalcSpecs` as a JSON array. M
 - **Updated:** File structure to include `themes.js`, `layout.js`, `sunhours.js`, and `philippine-sun-hours.json`
 - **Updated:** KPI Dashboard to include Projected Annual Cost
 - **Updated:** Implementation phases to include new features
+
+---
+
+## 16. Solar Package Database
+
+### 16.1 Overview
+
+The Solar Package Database lets users capture, compare, and share real-world solar quotes and deals. Each package represents a single supplier quotation with full pricing and contact details. Packages can populate the main calculator as a preset, eliminating manual re-entry. The module is self-contained, implemented in `packages.js`, and exposed in the main app UI via a **"📦 Packages" button in the header bar** that opens a **full-screen overlay panel** (slide-in from the right on desktop, full-screen on mobile). This approach preserves the existing single-page scrolling layout without requiring any structural changes to the app shell — consistent with how the Onboarding modal and Sun Hours calculator are implemented.
+
+### 16.2 User Stories
+
+| # | As a… | I want to… | So that… |
+|---|-------|-----------|----------|
+| US-P1 | user | save a supplier quote as a named package | I can compare multiple deals side-by-side without re-entering numbers |
+| US-P2 | user | apply a package to the calculator | the system size and price-per-kW fields pre-fill from the package so the ROI calculates correctly |
+| US-P3 | user | share my package list with a friend | they can import my deals and benefit from quotes I've already sourced |
+| US-P4 | user | export a single package as JSON | I can send one deal via email or messaging without sharing my entire list |
+| US-P5 | community member | see which packages offer the best value (lowest ₱/W, highest kWh/₱) | I can identify the best deals from community-submitted data |
+| US-P6 | user | tag packages by region and panel type | I can filter to deals relevant to my location and preferences |
+| US-P7 | user | search and sort my package list | I can quickly find the best or most recent deals |
+
+### 16.3 Package Schema
+
+Each package record is a JSON object with the following fields. All string fields default to `""` if not provided. All number fields default to `0` if not provided.
+
+| Field | Type | Required | Validation | Notes |
+|-------|------|----------|-----------|-------|
+| `id` | string | auto | non-empty | Auto-generated: `pkg_<Date.now()>` on first save; preserved on edit |
+| `name` | string | yes | 1–100 chars | User-given label (e.g., "SunPower Cebu May 2026") |
+| `panelBrand` | string | no | max 100 chars | Manufacturer name (e.g., "Jinko Solar") |
+| `panelModel` | string | no | max 100 chars | Model/series (e.g., "Tiger Neo N-Type 580W") |
+| `wattPeak` | number | no | ≥ 0, max 5000 | Panel watt-peak in W; 0 = unknown |
+| `systemSizeKw` | number | yes | > 0, max 100,000 | Total installed system size in kWp |
+| `priceTotal` | number | yes | > 0 | Total all-in package price in ₱ (panels + inverter + install) |
+| `pricePerWatt` | number | computed | read-only | ₱/W — derived: `priceTotal / (systemSizeKw × 1000)`; displays "—" if `systemSizeKw = 0` |
+| `estimatedKwhPerYear` | number | no | ≥ 0 | Supplier's estimated annual generation in kWh — reference only, not written to calculator |
+| `supplier` | string | no | max 100 chars | Company or installer name |
+| `contactName` | string | no | max 100 chars | Salesperson or contact name |
+| `contactEmail` | string | no | valid email or empty | Email address |
+| `contactPhone` | string | no | max 30 chars | Phone number (any format) |
+| `warrantyYears` | number | no | 0–50, integer | Warranty period in years; 0 = unknown |
+| `dateAdded` | string | auto | ISO 8601 | Set to today's date on first save; not changed on edit |
+| `sourceUrl` | string | no | valid URL or empty | Link to product listing, PDF quote, or website |
+| `notes` | string | no | max 1000 chars | Free-text notes (installation details, negotiated terms, etc.) |
+| `tags` | string[] | no | max 20 tags, each ≤ 30 chars | Lowercased and trimmed on save; duplicates within a record silently dropped. Examples: `["residential","cebu","mono-perc","tier-1"]` |
+
+> **Tag normalization:** Tags are always saved in lowercase with whitespace trimmed (e.g., `" Cebu "` → `"cebu"`). This ensures consistent search and filtering across all packages.
+
+### 16.4 Storage
+
+- All packages are persisted in `localStorage` under the key **`solar_packages`** as a JSON array.
+- On first load (key absent or value is `"[]"` or unparseable), the module seeds **2 sample packages** (one residential, one commercial) so the UI is never empty for new users. The seed is written to `localStorage` immediately on first load.
+- No hard maximum is enforced; if a `localStorage` write throws a `QuotaExceededError`, catch the error and show: *"Storage full — unable to save. Free up space by deleting unused packages."* The failed save is not silently dropped.
+
+**Sample seed data:**
+
+```json
+[
+  {
+    "id": "pkg_seed_001",
+    "name": "Jinko 5kW Residential — Cebu",
+    "panelBrand": "Jinko Solar",
+    "panelModel": "Tiger Neo N-Type 400W",
+    "wattPeak": 400,
+    "systemSizeKw": 5,
+    "priceTotal": 400000,
+    "pricePerWatt": 80,
+    "estimatedKwhPerYear": 7300,
+    "supplier": "SunBright PH",
+    "contactName": "Maria Santos",
+    "contactEmail": "maria@sunbrightph.com",
+    "contactPhone": "+63 912 345 6789",
+    "warrantyYears": 25,
+    "dateAdded": "2026-03-18",
+    "sourceUrl": "",
+    "notes": "Includes hybrid inverter and mounting. Negotiated 5% discount.",
+    "tags": ["residential", "cebu", "mono-perc", "tier-1"]
+  },
+  {
+    "id": "pkg_seed_002",
+    "name": "LONGi 100kW Commercial — Metro Manila",
+    "panelBrand": "LONGi Solar",
+    "panelModel": "Hi-MO 6 580W",
+    "wattPeak": 580,
+    "systemSizeKw": 100,
+    "priceTotal": 5000000,
+    "pricePerWatt": 50,
+    "estimatedKwhPerYear": 146000,
+    "supplier": "SolarEdge Philippines",
+    "contactName": "Juan dela Cruz",
+    "contactEmail": "juan@solaredgeph.com",
+    "contactPhone": "+63 917 000 1234",
+    "warrantyYears": 25,
+    "dateAdded": "2026-03-18",
+    "sourceUrl": "",
+    "notes": "Commercial rooftop with net metering application included.",
+    "tags": ["commercial", "metro-manila", "mono-perc", "volume"]
+  }
+]
+```
+
+### 16.5 Package Manager UI
+
+#### Entry Point
+
+A **"📦 Packages"** button sits in the header bar (right side, next to the theme/layout toggles). Clicking it opens the Package Manager as a **full-screen overlay panel**:
+
+- **Mobile (< 768px):** Full-screen takeover; close button (✕) in the top-right corner
+- **Desktop (≥ 768px):** Slides in from the right as a wide drawer (~600px); the calculator remains partially visible behind a semi-transparent backdrop; clicking the backdrop closes the panel
+
+The panel respects the active theme (`dark` class on `<html>`) and the existing CSS custom property system — no separate theming needed.
+
+#### Internal Views
+
+The panel has three internal views toggled via a sub-navigation bar at the top: **List**, **Detail**, and **Form (Add/Edit)**. The back-navigation flow is: Form → (previous Detail or List), Detail → List.
+
+#### List View
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  📦 SOLAR PACKAGES                  [+ Add]       [✕]    │
+│  ──────────────────────────────────────────────────────  │
+│  🔍 [Search...]                     Sort: [Date ▼]       │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │ Jinko 5kW Residential — Cebu                       │  │
+│  │ 5 kWp • ₱400,000 • ₱80/W • 7,300 kWh/yr est.     │  │
+│  │ 🏷 residential  cebu  mono-perc                    │  │
+│  │ Added: Mar 18, 2026          [View]  [Edit]  [Del] │  │
+│  └────────────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │ LONGi 100kW Commercial — Metro Manila              │  │
+│  │ 100 kWp • ₱5,000,000 • ₱50/W • 146,000 kWh/yr   │  │
+│  │ 🏷 commercial  metro-manila  volume                │  │
+│  │ Added: Mar 18, 2026          [View]  [Edit]  [Del] │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  [Export All → JSON]  [Export All → CSV]  [Import]       │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Search behavior:**
+- The search box filters across `name`, `panelBrand`, `panelModel`, `supplier`, and `tags` simultaneously (case-insensitive substring match on each field).
+- Multiple space-separated terms are treated as **AND** — all terms must match at least one of the searched fields. Example: "cebu jinko" shows only packages matching both "cebu" and "jinko" across any searched field.
+- Matching is live (filters on every keystroke, no submit button).
+
+**Sort options:** Date Added (newest first), Price Total (low → high), ₱/W (low → high), kWh/year (high → low), System Size kWp (large → small).
+
+**Delete:** Shows a confirmation dialog: *"Delete '[package name]'? This cannot be undone."* Confirmed delete removes the record from `localStorage` and refreshes the list. If the deleted package was currently active (banner showing), the banner is also dismissed.
+
+**Empty states:**
+- Search with no results: *"No packages match your search."*
+- List is empty (all deleted): *"No packages yet — add your first quote with [+ Add]."*
+
+**Duplicate name warning:** If the user saves a package with a `name` that already exists in the list (case-insensitive), show a non-blocking inline warning on the name field: *"A package with this name already exists."* Saving is still allowed — the warning is informational only.
+
+#### Detail View
+
+Displays all package fields in a read-only card layout, grouped into sections:
+
+- **System** — name, panelBrand, panelModel, wattPeak, systemSizeKw, priceTotal, pricePerWatt, estimatedKwhPerYear (labelled "Supplier est. kWh/yr — reference only")
+- **Supplier** — supplier, contactName, contactEmail (tap-to-email link), contactPhone (tap-to-call link), sourceUrl (tap-to-open link)
+- **Terms** — warrantyYears, dateAdded, notes
+- **Tags** — displayed as pills
+
+Key actions:
+
+- **Apply to Calculator** — populates calculator fields and closes the panel (see Section 16.6)
+- **Export Single Package** — downloads `package-{sanitized-name}-{YYYY-MM-DD}.json`
+- **Copy JSON** — copies the formatted record JSON to clipboard; shows brief "Copied!" confirmation
+- **Edit** — opens Form view pre-populated with this record
+
+#### Form View (Add / Edit)
+
+A single scrollable form containing all editable fields from the schema. `id` and `dateAdded` are auto-managed (not shown). `pricePerWatt` is a computed read-only display field updated live as `priceTotal` or `systemSizeKw` changes.
+
+**Field grouping mirrors Detail view** (System → Supplier → Terms → Tags).
+
+**Tags input:** A single text input where the user types tags separated by commas. On blur or comma entry, each token is trimmed, lowercased, and rendered as a dismissible pill. Pressing ✕ on a pill removes that tag.
+
+**Validation on Save:**
+- `name` — required; 1–100 characters
+- `systemSizeKw` — required; must be > 0
+- `priceTotal` — required; must be > 0
+- `contactEmail` — if non-empty, must be a valid email format
+- `sourceUrl` — if non-empty, must begin with `http://` or `https://`
+- `warrantyYears` — if non-empty, must be 0–50 integer
+- `wattPeak` — if non-empty, must be ≥ 0 and ≤ 5,000
+- `notes` — max 1,000 characters; show live character count
+
+Validation errors appear as inline red text below the relevant field. The Save button remains enabled but submission is blocked until all errors are resolved.
+
+**Cancel** — returns to the previous view (List or Detail) without saving. If the form has unsaved changes, shows: *"Discard unsaved changes?"* before navigating away.
+
+#### Responsive Behavior
+
+| Breakpoint | Package Manager Panel | Form Layout |
+|------------|-----------------------|-------------|
+| Mobile < 768px | Full-screen takeover | Single column; all fields stacked |
+| Tablet 768–1023px | Full-screen takeover | Single column; wider fields |
+| Desktop ≥ 1024px | Right-side drawer (~600px wide) | Two-column form (labels left, inputs right) |
+
+#### Dark Mode
+
+The panel inherits the app's active theme via the `dark` class on `<html>`. All backgrounds, borders, text, and input styles must use the same CSS custom properties defined in `themes.css` — no hard-coded colors in `packages.js` or the Package Manager HTML.
+
+### 16.6 Preset Integration with the Calculator
+
+#### Field Mapping
+
+When the user clicks **"Apply to Calculator"** from the Detail view, the following values are written to the calculator state using the same `applyPreset(values)` function used by Quick Presets (Section 5.6) — **not** via direct DOM manipulation:
+
+| Calculator Field | Value Written | Derivation |
+|-----------------|--------------|-----------|
+| `solarCapacityKW` | `package.systemSizeKw` | Direct |
+| `solarPricePerKW` | `package.priceTotal / package.systemSizeKw` | Derives all-in ₱/kW rate from the package's total price |
+| `miscInfraCosts` | `0` | Package `priceTotal` is an all-in quote; zeroing misc costs prevents double-counting |
+
+> **Why this mapping:** The calculator computes `pvSystemCost = solarCapacityKW × solarPricePerKW`. Setting `solarPricePerKW = priceTotal / systemSizeKw` means `pvSystemCost = priceTotal` — the package's full price lands correctly in CAPEX. Setting `miscInfraCosts = 0` avoids inflating CAPEX with a stale misc cost value from a previous scenario.
+>
+> **`estimatedKwhPerYear` is not written to any calculator field.** The calculator derives annual generation from `solarCapacityKW × peakSunHoursPerDay × operatingDaysPerYear`. The package's `estimatedKwhPerYear` is the supplier's estimate under their own assumptions — it is shown in the banner as a reference sanity-check only.
+
+#### Post-Apply Behavior
+
+After the three fields are written:
+
+1. The Package Manager panel **closes automatically**.
+2. The page **scrolls to Section 2** (PhotoVoltaic System), where `solarCapacityKW` and `solarPricePerKW` live.
+3. The Section 2 inputs **briefly highlight** (same highlight animation used when navigating from KPI cards to sections).
+4. A **dismissible banner** appears at the top of the calculator (below the Spec Selector, above Section 1):
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📦 Package applied: "Jinko 5kW Residential — Cebu"         │
+│  System size and price/kW pre-filled. Supplier est:         │
+│  7,300 kWh/yr. Misc costs set to ₱0 — adjust if needed.    │
+│                                          [View Package] [✕] │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Banner State Machine
+
+| Event | Banner State | Display |
+|-------|-------------|---------|
+| Package applied | Active | Full banner with package name and reference kWh |
+| User edits `solarCapacityKW`, `solarPricePerKW`, or `miscInfraCosts` | Modified | *"📦 Package applied (modified): '[name]' — [View Package] [✕]"* |
+| User clicks ✕ | Dismissed | Banner hidden; calculator fields retain their current values |
+| "Reset to Defaults" clicked | Dismissed | Banner hidden; calculator fields reset to defaults |
+| Spec loaded (with `activePackageId`) | Active or "no longer available" | See Section 16.8 |
+| Package deleted while banner showing | Dismissed | Banner hidden silently |
+| Second package applied | Active (new) | Banner replaces with new package name |
+
+The **active package ID** is stored as a module-level variable in `packages.js` (`let activePackageId = null`) and persisted in `localStorage` under key `solar_active_package` so the banner survives page reloads. It is **not** stored in `state.js` `defaultInputs` or `defaultResults`.
+
+> **Section 12 Rule compliance note:** `packages.js` manages its own `solar_packages` and `solar_active_package` localStorage keys independently. It interacts with the calculator exclusively via the existing `applyPreset(values)` function — the same path used by Quick Presets. No new fields are added to `calculateAll()`, `defaultInputs`, or `defaultResults`. Rules 1, 2, and 3 do not apply to this module.
+
+#### Clicking "View Package" in the Banner
+
+Opens the Package Manager panel directly to the Detail view for the active package.
+
+### 16.7 Import / Export
+
+| Action | Format | Filename | Behavior |
+|--------|--------|----------|----------|
+| Export All → JSON | `.json` array | `solar-packages-{YYYY-MM-DD}.json` | UTF-8 BOM + full JSON array of all packages |
+| Export All → CSV | `.csv` | `solar-packages-{YYYY-MM-DD}.csv` | UTF-8 BOM + header row + one row per package |
+| Import | `.json` or `.csv` | — | Merges by `id`; shows result summary |
+| Export Single → JSON | `.json` | `package-{sanitized-name}-{YYYY-MM-DD}.json` | Single record from Detail view |
+| Copy JSON | clipboard | — | Formatted single record; shows *"Copied!"* briefly |
+
+> **UTF-8 BOM:** All exported files are prefixed with `\uFEFF` (UTF-8 BOM). This ensures the ₱ peso sign renders correctly when opened in Microsoft Excel on Windows, which defaults to ANSI encoding without the BOM.
+
+**CSV column order (fixed):**
+```
+id, name, panelBrand, panelModel, wattPeak, systemSizeKw, priceTotal, pricePerWatt,
+estimatedKwhPerYear, supplier, contactName, contactEmail, contactPhone, warrantyYears,
+dateAdded, sourceUrl, notes, tags
+```
+
+Fields containing commas or newlines are wrapped in double quotes per RFC 4180. `tags` is serialized as a pipe-separated string within the cell (e.g., `"residential|cebu|mono-perc"`).
+
+**Import merge rules (JSON and CSV):**
+
+1. Parse the file. On JSON parse error or unrecognizable structure, abort and show: *"Import failed — invalid file format."*
+2. For each record in the file:
+   - If a record with the same `id` already exists → **replace all fields** of the existing record.
+   - If no matching `id` exists → **append** as a new record.
+   - If a numeric field is missing or non-numeric → default to `0`.
+   - If `id` is missing or empty → generate a new `pkg_<timestamp>_<index>`.
+   - If `dateAdded` is missing → use today's date.
+   - Tags are normalized (lowercased, trimmed, deduplicated) during import.
+3. For CSV: rows where the column count does not match the header row are **skipped** (not imported).
+4. After processing, show a summary: *"Imported X new, updated Y existing[, skipped Z invalid rows]."*
+5. If no valid records were found: *"Import failed — no valid package records found in file."*
+
+**Export Single filename sanitization:** Replace characters unsafe in filenames (`/ \ : * ? " < > |`) with `-`. Truncate to 60 characters before appending the date.
+
+### 16.8 Specs ↔ Packages Integration (Milestone 7 Compatibility)
+
+The Spec data structure (Section 13, Milestone 7) must be extended to record the active package at save time:
+
+```json
+{
+  "id": "spec_1710000000000",
+  "name": "Home 5kW With Battery",
+  "savedAt": "2026-03-18T10:30:00.000Z",
+  "activePackageId": "pkg_seed_001",
+  "inputs": { "...": "..." }
+}
+```
+
+`activePackageId` is `null` when no package was active at save time.
+
+**Behavior when loading a Spec:**
+
+| `activePackageId` in Spec | Package still in `solar_packages` | Result |
+|--------------------------|----------------------------------|--------|
+| `null` | — | Banner not shown |
+| set | Yes | Banner shows in **Active** state with the package name; values are already loaded from the Spec's `inputs` — the package is **not re-applied** (which would overwrite the Spec's values) |
+| set | No (deleted) | Banner shows: *"Package '[name]' no longer exists — values from saved spec are loaded."* Banner is dismissible; values remain from the Spec. |
+
+> Specs and Packages are loosely coupled: Specs capture the calculator *values* independently; the package reference is informational context only.
+
+### 16.9 Future: Community Leaderboard (Planned, Not Implemented)
+
+The leaderboard is a future read-only view surfacing the best community-submitted packages. It is documented here to keep the package schema and export format forward-compatible.
+
+**Ranking dimensions:**
+- **Lowest ₱/W** — most cost-efficient on a per-watt basis
+- **Highest kWh/year per ₱ spent** — best energy yield per peso of total cost
+- **Best warranty-to-cost ratio** — years of coverage per ₱100,000 of system cost
+
+**Planned submission flow:**
+1. User exports a single package as JSON (Section 16.7).
+2. User submits via a web form (URL TBD — separate from the PWA).
+3. Submissions are reviewed and published to a static leaderboard data file.
+
+**Planned leaderboard page:**
+- Separate overlay panel or static page (not the main calculator).
+- Filterable by region (derived from `tags` containing a Philippine region or city name) and panel type.
+- Each entry shows package details and an **"Apply to Calculator"** action — identical to the local Detail view action.
+
+> The leaderboard is **not in scope for any current milestone**. The schema, `pricePerWatt` derived field, and JSON export format are designed to be leaderboard-compatible from day one.
+
+### 16.10 Milestone 8: Solar Package Database
+
+> **Goal:** Users can create, manage, and share solar package records. Packages apply to the calculator as correct, non-double-counting presets. Import/export enables community deal-sharing.
+
+#### `packages.js` Public API (Phase 8.0)
+
+```javascript
+loadPackages()               // → SolarPackage[]    Read from localStorage; seed if absent
+savePackage(pkg)             // → SolarPackage      Insert (new id) or update (existing id); throws on QuotaExceededError
+deletePackage(id)            // → void              Remove by id; dismiss banner if active
+getPackageById(id)           // → SolarPackage | null
+applyPackageToCalculator(id) // → void              Calls applyPreset({solarCapacityKW, solarPricePerKW, miscInfraCosts: 0}); sets activePackageId; shows banner
+getActivePackageId()         // → string | null
+dismissActiveBanner()        // → void
+```
+
+`applyPreset(values)` is the existing Quick Presets function in `app.js` — `packages.js` calls it by import; it does not re-implement preset loading logic.
+
+#### Phases and Acceptance Criteria
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 8.0 | `packages.js` storage + API | All public functions work; seed written on first load; `QuotaExceededError` surfaced as user-visible message |
+| 8.1 | List View | Search (AND logic), all 5 sort options, delete with confirmation, empty states |
+| 8.2 | Detail View | All fields grouped and displayed; Apply, Export Single, Copy JSON, Edit actions work |
+| 8.3 | Form View | Add and Edit with full validation; tag pills; unsaved-changes guard on Cancel |
+| 8.4 | Preset Integration | Correct field mapping (`solarCapacityKW`, `solarPricePerKW`, `miscInfraCosts = 0`); panel closes; page scrolls to Section 2 with highlight; banner appears |
+| 8.5 | Banner state machine | Active → Modified → Dismissed transitions; "Reset to Defaults" dismisses; "View Package" opens panel to correct Detail view |
+| 8.6 | Export JSON & CSV | UTF-8 BOM; correct filenames; RFC 4180 CSV quoting; ₱ renders in Excel |
+| 8.7 | Import JSON & CSV | Merge-by-id; tag normalization; invalid row skipping; result summary; error messages for malformed files |
+| 8.8 | Specs compatibility | Spec save/load stores and restores `activePackageId`; deleted-package banner message works |
+| 8.9 | Seed data | 2 seed packages on fresh install; seed not re-written if `solar_packages` key already exists |
+
+#### Review Checklist
+
+**Storage & seeding:**
+- [ ] 2 seed packages present on fresh load (no prior `solar_packages` key)
+- [ ] Seed is not re-applied if `solar_packages` key already exists (even if list is empty after user deletes all)
+- [ ] `QuotaExceededError` on save shows user-visible error message; failed save is not silently dropped
+
+**List View:**
+- [ ] Search filters across name, brand, model, supplier, tags simultaneously
+- [ ] Multi-word search is AND logic ("cebu jinko" matches only packages containing both terms)
+- [ ] All 5 sort options produce correct ordering
+- [ ] Empty search result state and empty list state display correct messages
+- [ ] Delete confirmation dialog shows package name; confirmed delete removes from list and `localStorage`
+- [ ] Deleting the active package also dismisses the banner
+
+**Detail View:**
+- [ ] All 18 schema fields displayed in correct groups
+- [ ] `estimatedKwhPerYear` is labelled "Supplier est. kWh/yr — reference only"
+- [ ] Apply to Calculator, Export Single, Copy JSON, and Edit actions all work
+- [ ] "Copied!" confirmation shows briefly after Copy JSON
+
+**Form View:**
+- [ ] `pricePerWatt` updates live as `priceTotal` or `systemSizeKw` changes; shows "—" if `systemSizeKw = 0`
+- [ ] Required field validation blocks save for missing `name`, `systemSizeKw <= 0`, `priceTotal <= 0`
+- [ ] Email, URL, warrantyYears, wattPeak format validation shows inline errors
+- [ ] Notes character count shown; save blocked above 1,000 chars
+- [ ] Tags are lowercased and trimmed on pill creation; duplicate tags in same record are dropped
+- [ ] Duplicate name warning shown (non-blocking); save still proceeds
+- [ ] Cancel with unsaved changes shows discard confirmation
+- [ ] Edit pre-populates all fields correctly
+
+**Preset Integration:**
+- [ ] Apply to Calculator writes `solarCapacityKW = systemSizeKw`, `solarPricePerKW = priceTotal / systemSizeKw`, `miscInfraCosts = 0`
+- [ ] All three fields update immediately via `applyPreset()`
+- [ ] Panel closes after Apply
+- [ ] Page scrolls to Section 2; Section 2 inputs briefly highlight
+- [ ] Banner appears with package name and supplier-estimated kWh
+- [ ] Banner transitions to "modified" state when `solarCapacityKW`, `solarPricePerKW`, or `miscInfraCosts` is manually edited
+- [ ] Banner ✕ dismisses without resetting calculator fields
+- [ ] "Reset to Defaults" dismisses banner and resets calculator fields
+- [ ] "View Package" in banner opens panel to correct Detail view
+- [ ] `activePackageId` persists in `localStorage` across page reloads
+
+**Export:**
+- [ ] Export All → JSON downloads valid UTF-8 BOM JSON array with correct filename
+- [ ] Export All → CSV downloads UTF-8 BOM CSV; ₱ renders correctly in Excel
+- [ ] CSV tags column uses pipe separator; fields with commas are RFC 4180 quoted
+- [ ] Export Single downloads single-record JSON with sanitized filename
+- [ ] Copy JSON writes formatted JSON to clipboard; "Copied!" confirmation shown
+
+**Import:**
+- [ ] Import JSON: new records appended, existing records (same `id`) fully replaced; count summary shown
+- [ ] Import CSV: all columns parsed; tags split on pipe and normalized; count summary shown
+- [ ] CSV rows with wrong column count skipped; skipped count included in summary
+- [ ] Malformed JSON shows "Import failed — invalid file format."
+- [ ] No valid records found shows appropriate error message
+- [ ] Tags normalized (lowercased, trimmed) during import
+
+**Specs compatibility:**
+- [ ] Saving a Spec while a package is active stores `activePackageId` in the Spec record
+- [ ] Loading a Spec with a valid `activePackageId` shows the banner without re-applying values
+- [ ] Loading a Spec where the referenced package has been deleted shows the "no longer exists" banner
+
+**Theming and responsive:**
+- [ ] Package Manager panel respects dark/light theme toggle
+- [ ] Mobile: full-screen panel; Tablet: full-screen panel; Desktop: right-side drawer
+- [ ] All interactive elements meet 44×44px minimum touch target
+
+**No regressions:**
+- [ ] No console errors on fresh load with no `solar_packages` key
+- [ ] No console errors on fresh load with existing packages
+- [ ] No console errors when package panel is opened, closed, and reopened
+- [ ] Quick Presets (Section 5.6) still work correctly after Milestone 8 is added
+
+---
+
+## Changelog
+
+### v2.1.0 (2026-03-18) — Solar Package Database (revised)
+- **Fixed:** "Apply to Calculator" field mapping corrected — `priceTotal / systemSizeKw` → `solarPricePerKW` (not `miscInfraCosts`); `miscInfraCosts` set to 0 to prevent double-counting; derivation rationale added
+- **Fixed:** US-P2 user story updated to accurately describe which fields pre-fill
+- **Fixed:** `estimatedKwhPerYear` clarified as reference-only throughout; Detail View label updated
+- **Resolved:** UI entry point decided — "📦 Packages" button in header opens full-screen overlay panel (right-side drawer on desktop, full-screen on mobile)
+- **Added:** Section 16.3 — validation constraints column for all schema fields
+- **Added:** Section 16.3 — tag normalization rule (lowercase + trim on save; duplicates dropped)
+- **Added:** Section 16.3 — `pricePerWatt` division-by-zero guard: display "—" when `systemSizeKw = 0`
+- **Added:** Section 16.4 — `QuotaExceededError` handling: surface as user-visible message; no silent drops
+- **Added:** Section 16.5 — search AND logic spec for multi-word queries
+- **Added:** Section 16.5 — responsive breakpoint spec for the Package Manager panel
+- **Added:** Section 16.5 — dark mode spec: inherits app theme via CSS custom properties
+- **Added:** Section 16.5 — duplicate package name non-blocking warning
+- **Added:** Section 16.5 — empty-state messages for search and empty list
+- **Added:** Section 16.5 — Form View cancel unsaved-changes guard
+- **Added:** Section 16.6 — banner state machine table (Active → Modified → Dismissed)
+- **Added:** Section 16.6 — post-apply navigation: panel closes, page scrolls to Section 2 with highlight
+- **Added:** Section 16.6 — `activePackageId` persisted in `localStorage` key `solar_active_package`
+- **Added:** Section 16.6 — Section 12 Rule compliance note: `packages.js` exempt from Rules 1–3; uses `applyPreset()` exclusively
+- **Added:** Section 16.7 — UTF-8 BOM on all exports for Excel ₱ compatibility
+- **Added:** Section 16.7 — RFC 4180 CSV quoting rule for fields containing commas
+- **Added:** Section 16.7 — full import merge rules with error messages for malformed files and empty results
+- **Added:** Section 16.7 — export filename sanitization rule
+- **Added:** Section 16.8 (new) — Specs ↔ Packages integration: `activePackageId` field in Spec schema; load-Spec banner behavior for existing and deleted packages
+- **Renumbered:** Old 16.8 (Leaderboard) → 16.9; Old 16.9 (Milestone 8) → 16.10
+- **Added:** Section 16.10 — `packages.js` public API signatures
+- **Added:** Section 16.10 — Phases 8.5–8.9 (banner state machine, export, import, Specs compatibility, seed behavior)
+- **Expanded:** Review checklist from 14 items to 40 items covering all new specs
+- **Fixed:** Removed duplicate "## 17. Changelog (continued)" heading; consolidated into single Changelog section
+
+### v2.0.0 (2026-03-18) — Solar Package Database (initial)
+- **Added:** Section 16 "Solar Package Database" — initial spec for the `SolarPackageManager` module
+- **Added:** Package schema (18 fields), localStorage key `solar_packages`, seed data, List/Detail/Form views, import/export, future leaderboard, Milestone 8
+- **Updated:** Section 4.1 In Scope — added Solar Package Database bullet
+- **Updated:** Section 8 Tech Stack — localStorage row with all keys
+- **Updated:** Section 9 File Structure — added `js/packages.js`
