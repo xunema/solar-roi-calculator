@@ -3,8 +3,8 @@
  * Bump CACHE_NAME version whenever any cached file changes.
  */
 
-const CACHE_NAME = 'solarcalc-ph-v2';
-const RUNTIME_CACHE = 'solarcalc-runtime-v2';
+const CACHE_NAME = 'solarcalc-ph-v3';
+const RUNTIME_CACHE = 'solarcalc-runtime-v3';
 
 const APP_ASSETS = [
   '/solar-roi-calculator/',
@@ -19,6 +19,7 @@ const APP_ASSETS = [
   '/solar-roi-calculator/js/format.js',
   '/solar-roi-calculator/js/narrative.js',
   '/solar-roi-calculator/js/specs.js',
+  '/solar-roi-calculator/js/packages.js',
 ];
 
 /* ── Install: pre-cache all local app assets ── */

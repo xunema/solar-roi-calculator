@@ -4,6 +4,41 @@
 
 ---
 
+## Discovered Issues
+
+### Issue: Package Application Behavior (M8)
+
+**Problem:** When clicking "Apply to Calculator" on a package, the calculated results were changing but the actual input fields (Section 2: Solar Capacity, Solar Price/kW, Misc Infrastructure Costs) were not being populated with the package values.
+
+**Root Cause:** The initial implementation used a callback pattern (`applyPreset`) that updated the reactive state directly, bypassing the DOM input fields. The calculator was computing results from state, but users couldn't see or edit the applied values in the form.
+
+**Resolution:** Modified `applyCurrentPackage()` to:
+1. Directly populate `this.state.inputs` for all relevant fields
+2. Call `updateAllInputs()` to sync DOM input fields
+3. Highlight the populated fields with a brief green background animation
+4. Properly handle financing fields when present
+
+**Key Insight:** The package stores **Total Price** and **System Size**, from which **Price per kW** is computed (`Total ÷ Size`). This computed Price per kW populates Section 2's "Solar Price/kW" field. Misc Infrastructure Costs is set to ₱0 since the package price is all-in.
+
+---
+
+### Issue: Package Financing Data Model (M8)
+
+**Problem:** Users wanted to compare financing options between suppliers, but packages only stored system details.
+
+**Resolution:** Extended package schema with financing fields:
+- `hasFinancing` (boolean) - enables financing section
+- `loanPrincipal` (₱) - amount being financed
+- `annualInterestRate` (%) - supplier's interest rate  
+- `loanTermMonths` - loan duration
+- `downPayment` (₱) - upfront amount (reference only)
+
+**Key Design Decision:** The calculator uses **loan principal** directly for amortization calculations. The interest rate and term are used to compute and display the estimated monthly payment. The end user should always verify actual financing terms with the supplier, as the calculator provides an estimate based on standard amortization formulas.
+
+**When Applied:** If a package has financing, clicking "Apply" populates Section 4 (Financing) with the loan details, allowing immediate comparison of monthly amortization vs monthly savings.
+
+---
+
 ## Session Log
 
 ### 2026-03-16 — Project Initialization

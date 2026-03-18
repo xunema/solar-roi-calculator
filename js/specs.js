@@ -4,6 +4,7 @@
  */
 
 import { defaultInputs } from './state.js';
+import { getActivePackageId } from './packages.js';
 
 const SPECS_STORAGE_KEY = 'solarCalcSpecs';
 const MAX_SPECS = 20;
@@ -58,6 +59,7 @@ export function createSpec(name, inputs) {
     id: generateId(),
     name: name.trim(),
     savedAt: new Date().toISOString(),
+    activePackageId: getActivePackageId(),
     inputs: { ...inputs }
   };
   
@@ -84,6 +86,7 @@ export function updateSpec(specId, inputs) {
   specs[index] = {
     ...specs[index],
     savedAt: new Date().toISOString(),
+    activePackageId: getActivePackageId(),
     inputs: { ...inputs }
   };
   
