@@ -47,6 +47,7 @@ import {
   savePackage,
   deletePackage,
   getPackageById,
+  applyPackageToCalculator,
   getActivePackageId,
   setActivePackageId,
   dismissActiveBanner,
@@ -59,7 +60,9 @@ import {
   exportSinglePackageAsJson,
   importPackagesFromJson,
   importPackagesFromCsv,
-  getPackageSummary
+  getPackageSummary,
+  calculateMonthlyPayment,
+  calculateFinancingResults
 } from './packages.js';
 
 // Onboarding slides content
@@ -951,6 +954,23 @@ class SolarCalcApp {
       }
     });
 
+    // Fixed monthly payment toggle
+    const useFixedMonthly = document.getElementById('pkgUseFixedMonthly');
+    if (useFixedMonthly) {
+      useFixedMonthly.addEventListener('change', () => this.toggleFixedMonthly());
+    }
+
+    const monthlyPaymentInput = document.getElementById('pkgMonthlyPaymentInput');
+    if (monthlyPaymentInput) {
+      monthlyPaymentInput.addEventListener('input', () => this.updatePackageMonthlyPayment());
+    }
+
+    // Battery toggle
+    const hasBatteryCheckbox = document.getElementById('pkgHasBattery');
+    if (hasBatteryCheckbox) {
+      hasBatteryCheckbox.addEventListener('change', () => this.toggleBatteryFields());
+    }
+
     // Notes character count
     const notesInput = document.getElementById('pkgNotes');
     if (notesInput) {
@@ -1378,6 +1398,23 @@ class SolarCalcApp {
     document.getElementById('pkgSourceUrl').value = pkg?.sourceUrl || '';
     document.getElementById('pkgNotes').value = pkg?.notes || '';
 
+    // Battery
+    const hasBatteryEl = document.getElementById('pkgHasBattery');
+    if (hasBatteryEl) {
+      hasBatteryEl.checked = (pkg?.batteryCapacityKWh || 0) > 0;
+    }
+    const batteryCapacityEl = document.getElementById('pkgBatteryCapacity');
+    if (batteryCapacityEl) batteryCapacityEl.value = pkg?.batteryCapacityKWh || '';
+    const batteryPriceEl = document.getElementById('pkgBatteryPrice');
+    if (batteryPriceEl) batteryPriceEl.value = pkg?.batteryPricePerKWh || '';
+    const pvForBatteryEl = document.getElementById('pkgPvForBattery');
+    if (pvForBatteryEl) pvForBatteryEl.value = pkg?.pvForBatteryKW || '';
+    const nighttimeLoadEl = document.getElementById('pkgNighttimeLoad');
+    if (nighttimeLoadEl) nighttimeLoadEl.value = pkg?.nighttimeLoadKW || '';
+    const nighttimeDurationEl = document.getElementById('pkgNighttimeDuration');
+    if (nighttimeDurationEl) nighttimeDurationEl.value = pkg?.nighttimeDurationHours || '';
+    this.toggleBatteryFields();
+
     // Financing
     const hasFinancingEl = document.getElementById('pkgHasFinancing');
     if (hasFinancingEl) {
@@ -1391,6 +1428,16 @@ class SolarCalcApp {
     if (interestRateEl) interestRateEl.value = pkg?.annualInterestRate || '';
     const loanTermEl = document.getElementById('pkgLoanTerm');
     if (loanTermEl) loanTermEl.value = pkg?.loanTermMonths || '';
+    
+    // Fixed monthly payment
+    const useFixedMonthlyEl = document.getElementById('pkgUseFixedMonthly');
+    if (useFixedMonthlyEl) {
+      useFixedMonthlyEl.checked = (pkg?.monthlyPayment || 0) > 0;
+    }
+    const monthlyPaymentInputEl = document.getElementById('pkgMonthlyPaymentInput');
+    if (monthlyPaymentInputEl) monthlyPaymentInputEl.value = pkg?.monthlyPayment || '';
+    this.toggleFixedMonthly();
+    
     this.toggleFinancingFields();
     this.updatePackageMonthlyPayment();
 
@@ -1463,11 +1510,21 @@ class SolarCalcApp {
       sourceUrl: document.getElementById('pkgSourceUrl').value,
       notes: document.getElementById('pkgNotes').value,
       tags: this.packageTags,
+      // Battery fields
+      batteryCapacityKWh: document.getElementById('pkgBatteryCapacity').value,
+      batteryPricePerKWh: document.getElementById('pkgBatteryPrice').value,
+      pvForBatteryKW: document.getElementById('pkgPvForBattery').value,
+      nighttimeLoadKW: document.getElementById('pkgNighttimeLoad').value,
+      nighttimeDurationHours: document.getElementById('pkgNighttimeDuration').value,
+      // Financing fields
       hasFinancing: document.getElementById('pkgHasFinancing').checked,
       loanPrincipal: document.getElementById('pkgLoanPrincipal').value,
       downPayment: document.getElementById('pkgDownPayment').value,
       annualInterestRate: document.getElementById('pkgInterestRate').value,
-      loanTermMonths: document.getElementById('pkgLoanTerm').value
+      loanTermMonths: document.getElementById('pkgLoanTerm').value,
+      monthlyPayment: document.getElementById('pkgUseFixedMonthly').checked 
+        ? document.getElementById('pkgMonthlyPaymentInput').value 
+        : 0
     };
 
     // Validate
@@ -1518,24 +1575,12 @@ class SolarCalcApp {
 
     // Create applyPreset function that updates state
     const applyPreset = (values) => {
-      if (values.solarCapacityKW !== undefined) {
-        this.state.inputs.solarCapacityKW = values.solarCapacityKW;
-      }
-      if (values.solarPricePerKW !== undefined) {
-        this.state.inputs.solarPricePerKW = values.solarPricePerKW;
-      }
-      if (values.miscInfraCosts !== undefined) {
-        this.state.inputs.miscInfraCosts = values.miscInfraCosts;
-      }
-      if (values.loanPrincipal !== undefined) {
-        this.state.inputs.loanPrincipal = values.loanPrincipal;
-      }
-      if (values.annualInterestRate !== undefined) {
-        this.state.inputs.annualInterestRate = values.annualInterestRate;
-      }
-      if (values.loanTermMonths !== undefined) {
-        this.state.inputs.loanTermMonths = values.loanTermMonths;
-      }
+      // Update all input values from the preset
+      Object.keys(values).forEach(key => {
+        if (key in this.state.inputs && values[key] !== undefined) {
+          this.state.inputs[key] = values[key];
+        }
+      });
     };
 
     const result = applyPackageToCalculator(this.currentPackageId, applyPreset);
@@ -1594,11 +1639,11 @@ class SolarCalcApp {
     // Build financing info if package has financing
     let financingText = '';
     if (pkg.hasFinancing && pkg.loanPrincipal > 0) {
-      const monthlyPayment = this.calculateMonthlyPayment(
-        pkg.loanPrincipal, 
-        pkg.annualInterestRate, 
-        pkg.loanTermMonths
-      );
+      // Calculate financing results (uses monthlyPayment override if present)
+      const financing = calculateFinancingResults(pkg);
+      const monthlyPayment = financing.monthlyPayment;
+      const totalLoanCost = financing.totalLoanCost;
+      const totalInterest = financing.totalInterest;
       
       // Get current monthly savings from state
       const monthlySavings = this.state.results?.monthlySavings || 0;
@@ -1607,10 +1652,26 @@ class SolarCalcApp {
       const cashFlowIcon = netCashFlow >= 0 ? '✅' : '⚠️';
       const cashFlowColor = netCashFlow >= 0 ? 'text-green-300' : 'text-yellow-300';
       
+      // Show if using fixed monthly override
+      const fixedTag = pkg.monthlyPayment > 0 ? '<span class="text-xs bg-blue-500/30 px-1 rounded">FIXED</span>' : '';
+      
       financingText = `
         <span class="block mt-1 text-sm">
-          🏦 Financing: ₱${monthlyPayment.toLocaleString()}/mo @ ${pkg.annualInterestRate}% 
+          🏦 Financing ${fixedTag}: ₱${monthlyPayment.toLocaleString()}/mo 
           <span class="${cashFlowColor}">${cashFlowIcon} Net: ₱${netCashFlow.toLocaleString()}/mo</span>
+        </span>
+        <span class="block text-xs opacity-80">
+          Total: ₱${totalLoanCost.toLocaleString()} | Interest: ₱${totalInterest.toLocaleString()}
+        </span>
+      `;
+    }
+    
+    // Build battery info if package has battery
+    let batteryText = '';
+    if (pkg.batteryCapacityKWh > 0) {
+      batteryText = `
+        <span class="block mt-1 text-sm">
+          🔋 Battery: ${pkg.batteryCapacityKWh} kWh @ ₱${(pkg.batteryPricePerKWh || 0).toLocaleString()}/kWh
         </span>
       `;
     }
@@ -1618,6 +1679,7 @@ class SolarCalcApp {
     bannerText.innerHTML = `
       <strong>"${this.escapeHtml(pkg.name)}"</strong>${modifiedText} applied. 
       ${kwhText}Misc costs set to ₱0 — adjust if needed.
+      ${batteryText}
       ${financingText}
     `;
     banner.classList.remove('hidden');
@@ -1638,6 +1700,53 @@ class SolarCalcApp {
       } else {
         display.value = '—';
       }
+    }
+  }
+
+  /**
+   * Update package financing calculations
+   */
+  updatePackageMonthlyPayment() {
+    const principal = parseFloat(document.getElementById('pkgLoanPrincipal')?.value) || 0;
+    const rate = parseFloat(document.getElementById('pkgInterestRate')?.value) || 0;
+    const months = parseInt(document.getElementById('pkgLoanTerm')?.value) || 0;
+    
+    // Check if using fixed monthly override
+    const useFixed = document.getElementById('pkgUseFixedMonthly')?.checked;
+    const fixedMonthly = parseFloat(document.getElementById('pkgMonthlyPaymentInput')?.value) || 0;
+    
+    let monthlyPayment = 0;
+    let totalLoanCost = 0;
+    let totalInterest = 0;
+    
+    if (principal > 0 && months > 0) {
+      if (useFixed && fixedMonthly > 0) {
+        // Use fixed monthly payment
+        monthlyPayment = fixedMonthly;
+        totalLoanCost = monthlyPayment * months;
+        totalInterest = totalLoanCost - principal;
+      } else {
+        // Calculate from principal/rate/term
+        monthlyPayment = this.calculateMonthlyPayment(principal, rate, months);
+        totalLoanCost = monthlyPayment * months;
+        totalInterest = totalLoanCost - principal;
+      }
+    }
+    
+    // Update displays
+    const paymentDisplay = document.getElementById('pkgMonthlyPaymentDisplay');
+    if (paymentDisplay) {
+      paymentDisplay.textContent = `₱${monthlyPayment.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    
+    const totalDisplay = document.getElementById('pkgTotalLoanCost');
+    if (totalDisplay) {
+      totalDisplay.textContent = `₱${totalLoanCost.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    
+    const interestDisplay = document.getElementById('pkgTotalInterest');
+    if (interestDisplay) {
+      interestDisplay.textContent = `₱${totalInterest.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     }
   }
 
@@ -1873,6 +1982,47 @@ class SolarCalcApp {
           this.updatePackageMonthlyPayment();
         }
       }
+    }
+  }
+
+  /**
+   * Toggle battery fields visibility
+   */
+  toggleBatteryFields() {
+    const checkbox = document.getElementById('pkgHasBattery');
+    const fields = document.getElementById('pkgBatteryFields');
+    
+    if (checkbox && fields) {
+      const isEnabled = checkbox.checked;
+      fields.classList.toggle('opacity-50', !isEnabled);
+      fields.classList.toggle('pointer-events-none', !isEnabled);
+      
+      if (isEnabled) {
+        // Set defaults if empty
+        const capacityInput = document.getElementById('pkgBatteryCapacity');
+        if (capacityInput && !capacityInput.value) {
+          capacityInput.value = '10'; // Default 10 kWh
+        }
+        const priceInput = document.getElementById('pkgBatteryPrice');
+        if (priceInput && !priceInput.value) {
+          priceInput.value = '25000'; // Default ₱25,000/kWh
+        }
+      }
+    }
+  }
+
+  /**
+   * Toggle fixed monthly payment override
+   */
+  toggleFixedMonthly() {
+    const checkbox = document.getElementById('pkgUseFixedMonthly');
+    const field = document.getElementById('pkgFixedMonthlyField');
+    
+    if (checkbox && field) {
+      const isEnabled = checkbox.checked;
+      field.classList.toggle('opacity-50', !isEnabled);
+      field.classList.toggle('pointer-events-none', !isEnabled);
+      this.updatePackageMonthlyPayment();
     }
   }
 

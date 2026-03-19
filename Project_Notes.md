@@ -39,6 +39,76 @@
 
 ---
 
+### Issue: Package Battery Fields (M8 Enhancement)
+
+**Problem:** Users wanted to save packages with battery storage included, but the package schema only supported solar system details.
+
+**Resolution:** Extended package schema with battery fields:
+- `batteryCapacityKWh` - Battery size in kWh
+- `batteryPricePerKWh` - Price per kWh of battery storage
+- `pvForBatteryKW` - Dedicated PV capacity for charging battery
+- `nighttimeLoadKW` - Reference: nighttime power consumption
+- `nighttimeDurationHours` - Reference: hours of backup needed
+
+**Package Types Now Supported:**
+| Type | Solar | Battery | Financing |
+|------|-------|---------|-----------|
+| Solar Only | ✓ | ✗ | ✗ |
+| Solar + Battery | ✓ | ✓ | ✗ |
+| Solar + Financing | ✓ | ✗ | ✓ |
+| Complete System | ✓ | ✓ | ✓ |
+
+**Key Behavior:** When a package is applied, it populates ALL relevant sections and **zeros out sections not included** in the package. This ensures clean scenario comparison.
+
+---
+
+### Issue: Fixed Monthly Payment Override (M8 Enhancement)
+
+**Problem:** Some suppliers quote a fixed monthly payment directly (e.g., "₱12,500/month for 5 years") without disclosing the interest rate. The calculator needs to handle this case.
+
+**Resolution:** Added `monthlyPayment` field to packages:
+- When `monthlyPayment > 0`, it **overrides** the amortization calculation
+- Total Loan Cost = `monthlyPayment × loanTermMonths`
+- Total Interest = `Total Loan Cost - loanPrincipal`
+- Calculator displays "FIXED" tag to indicate override is in use
+
+**Form UI:** Checkbox "Use Fixed Monthly Payment (Override)" enables a field for direct entry of the quoted monthly amount.
+
+**Example:**
+```
+Package: "Trina 10kW with Battery — Fixed Monthly"
+- loanPrincipal: ₱500,000 (estimated)
+- monthlyPayment: ₱12,500 (quoted by supplier)
+- loanTermMonths: 60
+- Result: Total Cost = ₱750,000 | Total Interest = ₱250,000
+```
+
+---
+
+### Issue: Package Application Zeroing Behavior (M8)
+
+**Problem:** When applying a package, unspecified sections should be reset to avoid mixing old values with new package values.
+
+**Resolution:** Packages now act as **self-contained scenarios**. The `PACKAGE_PRESETS` object defines base values:
+
+```javascript
+PACKAGE_PRESETS = {
+  solarOnly: { battery: 0, financing: 0 },
+  solarWithBattery: { financing: 0 },
+  solarWithFinancing: { battery: 0 },
+  complete: {}
+}
+```
+
+When applied, the package:
+1. Sets all fields it defines
+2. Zeros out fields it doesn't define (via base preset)
+3. Recalculates all results
+
+This ensures clean comparison between different supplier quotes.
+
+---
+
 ## Session Log
 
 ### 2026-03-16 — Project Initialization
