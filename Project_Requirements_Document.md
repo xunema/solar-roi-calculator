@@ -733,26 +733,70 @@ The panel inherits the app's active theme via the `dark` class on `<html>`. All 
 
 #### Field Mapping
 
-When the user clicks **"Apply to Calculator"** from the Detail view, the following values are written to the calculator state using the same `applyPreset(values)` function used by Quick Presets (Section 5.6) — **not** via direct DOM manipulation:
+When the user clicks **"Apply to Calculator"** from the Detail view, the following Editable Fields are written to the calculator state using the `applyPreset(values)` function — **not** via direct DOM manipulation. Only Editable Fields are ever written (see Section 7.0 and Rule 5).
 
-| Calculator Field | Value Written | Derivation |
-|-----------------|--------------|-----------|
-| `solarCapacityKW` | `package.systemSizeKw` | Direct |
-| `solarPricePerKW` | `package.priceTotal / package.systemSizeKw` | Derives all-in ₱/kW rate from the package's total price |
-| `miscInfraCosts` | `0` | Package `priceTotal` is an all-in quote; zeroing misc costs prevents double-counting |
+##### Null / Empty vs Zero — Write Rule
 
-> **Why this mapping:** The calculator computes `pvSystemCost = solarCapacityKW × solarPricePerKW`. Setting `solarPricePerKW = priceTotal / systemSizeKw` means `pvSystemCost = priceTotal` — the package's full price lands correctly in CAPEX. Setting `miscInfraCosts = 0` avoids inflating CAPEX with a stale misc cost value from a previous scenario.
+The package field value determines whether and how each Editable Field is written:
+
+| Package field value | Write behaviour |
+|--------------------|----------------|
+| `null`, `undefined`, `""` (empty / not provided) | **Skip** — leave the calculator's current Editable Field value unchanged |
+| `0` (explicit zero) | **Zero out** — write `0` to the Editable Field |
+| Any other number | **Write** — overwrite the Editable Field with the package value |
+
+This distinction is critical: `0` is an intentional signal ("this package has no battery / no financing"), whereas `null`/empty means the package simply doesn't supply that value and the user's existing entry should be preserved.
+
+##### Section 2 — PhotoVoltaic System Editable Fields
+
+| Editable Field | Write Rule | Notes |
+|---------------|-----------|-------|
+| `solarCapacityKW` | **Always written** | Derived from `package.systemSizeKw` — required for any ROI calculation |
+| `solarPricePerKW` | **Always written** | Derived as `priceTotal ÷ systemSizeKw` — required for CAPEX |
+| `miscInfraCosts` | **Always written as `0`** | Package `priceTotal` is all-in; zeroing misc costs prevents double-counting |
+| `peakSunHoursPerDay` | **Never written** | Location-specific, user-maintained — not a package field |
+
+> **Why this mapping:** `pvSystemCost = solarCapacityKW × solarPricePerKW`. Setting `solarPricePerKW = priceTotal / systemSizeKw` means `pvSystemCost = priceTotal` — the package's full price lands correctly in CAPEX. Setting `miscInfraCosts = 0` avoids inflating CAPEX with a stale misc cost value from a previous scenario.
 >
-> **`estimatedKwhPerYear` is not written to any calculator field.** The calculator derives annual generation from `solarCapacityKW × peakSunHoursPerDay × operatingDaysPerYear`. The package's `estimatedKwhPerYear` is the supplier's estimate under their own assumptions — it is shown in the banner as a reference sanity-check only.
+> **Field type constraint:** All four fields above are Editable Fields (Section 7.0). The Section 2 Result Fields (`pvSystemCost`, `totalPVCapex`, `dailyGenerationKWh`, `dailySavings`, `annualGenerationKWh`, `pvTotalCapacityKW`) must **never** be written by Apply — they are always derived by `calculateAll()`. See Rule 5 (Section 13).
+>
+> **Known error — Eco Power 10KW / HHOT Solar Huawei 5KW:** These packages previously wrote to Section 2 Result Fields instead of the Editable Fields, causing the results panel to show the package's numbers while the dashboard KPIs continued calculating from the unchanged editable field values — a discrepancy invisible to the user. The correct fix is to always route through `applyPreset(values)` with Editable Field keys only, and to call `updateAllInputs()` after Apply so the form boxes visually reflect the new values.
+>
+> **`estimatedKwhPerYear` is not written to any calculator field.** The calculator derives annual generation from `solarCapacityKW × peakSunHoursPerDay × operatingDaysPerYear`. The package's `estimatedKwhPerYear` is the supplier's estimate and is shown in the banner as a reference sanity-check only.
 
-#### Post-Apply Behavior
+##### Section 3 — Battery Storage Editable Fields
 
-After the three fields are written:
+| Editable Field | Write Rule |
+|---------------|-----------|
+| `batteryCapacityKWh` | null/empty → skip; `0` → zero out; value → write |
+| `batteryPricePerKWh` | null/empty → skip; `0` → zero out; value → write |
+| `pvForBatteryKW` | null/empty → skip; `0` → zero out; value → write |
+| `nighttimeLoadKW` | null/empty → skip; `0` → zero out; value → write |
+| `nighttimeDurationHours` | null/empty → skip; `0` → zero out; value → write |
 
-1. The Package Manager panel **closes automatically**.
-2. The page **scrolls to Section 2** (PhotoVoltaic System), where `solarCapacityKW` and `solarPricePerKW` live.
-3. The Section 2 inputs **briefly highlight** (same highlight animation used when navigating from KPI cards to sections).
-4. A **dismissible banner** appears at the top of the calculator (below the Spec Selector, above Section 1):
+> **Solar-only packages zero out Section 3.** When a package has no battery (all battery fields explicitly `0`), applying it zeros out the entire battery section. This is intentional — it prevents confusion from leftover battery values entered for a previous scenario.
+>
+> **`batteryPricePerKWh: 0` means zero out, not "use default."** Do not substitute a default value (e.g. `|| 6000`) when the package field is `0`. The `||` operator treats `0` as falsy and incorrectly substitutes the fallback. Use an explicit null/empty check instead.
+
+##### Section 4 — Financing Editable Fields
+
+| Editable Field | Write Rule |
+|---------------|-----------|
+| `loanPrincipal` | `hasFinancing: false` → write `0`; otherwise null/empty → skip; value → write |
+| `annualInterestRate` | `hasFinancing: false` → write `0`; otherwise null/empty → skip; value → write |
+| `loanTermMonths` | `hasFinancing: false` → skip (keep user's term — it doesn't affect calculation when principal = 0); otherwise null/empty → skip; value → write |
+
+> **No-financing packages zero out Section 4.** When a package has `hasFinancing: false`, `loanPrincipal` and `annualInterestRate` are set to `0`. This removes confusion from leftover loan values that would otherwise inflate the financing KPIs. `loanTermMonths` is left unchanged because it has no effect when `loanPrincipal = 0`.
+
+#### Post-Apply Behaviour
+
+After all Editable Fields are written:
+
+1. **`updateAllInputs()` is called** so the form input boxes visually reflect the new values. Without this step, the input boxes stay visually stale while the results update — making it appear (incorrectly) that only Result Fields were changed.
+2. The Package Manager panel **closes automatically**.
+3. The page **scrolls to Section 2** (PhotoVoltaic System), where `solarCapacityKW` and `solarPricePerKW` live.
+4. The Section 2 inputs **briefly highlight** (same highlight animation used when navigating from KPI cards to sections).
+5. A **dismissible banner** appears at the top of the calculator (below the Spec Selector, above Section 1):
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -977,6 +1021,18 @@ dismissActiveBanner()        // → void
 ---
 
 ## 7. Data Model
+
+### 7.0 Field Types
+
+The calculator uses two distinct categories of fields:
+
+**Editable Fields** — User-controlled inputs. These are the values the user types or selects in the form. They are stored in `state.inputs` and listed in full in Section 7.1. These are the **only** fields that external actions (Quick Presets, Package Apply) are permitted to write.
+
+**Result Fields** — Computed outputs derived from Editable Fields. They are calculated by `calculateAll()`, stored in `state.results`, and displayed in section results panels and the Results Dashboard. They are **never** directly written by presets or packages — they are always recomputed after Editable Fields change. They are listed in Section 7.2.
+
+> **Core rule:** Packages and presets write **Editable Fields only**. Writing directly to Result Fields is forbidden — doing so bypasses the calculation chain and produces values that appear correct on screen but are inconsistent with the actual inputs, causing silent errors in downstream KPIs (Total CAPEX, Payback, ROI, etc.).
+
+---
 
 ### 7.1 Input Fields
 
@@ -1623,6 +1679,24 @@ This is the single fastest way to catch Rule 1 and Rule 2 violations before they
 
 ---
 
+### Rule 5 — Packages and Presets Write Editable Fields Only (Never Result Fields)
+
+> **Packages and Quick Presets must only write Editable Fields (Section 7.0). Writing directly to Result Fields is forbidden.**
+
+Result Fields are always derived by `calculateAll()` — they are never set directly. Writing to a Result Field bypasses the calculation chain and produces values that appear correct in the UI but are inconsistent with the actual inputs stored in `state.inputs`. This causes silent errors: downstream KPIs (Total CAPEX, Payback Years, ROI %, Net Monthly Cash Flow) will continue to compute from the stale editable field values, producing a discrepancy that is invisible to the user.
+
+**Correct pattern:** All preset and package apply operations must call `applyPreset(values)` with **Editable Field keys only** (e.g., `solarCapacityKW`, `solarPricePerKW`, `miscInfraCosts`). The subsequent `calculateAll()` call recomputes all Result Fields automatically.
+
+**Known violation — Eco Power 10KW:** An earlier implementation wrote to Section 2 Result Fields (`pvSystemCost`, `totalPVCapex`) instead of the Section 2 Editable Fields (`solarCapacityKW`, `solarPricePerKW`). See Section 6.6 for the full description and correct field mapping.
+
+**Checklist:**
+- [ ] Every key passed to `applyPreset(values)` is an Editable Field listed in Section 7.1
+- [ ] No key passed to `applyPreset(values)` appears in the Section 7.2 Computed Fields table
+- [ ] After Apply, open browser DevTools and confirm `state.inputs.solarCapacityKW` and `state.inputs.solarPricePerKW` reflect the package values
+- [ ] Confirm Section 2 Results panel and Dashboard KPIs are consistent with each other after Apply
+
+---
+
 ## 14. Milestones & Deliverables
 
 Development is organized into 7 milestones. Each milestone produces a reviewable, testable deliverable. **You should review and test at the end of each milestone before proceeding.**
@@ -1917,6 +1991,31 @@ Specs are stored in `localStorage` under key `solarCalcSpecs` as a JSON array. M
 
 ---
 
+### Milestone 9: Money Market Benchmark & Real ROI
+> **Goal:** Users can compare their solar investment directly against a Philippine time deposit benchmark (default 5.5% p.a.) — for both cash purchases and financed systems — and optionally run a full NPV/IRR analysis with panel degradation and electricity inflation. See Section 17 for full FR specifications.
+
+| Phase | Deliverable | Acceptance Criteria |
+|-------|-------------|---------------------|
+| 9.0 | `benchmarkRate` Editable Field + `benchmarkCrossoverYear` KPI | Field registered per Rule 3; crossover year in Results Dashboard; real-time recalculation |
+| 9.1 | FR-ROI-01 Cash Crossover | Year-by-year comparison table (collapsible); plain-language summary sentence |
+| 9.2 | FR-ROI-02 Financing Milestones | M1/M2/M3 displayed in Section 4 Results when `hasFinancing: true`; hidden when `loanPrincipal = 0` |
+| 9.3 | FR-ROI-03 NPV / IRR panel | Advanced toggle (collapsed by default); NPV, IRR, discounted payback computed; Newton-Raphson IRR |
+| 9.4 | Narrative integration | Benchmark crossover and IRR vs TD woven into the Milestone 6 narrative (Part 5 — The Return) |
+| 9.5 | Tests | `calc.test.js` covers NPV, IRR convergence, crossover year, all three financing milestones |
+
+**Review checklist:**
+- [ ] `benchmarkRate` and all FR-ROI-03 fields registered in `defaultInputs`, `state.js`, `ui.js` (Rule 3)
+- [ ] All new computed fields (`npv`, `irr`, `benchmarkCrossoverYear`, etc.) exist in `defaultResults` (Rule 1)
+- [ ] Defensive rendering guards on all new result fields in `ui.js` (Rule 2)
+- [ ] Advanced fields collapsed by default; basic ROI view visually unchanged
+- [ ] NPV positive/negative coloring correct (green/red)
+- [ ] IRR Newton-Raphson converges for standard inputs; "IRR > 100%" shown on non-convergence
+- [ ] M1/M2/M3 milestones hidden when `loanPrincipal = 0`
+- [ ] `benchmarkCrossoverYear` shows "—" when `annualSavings ≤ 0`
+- [ ] No console errors on fresh load (Rule 4)
+
+---
+
 ## 15. Edge Cases
 
 | Scenario | Behavior |
@@ -1935,6 +2034,141 @@ Specs are stored in `localStorage` under key `solarCalcSpecs` as a JSON array. M
 ---
 
 ## 16. Testing Checklist
+
+---
+
+## 17. Money Market Benchmark & Real ROI
+
+### 17.1 Strategic Goal
+
+Every peso saved on an electricity bill is a peso earned. The question is whether solar earns those pesos faster than the alternative: parking the same capital in a Philippine time deposit at 5–6% per year.
+
+This section defines three functional requirements that give users a direct, head-to-head comparison between their solar investment and a money market benchmark — at every stage of the investment lifecycle. The framing is always: *"When does cheap energy become a better return than safe money?"*
+
+---
+
+### FR-ROI-01 — Cash Purchase: Benchmark Crossover
+
+**Goal:** Show the year when cumulative solar savings first overtake what the same capital would have earned sitting in a time deposit.
+
+#### Inputs
+
+| Field | Default | Range | Notes |
+|-------|---------|-------|-------|
+| `benchmarkRate` | 5.5% | 1–15% | Annual time deposit / money market rate; editable |
+
+All other inputs come from the existing calculator: `totalCapex`, `annualSavings`.
+
+#### Outputs
+
+| Field | Formula | Description |
+|-------|---------|-------------|
+| `tdValueAtYear(n)` | `totalCapex × (1 + benchmarkRate)^n` | What the capital would have grown to in a TD by year n |
+| `cumulativeSavings(n)` | `annualSavings × n` | Total electricity savings by year n (nominal; no degradation) |
+| `benchmarkCrossoverYear` | Smallest n where `cumulativeSavings(n) ≥ tdValueAtYear(n)` | The year solar beats the time deposit |
+| `postPaybackAnnualROI` | `annualSavings / totalCapex × 100` | Effective annual return % once CAPEX is fully recovered |
+
+> **Plain-language summary example:** *"Your ₱300,000 system saves ₱73,000/year. In a 5.5% time deposit that money grows to ₱470,000 in 5 years. Your solar savings reach ₱365,000 in the same period — solar beats the TD in year 7. After payback in year 4.1, your effective annual return is 24.3%."*
+
+#### Acceptance Criteria
+- [ ] `benchmarkCrossoverYear` shown as a new KPI in the Results Dashboard
+- [ ] Year-by-year comparison table available (collapsible): Year | Cumulative Solar Savings | TD Value | Ahead/Behind
+- [ ] `benchmarkRate` is an Editable Field (input, default 5.5%)
+- [ ] Recalculates in real time with all other inputs
+- [ ] If `annualSavings ≤ 0`, crossover displays "—"
+
+---
+
+### FR-ROI-02 — Loan Financing: Three Milestones
+
+For a financed solar purchase, three distinct milestones replace the single payback number. They are often conflated but represent very different financial realities.
+
+| Milestone | Definition | Formula |
+|-----------|-----------|---------|
+| **M1 — Cash Flow Positive** | Monthly solar savings exceed the monthly loan payment | Earliest month where `monthlySavings > monthlyAmortization`; typically Month 1 if the system is well-sized |
+| **M2 — Full Investment Recovery** | Cumulative savings equal the total cost of the loan (principal + all interest) | `(loanPrincipal + totalInterestPaid) ÷ annualSavings` years |
+| **M3 — Benchmark-Beating ROI** | After the loan closes, cumulative post-loan savings on the original principal exceed what a TD would have earned | Computes from end of loan term using `benchmarkRate` |
+
+#### Outputs
+
+| Field | Description |
+|-------|-------------|
+| `isCashFlowPositive` | Boolean — are monthly savings already > monthly loan payment? |
+| `fullRecoveryYears` | Years to recover total loan cost (principal + interest) |
+| `postLoanBenchmarkCrossoverYear` | Year (from loan start) when solar beats the TD on original principal |
+
+> **Why M3 matters:** A 0% interest deal (e.g., Solviva ₱7,089/mo × 60 months) collapses M1 and M2 to the same number, but M3 may still lag a TD if savings are thin. This prevents a low-interest deal from masking a poor overall return.
+
+#### Acceptance Criteria
+- [ ] All three milestones displayed in Section 4 Results panel when `hasFinancing: true`
+- [ ] M1 shown as "✅ Cash flow positive from day 1" or "⚠️ Monthly payment exceeds savings"
+- [ ] M2 and M3 shown in years (one decimal place)
+- [ ] Entire block hidden when `loanPrincipal = 0`
+
+---
+
+### FR-ROI-03 — NPV / Real ROI (Advanced)
+
+Advanced fields that account for real-world factors over the system's life: panel degradation, electricity price inflation, and ongoing maintenance costs. These are optional and progressive — the basic ROI view is unaffected.
+
+#### Advanced Editable Fields
+
+| Field | Default | Range | Notes |
+|-------|---------|-------|-------|
+| `degradationRatePct` | 0.5% /yr | 0–2% | Annual panel output decline (industry typical: 0.5%) |
+| `electricityInflationPct` | 4.0% /yr | 0–15% | Annual electricity rate increase (PH historical avg ≈ 4%) |
+| `annualOMCost` | ₱5,000 /yr | 0–₱50,000 | Maintenance, cleaning, inverter reserve fund |
+| `discountRate` | = `benchmarkRate` | 1–15% | NPV discount rate; defaults to benchmark rate |
+| `systemLifeYears` | 25 (fixed) | — | Standard crystalline panel warranty period |
+
+#### Computed Fields
+
+| Field | Formula | Description |
+|-------|---------|-------------|
+| `savingsInYear(n)` | `annualSavings × (1 − degradationRatePct)^n × (1 + electricityInflationPct)^n − annualOMCost` | Real savings in year n after degradation, inflation, and O&M |
+| `npv` | `−totalCapex + Σ [savingsInYear(n) ÷ (1 + discountRate)^n]` for n = 1…25 | Net Present Value over system life. Positive = solar wins |
+| `irr` | Rate r where NPV = 0, solved via Newton-Raphson iteration | Internal Rate of Return |
+| `discountedPaybackYears` | Smallest n where cumulative discounted savings ≥ `totalCapex` | Payback in today's money — always longer than simple payback |
+
+> **Degradation and inflation partially cancel.** Panel output falls ~0.5%/yr but Philippine electricity rates historically rise ~4%/yr. In practice, year-10 savings in peso terms often exceed year-1 savings even as generation declines. The net effect is a tailwind for solar over time.
+
+> **IRR implementation:** Newton-Raphson, capped at 100 iterations. If no convergence, display "IRR > 100%". Initial guess = simple ROI.
+
+#### Acceptance Criteria
+- [ ] Advanced fields hidden behind a toggle: "⚙️ Advanced ROI Settings" (collapsed by default)
+- [ ] NPV, IRR, and discounted payback shown in a dedicated "Real ROI" results panel
+- [ ] NPV displayed with sign: green if positive, red if negative
+- [ ] IRR compared to `benchmarkRate` in plain language: *"Your IRR of 18.2% beats the 5.5% TD benchmark by 12.7 percentage points"*
+- [ ] All new Editable Fields registered per Rule 3; all new computed fields in `defaultResults` per Rule 1
+
+---
+
+### 17.2 Design Principles
+
+**Progressive disclosure** — Basic payback and simple ROI remain the primary view. Benchmark crossover and three-milestone financing are secondary. NPV/IRR are tertiary behind a collapsed toggle. Users who only want "how many years" never see the advanced fields.
+
+**Every peso saved is a peso earned** — The benchmark framing is central to all plain-language summaries. The question is never just "how many years" but "does this beat what I'd earn doing nothing with the money?"
+
+**Real-time recalculation** — All benchmark and NPV fields recompute on every input change, including the benchmark rate. No separate "Calculate" button.
+
+---
+
+### 17.3 Glossary
+
+| Term | Definition |
+|------|-----------|
+| **Time Deposit (TD)** | A fixed-term bank deposit paying a fixed interest rate (5–6% p.a. typical in the Philippines, 2026). The benchmark: the safest alternative use of the capital. |
+| **Money Market Rate** | Short-term interest rate benchmark; used interchangeably with TD rate for this calculator. Default: 5.5% |
+| **Benchmark Crossover Year** | The year when cumulative solar savings first exceed the TD value of the same invested capital. |
+| **NPV (Net Present Value)** | Total lifetime solar savings discounted to today's pesos, minus initial CAPEX. Positive NPV = solar is the better investment. |
+| **IRR (Internal Rate of Return)** | The discount rate that makes NPV exactly zero. IRR above the benchmark rate = solar beats the TD. |
+| **Discounted Payback** | Payback period in real (inflation-adjusted, time-discounted) pesos — always longer than simple payback. |
+| **Degradation Rate** | Annual decline in panel output. Typical crystalline silicon: ~0.5%/year. |
+| **Electricity Inflation** | Annual increase in grid electricity price. Philippine historical average: ~4%/year. Accelerates effective ROI. |
+| **O&M (Operations & Maintenance)** | Annual cost of keeping the system running: cleaning, inverter maintenance, minor repairs. |
+| **Post-Payback ROI** | Annual return % on the original investment once CAPEX is fully recovered — the pure profit rate going forward. |
+
+---
 
 - [ ] `node tests/calc.test.js` — all assertions pass
 - [ ] PWA installs on Android Chrome

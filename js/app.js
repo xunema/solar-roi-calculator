@@ -1586,6 +1586,10 @@ class SolarCalcApp {
     const result = applyPackageToCalculator(this.currentPackageId, applyPreset);
 
     if (result.success) {
+      // Sync form input boxes to the new state values (required — without this,
+      // the input fields stay visually stale while results update, making it
+      // appear as though only Result Fields changed)
+      updateAllInputs(this.state.inputs);
       this.closePackageManager();
       this.updatePackageBanner();
 

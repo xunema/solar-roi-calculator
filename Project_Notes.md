@@ -4,6 +4,26 @@
 
 ---
 
+## Design Decisions
+
+### Decision: Money Market Benchmark as the Primary ROI Frame (Milestone 9)
+
+**Context:** Simple payback (years to recover CAPEX) is the metric most users ask for, but it doesn't answer the investor's real question: *is solar a better use of this money than the safest alternative?* In the Philippine context, that alternative is a time deposit or money market fund at 5–6% p.a.
+
+**Decision:** Milestone 9 frames all advanced ROI outputs around a single benchmark rate (default 5.5%) and answers three layered questions:
+
+1. **For cash purchases** — What year do cumulative savings overtake what a TD would have earned on the same capital? This is the *benchmark crossover year*, distinct from simple payback (which only measures CAPEX recovery, not opportunity cost).
+
+2. **For financed purchases** — Three milestones instead of one: cash flow positive (savings > payment), full recovery (savings = principal + interest), and benchmark-beating ROI after the loan closes. These are often conflated in sales pitches; presenting them separately prevents misleading "month-1 positive cash flow" framing.
+
+3. **For long-term real ROI** — NPV and IRR over 25 years, incorporating panel degradation (~0.5%/yr) and electricity inflation (~4%/yr). These two forces partially cancel in peso terms: output falls but each kWh saved is worth more each year. The net effect is a long-term tailwind for solar that simple payback completely ignores.
+
+**Key framing principle:** Every peso saved on electricity is a peso earned. The question is *when* those earnings compound into a return that beats safe money — not just *if* the system pays for itself.
+
+**Progressive disclosure:** NPV/IRR are hidden behind an advanced toggle by default. The basic view (payback, simple ROI, benchmark crossover) is sufficient for most sales conversations. Advanced fields are for owners who want to model a 25-year hold.
+
+---
+
 ## Discovered Issues
 
 ### Issue: Package Application Behavior (M8)

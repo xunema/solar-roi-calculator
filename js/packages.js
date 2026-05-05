@@ -548,20 +548,17 @@ export const PACKAGE_PRESETS = {
   // Solar only - zeros out battery and financing
   solarOnly: {
     batteryCapacityKWh: 0,
-    batteryPricePerKWh: 6000,
+    batteryPricePerKWh: 0,
     pvForBatteryKW: 0,
     nighttimeLoadKW: 0,
     nighttimeDurationHours: 0,
     loanPrincipal: 0,
-    annualInterestRate: 0,
-    loanTermMonths: 60,
-    monthlyPayment: 0
+    annualInterestRate: 0
   },
   // Solar + Battery - zeros out financing
   solarWithBattery: {
     loanPrincipal: 0,
-    annualInterestRate: 0,
-    monthlyPayment: 0
+    annualInterestRate: 0
   },
   // Solar + Financing - zeros out battery
   solarWithFinancing: {
@@ -636,11 +633,10 @@ export function applyPackageToCalculator(id, applyPreset) {
   // Calculate derived values for the calculator
   const solarCapacityKW = pkg.systemSizeKw;
   const solarPricePerKW = pkg.systemSizeKw > 0 ? pkg.priceTotal / pkg.systemSizeKw : 0;
-  
-  // Determine which preset base to use
+
   const hasBattery = pkg.batteryCapacityKWh > 0;
   const hasFinancing = pkg.hasFinancing && pkg.loanPrincipal > 0;
-  
+
   let basePreset = PACKAGE_PRESETS.solarOnly;
   if (hasBattery && hasFinancing) {
     basePreset = PACKAGE_PRESETS.complete;
@@ -649,30 +645,41 @@ export function applyPackageToCalculator(id, applyPreset) {
   } else if (hasFinancing) {
     basePreset = PACKAGE_PRESETS.solarWithFinancing;
   }
-  
+
   // Calculate financing results
   const financing = calculateFinancingResults(pkg);
-  
-  // Build complete preset values starting from base
+
+  // Helper: returns value if not null/empty (including 0 as valid "zero out").
+  // Returns undefined when the package field was not provided — undefined keys
+  // are excluded from presetValues so the calculator's current value is preserved.
+  const pkgVal = (v) => (v === null || v === undefined || v === '') ? undefined : v;
+
+  // Build preset values — Section 2 (mandatory) + base preset zeros
   const presetValues = {
     ...basePreset,
-    solarCapacityKW,
-    solarPricePerKW,
-    miscInfraCosts: 0,  // Package priceTotal is all-in
-    // Battery fields from package
-    batteryCapacityKWh: pkg.batteryCapacityKWh || 0,
-    batteryPricePerKWh: pkg.batteryPricePerKWh || 6000,
-    pvForBatteryKW: pkg.pvForBatteryKW || 0,
-    nighttimeLoadKW: pkg.nighttimeLoadKW || 0,
-    nighttimeDurationHours: pkg.nighttimeDurationHours || 0
+    solarCapacityKW,        // always written — required for any ROI calculation
+    solarPricePerKW,        // always written — required for CAPEX
+    miscInfraCosts: 0       // always 0 — package priceTotal is all-in
   };
-  
-  // Add financing values if package has financing
-  if (hasFinancing) {
-    presetValues.loanPrincipal = pkg.loanPrincipal;
-    presetValues.annualInterestRate = pkg.annualInterestRate || 0;
-    presetValues.loanTermMonths = pkg.loanTermMonths || 60;
-    // Note: monthlyPayment is calculated by the calculator, not stored in inputs
+
+  // Section 3 — Battery Storage: null/empty → skip; 0 → zero out; value → write
+  const s3Fields = ['batteryCapacityKWh', 'batteryPricePerKWh', 'pvForBatteryKW', 'nighttimeLoadKW', 'nighttimeDurationHours'];
+  s3Fields.forEach(field => {
+    const v = pkgVal(pkg[field]);
+    if (v !== undefined) presetValues[field] = v;
+  });
+
+  // Section 4 — Financing:
+  // hasFinancing: false → zero out loanPrincipal + annualInterestRate (leave loanTermMonths)
+  // hasFinancing: true  → write provided values; null/empty → skip
+  if (!hasFinancing) {
+    presetValues.loanPrincipal = 0;
+    presetValues.annualInterestRate = 0;
+    // loanTermMonths intentionally not zeroed — no effect when principal = 0
+  } else {
+    const pv = pkgVal(pkg.loanPrincipal);      if (pv !== undefined) presetValues.loanPrincipal = pv;
+    const ar = pkgVal(pkg.annualInterestRate);  if (ar !== undefined) presetValues.annualInterestRate = ar;
+    const lt = pkgVal(pkg.loanTermMonths);      if (lt !== undefined) presetValues.loanTermMonths = lt;
   }
   
   // Apply to calculator using the same function as Quick Presets

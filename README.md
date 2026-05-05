@@ -15,6 +15,8 @@ SolarCalc PH takes your electricity rate, photovoltaic system specs, optional ba
 - **Simple ROI** — percentage of investment recovered per year
 - **Payback Period** — years until the system pays for itself
 - **Monthly Cash Flow** — net savings after loan payments (if financed)
+- **Money Market Benchmark** — the year solar savings beat a 5–6% time deposit return *(Milestone 9)*
+- **NPV / IRR** — net present value and internal rate of return with degradation and electricity inflation *(Milestone 9)*
 
 **Key Features:**
 - ⚡ **Real-time calculations** — See results instantly as you type
@@ -22,6 +24,8 @@ SolarCalc PH takes your electricity rate, photovoltaic system specs, optional ba
 - 🎯 **11 KPI Dashboard** — All metrics with click-to-navigate
 - ☀️ **Sun Hours Calculator** — Philippine regional data built-in
 - 🏠 **Quick Presets** — Residential, Commercial, Battery Only, Spreadsheet
+- 📦 **Solar Package Database** — Save and compare real supplier quotes
+- 💰 **Money Market Benchmark** — Compare solar ROI against Philippine time deposit rates *(Milestone 9)*
 - 🌙 **Night/Day themes** — Comfortable viewing any time
 - 📱 **PWA** — Works offline, installable on mobile
 
@@ -164,6 +168,23 @@ Monthly Payment = P × [r(1+r)^n] / [(1+r)^n - 1]
 where P = principal, r = monthly rate, n = months
 ```
 
+### Money Market Benchmark *(Milestone 9)*
+The core question: does solar beat parking the same money in a time deposit?
+```
+TD Value at Year n   = totalCapex × (1 + benchmarkRate)^n
+Cumulative Savings n = annualSavings × n
+Crossover Year       = smallest n where Cumulative Savings ≥ TD Value
+Post-Payback ROI     = annualSavings / totalCapex × 100%
+```
+
+### NPV / Real ROI *(Milestone 9)*
+Accounts for panel degradation, electricity inflation, and maintenance over 25 years:
+```
+Savings in Year n = annualSavings × (1 − degradation)^n × (1 + electricityInflation)^n − O&M
+NPV               = −totalCapex + Σ [Savings(n) ÷ (1 + discountRate)^n]  for n = 1…25
+IRR               = rate r where NPV = 0  (solved via Newton-Raphson)
+```
+
 ---
 
 ## Development Milestones
@@ -290,6 +311,20 @@ Named scenario save/load with a dropdown selector at the top of the page.
 - [x] Max 20 specs per device
 
 **Spec data stored:** All 18 input values, name, saved timestamp. Export format: `solarcalc-specs-YYYY-MM-DD.json`
+
+---
+
+---
+
+### ⏳ Milestone 9: Money Market Benchmark & Real ROI
+> **Status: PLANNED** — See [Section 17 of the PRD](./Project_Requirements_Document.md#17-money-market-benchmark--real-roi) for full specifications.
+
+Every peso saved on electricity is a peso earned. Milestone 9 answers: *when does solar beat the 5–6% time deposit?*
+
+- [ ] **FR-ROI-01** — Cash purchase benchmark crossover: year-by-year comparison of cumulative savings vs time deposit growth; `benchmarkRate` Editable Field (default 5.5%)
+- [ ] **FR-ROI-02** — Financing milestones: M1 cash flow positive, M2 full investment recovery (principal + interest), M3 benchmark-beating ROI after loan closes
+- [ ] **FR-ROI-03** — Advanced NPV/IRR panel (collapsed by default): panel degradation (0.5%/yr), electricity inflation (4%/yr), O&M costs, NPV over 25-year system life, IRR via Newton-Raphson
+- [ ] **Narrative integration** — benchmark crossover and IRR vs TD woven into the Milestone 6 narrative summary
 
 ---
 
